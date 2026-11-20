@@ -52,7 +52,7 @@ main{flex:1;position:relative;overflow:hidden}
 .grow small{display:block;color:var(--g600);font-size:14px;line-height:1.43;letter-spacing:-.224px}
 small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .num{text-align:right;flex:none}.num b{font-size:16px}.num small{display:block;font-size:12px;color:var(--g600)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.stats .full{grid-column:1/-1}
 .stats div{background:var(--soft);border-radius:20px;padding:14px 16px;box-shadow:var(--sh);min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
 .stats div:nth-child(4n+1),.stats div:nth-child(4n+4){background:var(--grad);color:#fff}
 .stats div:nth-child(4n+1) small,.stats div:nth-child(4n+4) small{color:#c3d2ee}
@@ -72,6 +72,18 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .hero img{width:100%;height:100%;object-fit:cover;display:block}
 .hero .cap{position:absolute;left:12px;bottom:12px;right:12px;background:#0b2545cc;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;border-radius:14px;padding:10px 14px;font-size:13px;text-align:left}
 .hero .cap b{display:block;font-size:15px}
+.adb{position:absolute;left:14px;top:14px;z-index:2;border:0;border-radius:999px;background:#ffffffe6;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#0b2545;font:inherit;font-weight:700;font-size:13px;padding:8px 12px;box-shadow:0 4px 14px #0003}
+.cmp{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;margin:6px 0 14px;background:#0b2545;touch-action:pan-y}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cmpA{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}
+.cmpL,.cmpR{position:absolute;top:12px;background:#0b2545cc;color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;pointer-events:none}.cmpL{left:12px}.cmpR{right:12px}
+.cmpH{position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:#fff;pointer-events:none;box-shadow:0 0 8px #0006}
+.cmpH i{position:absolute;top:50%;left:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#fff;color:#0b2545;display:grid;place-items:center;font-style:normal;font-weight:800;box-shadow:0 4px 14px #0005}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:ew-resize}
+.tagf{position:absolute;left:5px;top:5px;background:#0b2545d9;color:#fff;font-size:11px;font-weight:700;border-radius:8px;padding:2px 7px}
+.opc{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:18px;padding:14px;margin:0 0 10px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.opc .ic{font-size:24px}.opc b{flex:1}.opc .fl{color:#8a97a8;font-size:22px}
+.repetir{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:20px;padding:12px 14px;margin:6px 0 4px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.repetir .ic{width:40px;height:40px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-size:20px;flex:none}.repetir b{display:block}.repetir small{display:block;color:var(--g600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.repetir .grow{min-width:0}.repetir .fl{color:#8a97a8;font-size:22px}
+.reco{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#EAF3FF,#fff);border-radius:20px;padding:14px;margin:14px 0;box-shadow:var(--sh)}.reco b{display:block}.reco small{display:block;color:var(--g600);margin-top:2px}
 .heroW{position:relative;margin:14px 0 12px}.heroW .hero{margin:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.heroW .cap{padding-right:62px}
 .lk{position:absolute;right:16px;bottom:15px;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent}
 .lk svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round;overflow:visible}
@@ -241,6 +253,7 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
 
 <script src="js/sonidos.js"></script>
 <script src="js/push.js"></script>
+<script src="js/fotos.js"></script>
 <script src="js/tour.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -309,7 +322,8 @@ function demo() {
     ],
     pedidos: [{ id: 'pe0', items: [{ t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 5000, pago: 'cuenta', estado: 'entregado', creado: ago(60 * 24 * 9) }]
   };
-  C.fotos = [{ id: 'f1', realizada_id: 'r1', data: pool, creado: ago(90) }];
+  const verde = pool.replace(encodeURIComponent('#1FA2D6'), encodeURIComponent('#4E7A2E')).replace(encodeURIComponent('#5CC8EE'), encodeURIComponent('#6E9640'));
+  C.fotos = [{ id: 'f1', realizada_id: 'r1', data: pool, creado: ago(90), tipo: 'despues' }, { id: 'f0', realizada_id: 'r1', data: verde, creado: ago(150), tipo: 'antes' }];
   C.ms = [
     { id: 'm1', de_cliente: true, texto: 'Hola José! El lunes no hay nadie, te dejo la llave con el vecino.', creado: ago(60 * 26), leido_cliente: true },
     { id: 'm2', de_cliente: false, texto: 'Perfecto, gracias! Paso a las 9.', creado: ago(60 * 25), leido_cliente: true },
@@ -356,6 +370,9 @@ function proxima() {
 const cat = (t, id) => (C.d.catalogo || []).find(x => x.t === t && x.id === id);
 const cartN = () => C.cart.reduce((a, x) => a + x.n, 0);
 const cartTot = () => C.cart.reduce((a, x) => a + (+(cat(x.t, x.id) || {}).precio || 0) * x.n, 0);
+const kg = x => /\b1\s*kg\b/i.test((x && x.detalle) || '');
+const cant = (x, n) => kg(x) ? n + ' kg' : n;
+const ultimoPedido = () => (C.d.pedidos || []).find(p => p.estado !== 'cancelado' && (p.items || []).some(i => cat(i.t, i.id)));
 const enCarro = (t, id) => (C.cart.find(x => x.t === t && x.id === id) || {}).n || 0;
 function guardarCarro() { try { localStorage.setItem('carro', JSON.stringify(C.cart)); } catch (e) {} }
 function limpiarCarro() { C.cart = C.cart.filter(x => cat(x.t, x.id)); }
@@ -375,7 +392,7 @@ function renderCarro() {
 
 // ── Pantallas
 function renderInicio() {
-  const d = C.d, c = d.cliente, p = d.piletero, r = d.realizadas, ult = r[0], h = hoy(), f = C.fotos[0];
+  const d = C.d, c = d.cliente, p = d.piletero, r = d.realizadas, ult = r[0], h = hoy(), f = C.fotos.find(x => x.tipo !== 'antes'), fa = f && C.fotos.find(x => x.tipo === 'antes' && x.realizada_id === f.realizada_id);
   const mes = h.slice(0, 7), rm = r.filter(x => (x.fecha || '').startsWith(mes)), vm = d.ventas.filter(v => (v.fecha || '').startsWith(mes));
   const tv = rm.reduce((a, x) => a + (+x.valor || 0), 0), tp = vm.reduce((a, v) => a + (+v.total || 0), 0);
   const pend = d.ventas.filter(v => v.cobrado === false), tpend = pend.reduce((a, v) => a + (+v.total || 0), 0);
@@ -384,18 +401,20 @@ function renderInicio() {
   const nombre = (C.user?.user_metadata?.nombre || C.user?.user_metadata?.full_name || c.nombre || '').split(' ')[0];
   $('#inicio').innerHTML =
     `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1><p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
-    (f ? `<div class="heroW"><button class="hero" data-a="fotoToque" data-id="${esc(f.id)}" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button><span class="bigh" aria-hidden="true">${CORAZON}</span>${botonGusta(f)}</div>`
+    (f ? `<div class="heroW"><button class="hero" data-a="fotoToque" data-id="${esc(f.id)}" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button><span class="bigh" aria-hidden="true">${CORAZON}</span>${botonGusta(f)}${fa ? `<button class="adb" data-a="comparar" data-id="${esc(f.realizada_id)}">↔ Antes y después</button>` : ''}</div>`
        : `<div class="hero"><div class="empty"><div><span>🏊</span>Cuando tu piletero pase, vas a ver acá la foto de cómo quedó tu pileta.</div></div></div>`) +
     (vino ? `<div class="estado ok"><div class="ic">✓</div><div><b>Tu piletero pasó hoy</b><small>${esc(ult.piletero || 'Tu piletero')} ya hizo el mantenimiento.</small></div></div>`
       : ult ? `<div class="estado"><div class="ic">🕒</div><div><b>Última visita: ${hace(ult.fecha)}</b><small>${largo(ult.fecha)}${ult.piletero ? ' · ' + esc(ult.piletero) : ''}</small></div></div>`
       : `<div class="estado"><div class="ic">🕒</div><div><b>Todavía no hay visitas registradas</b><small>Cuando tu piletero confirme una visita la vas a ver acá.</small></div></div>`) +
     (recs.length ? `<div class="aviso"><small>Aviso de ${esc(p?.nombre || 'tu piletero')}</small><b>Te estás quedando <span class="hl">sin productos</span></b><ul>${recs.map(x => `<li><span>${esc(x.nombre)} ×${x.cantidad}${x.nota ? `<br><small>${esc(x.nota)}</small>` : ''}</span><span>${+x.precio ? peso(x.precio * x.cantidad) : 'Consultá'}</span></li>`).join('')}</ul><button class="btn" data-a="comprarRecs">Pedírselos ahora</button></div>` : '') +
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
-    `<div class="stats"><div><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div><div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div><div><small>Visitas este mes</small><b>${rm.length}</b></div><div><small>Total del mes</small><b>${peso(tv + tp)}</b></div></div>` +
+    `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div><div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div><div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
+    avisosActivos(p) + `<button class="btn sec" data-a="avisar">📣 Avisarle algo a ${esc((p?.nombre || 'tu piletero').split(' ')[0])}</button>` +
     (tpend ? `<div class="estado warn"><div class="ic">$</div><div><b>Productos sin pagar: ${peso(tpend)}</b><small>${pend.map(v => esc(v.nombre) + ' ×' + v.cantidad).join(', ')}</small></div></div>` : '') +
     cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia') +
     `<div class="card pil">${avatar(p)}<div class="grow"><b>${esc(p?.nombre || 'Sin piletero asignado')}</b><small>Tu piletero · ${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ', los ' + esc(c.dia.toLowerCase()) : ''}</small></div><button class="btn sm" data-t="chat">Escribile</button></div>` +
     (ult ? `<h3>Lo que se hizo en la última visita</h3><div class="card"><p>${esc(ult.nota || 'Mantenimiento de rutina.')}</p>${ult.productos ? `<p class="sub" style="margin:6px 0 0">Productos usados: ${esc(ult.productos)}</p>` : ''}</div><button class="btn sec" data-t="hist">Ver todas las visitas</button>` : '') +
+    recomendarHTML() +
     `<h3>Avisale algo rápido</h3><div class="chips" style="flex-wrap:wrap">${QUICK.slice(0, 4).map(q => `<button class="chip" data-a="rapido" data-id="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
   if (window.JCPush) JCPush.montarAviso($('#pushAviso'), pushOpc());
 }
@@ -412,7 +431,7 @@ function tourCliente() {
     { el: null, antes: ir('inicio'), titulo: '¡Bienvenido a tu pileta! 👋', texto: `En 30 segundos te mostramos todo lo que podés hacer desde acá.` },
     { el: '.heroW, #inicio .hero', antes: ir('inicio'), titulo: 'Cómo quedó tu pileta', texto: `Cada vez que ${pil} pasa, sube la foto de cómo quedó. Si te gusta, tocá el ❤️ o tocá dos veces la foto.` },
     { el: '#inicio .estado', titulo: '¿Ya vino?', texto: 'Acá ves si tu piletero pasó hoy y cuándo fue la última visita.' },
-    { el: '#inicio .stats', titulo: 'Tu próxima visita', texto: 'Cuándo vuelve, cuánto sale cada visita y lo que llevás gastado en el mes.' },
+    { el: '#inicio .stats', titulo: 'Tu próxima visita', texto: 'Cuándo vuelve tu piletero y cuántas visitas lleva este mes. Si no tiene que venir, avisale desde acá.' },
     { el: 'nav [data-t=tienda]', pad: 4, radio: 24, titulo: 'Tienda', texto: `Pedí cloro y todos los productos para tu pileta. ${pil[0].toUpperCase() + pil.slice(1)} te los lleva en la próxima visita.` },
     { el: 'nav [data-t=chat]', pad: 4, radio: 24, titulo: 'Mensajes', texto: 'Escribile a tu piletero y mandale fotos cuando necesites algo.' },
     { el: 'nav [data-t=hist]', pad: 4, radio: 24, titulo: 'Historial', texto: 'Todas las visitas con sus fotos y los productos que compraste.' },
@@ -441,6 +460,55 @@ const foto = (x) => { const n = (x.nombre || '').toLowerCase(), k = x.t === 'k';
   const f = k ? (/pro\b/.test(n) ? 'kit2-pro' : /premium/.test(n) ? 'kit2-premium' : /shock/.test(n) ? 'kit2-shock' : /b[áa]sico|kit/.test(n) ? 'kit2-basico' : '')
     : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado') : /\bph\b|regulador|ácido|acido/.test(n) ? (/10/.test(n) ? 'regulador-ph10' : 'regulador-ph5') : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
   return f ? IMG + f + '.jpg' : ''; };
+// ── Antes y después (deslizador)
+function comparar(rid) {
+  const fs = [...(C.fotosAll || []), ...C.fotos].filter(f => f.realizada_id === rid);
+  const a = fs.find(f => f.tipo === 'antes'), dsp = fs.find(f => f.tipo !== 'antes');
+  if (!a || !dsp) return;
+  const r = C.d.realizadas.find(x => x.id === rid);
+  sheet(`<h2>Antes y <em>después</em></h2><p class="sub">${r ? 'Visita del ' + largo(r.fecha) + ' · ' : ''}Deslizá para comparar</p><div class="cmp"><img src="${esc(dsp.data)}" alt="Después"><div class="cmpA" id="cmpA"><img src="${esc(a.data)}" alt="Antes"></div><span class="cmpL">Antes</span><span class="cmpR">Después</span><div class="cmpH" id="cmpH"><i>↔</i></div><input type="range" id="cmpX" min="0" max="100" value="50" aria-label="Comparar antes y después" oninput="cmpMover(this.value)"></div><button class="btn sec" data-a="cerrar">Cerrar</button>`);
+  // pista: se mueve solo un poquito al abrir
+  [[300, 30], [800, 70], [1250, 50]].forEach(([ms, v]) => setTimeout(() => { const x = $('#cmpX'); if (x && !x.dataset.toco) { x.value = v; cmpMover(v, true); } }, ms));
+  $('#cmpX').addEventListener('pointerdown', e => { e.target.dataset.toco = 1; }, { once: true });
+}
+window.cmpMover = (v, anim) => { const a = $('#cmpA'), h = $('#cmpH'); if (!a) return; [a, h].forEach(el => el.style.transition = anim ? 'all .4s ease' : 'none'); a.style.clipPath = `inset(0 ${100 - v}% 0 0)`; h.style.left = v + '%'; };
+// ── Avisos sobre la visita
+const AVISOS = {
+  saltear: { ic: '🚫', t: 'Que no venga la próxima visita', txt: (d) => `🚫 Te pido que no vengas el ${largo(d)}.` },
+  viaje: { ic: '✈️', t: 'Me voy de viaje', txt: (d, h) => `✈️ Me voy de viaje del ${largo(d)} al ${largo(h)}. No hace falta que vengas esos días.` },
+  llave: { ic: '🔑', t: 'La llave está con el vecino', txt: (d) => `🔑 El ${largo(d)} la llave está con el vecino.` }
+};
+function hojaAviso(tipo) {
+  const pr = proxima(), def = pr ? pr.fecha : hoy(), p = C.d.piletero, nom = (p?.nombre || 'tu piletero').split(' ')[0];
+  if (!tipo) return sheet(`<h2>Avisale a ${esc(nom)}</h2><p class="sub">Le llega al instante y lo ve en su agenda del día.</p>` + Object.entries(AVISOS).map(([k, a]) => `<button class="opc" data-a="avisoTipo" data-id="${k}"><span class="ic">${a.ic}</span><b>${a.t}</b><span class="fl">›</span></button>`).join('') + `<button class="btn sec" data-a="cerrar">Cancelar</button>`);
+  const a = AVISOS[tipo], fin = new Date(fd(def)); fin.setDate(fin.getDate() + 7);
+  sheet(`<h2>${a.ic} ${a.t}</h2>` + (tipo === 'viaje'
+    ? `<label>Me voy el<input type="date" id="avD" value="${hoy()}" min="${hoy()}"></label><label>Vuelvo el<input type="date" id="avH" value="${ymd(fin)}" min="${hoy()}"></label>`
+    : `<label>${tipo === 'saltear' ? 'Qué visita' : 'Qué día'}<input type="date" id="avD" value="${def}" min="${hoy()}"></label>${pr && tipo === 'saltear' ? `<p class="note" style="margin-top:-4px">Tu próxima visita es el ${largo(pr.fecha)}.</p>` : ''}`) +
+    `<label>Algo más (opcional)<input id="avN" maxlength="200" placeholder="${tipo === 'llave' ? 'Ej: en la casa de al lado, la de rejas verdes' : 'Ej: la semana siguiente vení normal'}"></label><button class="btn" data-a="mandarAviso" data-id="${tipo}">Avisar</button><button class="btn sec" data-a="avisar">Volver</button>`);
+}
+async function enviarAviso(tipo, desde, hasta, nota) {
+  const texto = AVISOS[tipo].txt(desde, hasta) + (nota ? ' ' + nota : '');
+  const row = { cliente_id: C.d.cliente.id, de_cliente: true, texto, aviso: tipo, aviso_desde: desde, aviso_hasta: hasta };
+  if (C.demo) C.ms.push({ id: crypto.randomUUID(), creado: new Date().toISOString(), ...row });
+  else {
+    const x = await sb.from('mensajes').insert({ ...row, autor_id: C.user.id }).select().single();
+    if (x.error) throw new Error('No se pudo avisar: ' + x.error.message);
+    C.ms.push(x.data);
+  }
+  renderMsgs(); renderInicio();
+}
+function avisosActivos(p) {
+  const nom = (p?.nombre || 'tu piletero').split(' ')[0];
+  return C.ms.filter(m => m.aviso && m.aviso_hasta >= hoy()).slice(-3).map(m => `<div class="estado warn"><div class="ic">${AVISOS[m.aviso].ic}</div><div><b>Le avisaste a ${esc(nom)}</b><small>${esc(m.texto)}</small></div></div>`).join('');
+}
+// ── Recomendanos
+const recomendarHTML = () => `<div class="reco"><div class="grow"><b>¿Conocés a alguien con pileta?</b><small>Recomendanos y ayudás a que el equipo crezca 💙</small></div><button class="btn sm" data-a="recomendar">Recomendar</button></div>`;
+async function recomendar() {
+  const texto = 'Te recomiendo a José Carrizo e Hijos para el mantenimiento de la pileta 🏊 Son de confianza, te mandan foto de cómo queda la pileta después de cada visita y te llevan los productos. Mirá:', url = 'https://www.josecarrizoehijos.ar';
+  if (navigator.share) { try { await navigator.share({ title: 'José Carrizo e Hijos', text: texto, url }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  window.open('https://wa.me/?text=' + encodeURIComponent(texto + ' ' + url), '_blank', 'noopener');
+}
 // "Me gusta" en las fotos (como en Instagram: corazón o doble toque)
 const CORAZON = '<svg viewBox="0 0 24 24"><path d="M16.8 3.9c-2 0-3.6 1-4.8 2.6C10.8 4.9 9.2 3.9 7.2 3.9 4.1 3.9 1.8 6.4 1.8 9.6c0 5.3 8.2 10.4 10.2 11.6 2-1.2 10.2-6.3 10.2-11.6 0-3.2-2.3-5.7-5.4-5.7z"/></svg>';
 const botonGusta = f => `<button class="lk ${f.gusta ? 'on' : ''}" data-a="gusta" data-id="${esc(f.id)}" aria-pressed="${!!f.gusta}" aria-label="${f.gusta ? 'Ya no me gusta' : 'Me gusta'}">${CORAZON}</button>`;
@@ -466,14 +534,15 @@ const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${
 const icono = x => x.t === 'k' ? '🧰' : /ph|ácido|acido/i.test(x.nombre) ? '⚗️' : /clarif|flocul/i.test(x.nombre) ? '💧' : /pastilla/i.test(x.nombre) ? '⚪' : '🧪';
 function itemHTML(x, rec) {
   const n = enCarro(x.t, x.id), ft = foto(x);
-  if (ft) return `<div class="pcard ${rec ? 'rec' : ''}"><img src="${ft}" alt="${esc(x.nombre)}" loading="lazy"><div class="pb"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${x.hay === false ? '<small class="u">Sin stock: lo conseguimos en unos días</small>' : ''}<div class="fila"><span class="precio">${peso(x.precio)}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${n}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
-  return `<div class="prod ${rec ? 'rec' : ''}"><div class="ico">${icono(x)}</div><div class="grow"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${x.hay === false ? '<small class="u">Sin stock ahora: lo conseguimos en unos días</small>' : ''}<div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${n}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div><div class="precio">${peso(x.precio)}</div></div>`;
+  if (ft) return `<div class="pcard ${rec ? 'rec' : ''}"><img src="${ft}" alt="${esc(x.nombre)}" loading="lazy"><div class="pb"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock: lo conseguimos en unos días</small>' : ''}<div class="fila"><span class="precio">${peso(x.precio)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
+  return `<div class="prod ${rec ? 'rec' : ''}"><div class="ico">${icono(x)}</div><div class="grow"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock ahora: lo conseguimos en unos días</small>' : ''}<div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${n}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div><div class="precio">${peso(x.precio)}</div></div>`;
 }
 function renderTienda() {
   const d = C.d, catl = d.catalogo || [], recs = d.recomendaciones || [], peds = d.pedidos || [];
   const recItems = recs.map(r => ({ r, x: cat(r.t, r.id_item) })).filter(z => z.x);
   const kits = catl.filter(x => x.t === 'k'), prods = catl.filter(x => x.t === 'p');
   $('#tienda').innerHTML = `<h1>Productos para tu <em>pileta</em></h1><p class="sub">Los mismos productos que usa tu piletero. Pedilos acá y te los lleva en la próxima visita.</p>` +
+    (ultimoPedido() ? `<button class="repetir" data-a="repetir"><span class="ic">↻</span><span class="grow"><b>Repetir mi último pedido</b><small>${esc(ultimoPedido().items.filter(i => cat(i.t, i.id)).map(i => i.nombre + ' ×' + i.n).join(', '))}</small></span><span class="fl">›</span></button>` : '') +
     (recItems.length ? '<h3>Te recomienda tu piletero</h3><div class="pgrid">' + recItems.map(z => itemHTML(z.x, z.r)).join('') + '</div>' : '') +
     (!catl.length ? '<p class="note">Todavía no hay productos a la venta. Escribile a tu piletero si necesitás algo.</p>' : '') +
     (kits.length ? '<h3>Kits</h3><div class="pgrid">' + kits.map(x => itemHTML(x)).join('') + '</div>' : '') +
@@ -483,7 +552,7 @@ function renderTienda() {
 function verCarro() {
   if (!C.cart.length) return closeSheet();
   sheet(`<h2>Tu pedido</h2><p class="sub">Tu piletero lo recibe al instante y te lo lleva en la próxima visita.</p>` +
-    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} c/u</small><div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${x.n}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
+    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} ${kg(it) ? 'el kilo' : 'c/u'}</small><div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${cant(it, x.n)}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
     `<div class="stats"><div><small>Total</small><b>${peso(cartTot())}</b></div><div><small>Entrega</small><b style="font-size:16px">Con la próxima visita</b></div></div><label>¿Cómo lo pagás?<select id="pago" onchange="document.getElementById('cobroCarro').hidden=this.value!=='transferencia'">${Object.entries(PAGO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label><div id="cobroCarro" hidden>${tieneCobro(C.d.piletero) ? cobroHTML(C.d.piletero) : '<p class="note">Tu piletero todavía no cargó sus datos para transferir. Pedíselos por Mensajes.</p>'}</div><label>Algo para aclarar (opcional)<input id="pnota" maxlength="300" placeholder="Ej: dejalo en el quincho"></label><button class="btn" data-a="pedir">Enviar pedido</button><button class="btn sec" data-a="cerrar">Seguir comprando</button>`);
 }
 function renderChatHead() {
@@ -511,7 +580,7 @@ async function renderHist() {
   }
   const fo = id => C.fotosAll.filter(f => f.realizada_id === id), vs = C.d.ventas;
   $('#hist').innerHTML = `<h1>Tu <em>historial</em></h1><p class="sub">Todas las visitas a tu pileta y los productos que compraste.</p>` +
-    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small><small style="color:var(--ink);margin-top:4px">${esc(x.nota || 'Mantenimiento de rutina')}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<span class="fw"><img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">${botonGusta(f)}</span>`).join('')}</div>` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
+    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small><small style="color:var(--ink);margin-top:4px">${esc(x.nota || 'Mantenimiento de rutina')}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<span class="fw"><img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">${f.tipo === 'antes' ? '<span class="tagf">Antes</span>' : botonGusta(f)}</span>`).join('')}</div>${fo(x.id).some(f => f.tipo === 'antes') && fo(x.id).some(f => f.tipo !== 'antes') ? `<button class="btn sm sec" style="margin-top:8px" data-a="comparar" data-id="${esc(x.id)}">↔ Comparar antes y después</button>` : ''}` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
     '<h3>Productos comprados</h3>' + (vs.length ? vs.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${largo(v.fecha)}</small><small class="${v.cobrado === false ? 'u' : 'a'}">${v.cobrado === false ? 'Pendiente de pago' : 'Pagado'}</small></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('') : '<p class="note">No compraste productos todavía.</p>');
 }
 function renderCuenta() {
@@ -522,7 +591,7 @@ function renderCuenta() {
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Notificaciones</h3><div class="pago" id="pushBox" style="margin-top:0"></div>` +
-    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` +
+    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + recomendarHTML() +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
     `<button class="btn sec" data-a="salir">Cerrar sesión</button>`;
   if (window.JCPush) JCPush.montar($('#pushBox'), pushOpc());
@@ -570,7 +639,7 @@ function preview() {
 async function enviar(texto) {
   texto = (texto ?? $('#ct').value).trim();
   if (!texto && !C.foto) return toast('Escribí un mensaje o adjuntá una foto');
-  const row = { cliente_id: C.d.cliente.id, de_cliente: true, texto: texto || null, foto: C.foto || null };
+  const row = { cliente_id: C.d.cliente.id, de_cliente: true, texto: texto || null, foto: C.foto ? (C.demo ? C.foto : await JCFotos.subir(sb, C.foto, `chat/${C.d.cliente.id}`)) : null };
   if (C.demo) {
     C.ms.push({ id: crypto.randomUUID(), creado: new Date().toISOString(), ...row });
     setTimeout(() => { C.ms.push({ id: crypto.randomUUID(), de_cliente: false, texto: '¡Recibido! 👍', creado: new Date().toISOString(), leido_cliente: C.tab === 'chat' }); renderMsgs(); badge(); }, 1800);
@@ -673,6 +742,23 @@ async function act(e) {
     case 'enviar': t.disabled = true; try { await enviar(); } finally { t.disabled = false; } return;
     case 'rapido': if (C.tab !== 'chat') go('chat'); return enviar(d.id);
     case 'sinFoto': C.foto = null; return preview();
+    case 'repetir': {
+      const u = ultimoPedido(); if (!u) return;
+      u.items.forEach(i => { if (cat(i.t, i.id)) { const k = C.cart.find(x => x.t === i.t && x.id === i.id); if (k) k.n = Math.max(k.n, i.n); else C.cart.push({ t: i.t, id: i.id, n: i.n }); } });
+      guardarCarro(); renderTienda(); renderCarro(); son('tap'); return verCarro();
+    }
+    case 'comparar': return comparar(d.id);
+    case 'avisar': return hojaAviso();
+    case 'avisoTipo': return hojaAviso(d.id);
+    case 'mandarAviso': {
+      const tipo = d.id, desde = $('#avD').value, hasta = tipo === 'viaje' ? $('#avH').value : desde;
+      if (!desde || !hasta) return toast('Elegí la fecha');
+      if (hasta < desde) return toast('La fecha de vuelta tiene que ser después de la de ida');
+      t.disabled = true;
+      try { await enviarAviso(tipo, desde, hasta, ($('#avN').value || '').trim()); } finally { t.disabled = false; }
+      closeSheet(); son('ok'); return toast('Listo, ya le avisamos a tu piletero');
+    }
+    case 'recomendar': return recomendar();
     case 'gusta': { const f = [...C.fotos, ...(C.fotosAll || [])].find(x => x.id === d.id); return darGusta(d.id, !(f && f.gusta)); }
     case 'fotoToque': {
       const ahora = Date.now();
