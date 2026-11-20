@@ -1220,7 +1220,7 @@ async function act(e) {
     case 'guardarPorc': {
       if (!isGestor()) return;
       const n = Math.min(100, Math.max(0, +$('#pc').value || 0));
-      const r = await put('p', 'perfiles', { ...P(d.id), porc_productos: n });
+      const r = await upd('p', 'perfiles', d.id, { porc_productos: n });
       if (r && d.id === S.me.id) S.me = r;
       closeSheet(); renderAll(); return toast('Comisión guardada');
     }
@@ -1264,7 +1264,7 @@ async function act(e) {
       const cbu = $('#pgC').value.replace(/\D/g, '');
       if (cbu && cbu.length !== 22) return toast('El CBU o CVU tiene 22 números');
       t.disabled = true;
-      try { S.me = await put('p', 'perfiles', { ...S.me, pago_alias: $('#pgA').value.trim() || null, pago_cbu: cbu || null, pago_titular: $('#pgT').value.trim() || null, pago_banco: $('#pgB').value.trim() || null }) || S.me; }
+      try { S.me = await upd('p', 'perfiles', S.me.id, { pago_alias: $('#pgA').value.trim() || null, pago_cbu: cbu || null, pago_titular: $('#pgT').value.trim() || null, pago_banco: $('#pgB').value.trim() || null }) || S.me; }
       finally { t.disabled = false; }
       son('ok'); renderAll(); return toast('Listo. Tus clientes ya ven tus datos para transferir');
     }
@@ -1385,7 +1385,7 @@ async function act(e) {
       closeSheet(); renderAll(); return toast('Herramienta guardada');
     }
     case 'color':
-      S.me = await put('p', 'perfiles', { ...S.me, color: d.id }) || S.me; return renderAll();
+      S.me = await upd('p', 'perfiles', S.me.id, { color: d.id }) || S.me; return renderAll();
     case 'salir':
       if (S.me) await stopShare(); if (window.JCPush) await JCPush.olvidar(sb); return sb ? sb.auth.signOut().then(() => location.reload()) : location.reload();
   }
@@ -1414,7 +1414,7 @@ document.addEventListener('change', e => {
     const z = 192, cv = document.createElement('canvas'), m = Math.min(img.width, img.height);
     cv.width = cv.height = z;
     cv.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, z, z);
-    try { S.me = await put('p', 'perfiles', { ...S.me, foto: cv.toDataURL('image/jpeg', .8) }) || S.me; renderAll(); toast('Foto actualizada'); } catch (err) { toast(err.message); }
+    try { S.me = await upd('p', 'perfiles', S.me.id, { foto: cv.toDataURL('image/jpeg', .8) }) || S.me; renderAll(); toast('Foto actualizada'); } catch (err) { toast(err.message); }
   };
   img.src = URL.createObjectURL(e.target.files[0]);
 });
