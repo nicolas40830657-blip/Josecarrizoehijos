@@ -103,6 +103,15 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .carro .grow small{color:#c3d2ee}
 .carro .btn{background:#fff;color:var(--navy);margin:0;width:auto;padding:0 20px;height:42px;font-size:15px}
 
+/* Datos para transferir */
+.pago{background:#fff;border-radius:20px;box-shadow:var(--sh);padding:16px;margin:12px 0}
+.pago h4{margin:0 0 2px;font-size:16px}
+.pago .dato{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--g300)}
+.pago .dato:first-of-type{border-top:0}
+.pago .dato small{display:block;font-size:12px;color:var(--g600)}
+.pago .dato b{display:block;font-size:16px;word-break:break-all}
+.pago .cp{flex:none;height:34px;padding:0 14px;border-radius:9999px;background:var(--g50);font-size:13px;font-weight:600}
+.pago .cp:active{background:#dfe9fb}
 /* Tienda con fotos */
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
 .pcard{background:#fff;border-radius:20px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
@@ -259,7 +268,7 @@ function demo() {
   const pool = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#7FB77E"/><rect x="40" y="40" width="320" height="220" rx="18" fill="#E8EEF2"/><rect x="56" y="56" width="288" height="188" rx="12" fill="#1FA2D6"/><path d="M56 120c40-14 80 14 120 0s80-14 120 0 48 10 48 10V56H56z" fill="#5CC8EE" opacity=".6"/><path d="M80 180c30-8 60 8 90 0" stroke="#fff" stroke-width="4" fill="none" opacity=".5"/><path d="M200 210c30-8 60 8 90 0" stroke="#fff" stroke-width="4" fill="none" opacity=".5"/></svg>');
   C.d = {
     cliente: { id: 'c1', nombre: 'Familia Pérez', direccion: 'Güemes 2450, Mar del Plata', valor_visita: 15000, frecuencia: 'Semanal', dia: 'Lunes' },
-    piletero: { id: 'p1', nombre: 'José', color: '#1F63E8' },
+    piletero: { id: 'p1', nombre: 'José', color: '#1F63E8', alias: 'pileta.jose.mp', cbu: '0000003100012345678901', titular: 'José Carrizo', banco: 'Mercado Pago' },
     visitas: [{ fecha: mon, hora: '09:00', repetir: 'semanal', omitir: [] }],
     realizadas: [
       { id: 'r1', fecha: back(0), valor: 15000, nota: 'Limpieza de fondo, cepillado de paredes y control de pH (7,4).', productos: 'Cloro granulado 1 kg', piletero: 'José' },
@@ -369,6 +378,7 @@ function renderInicio() {
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
     `<div class="stats"><div><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div><div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div><div><small>Visitas este mes</small><b>${rm.length}</b></div><div><small>Total del mes</small><b>${peso(tv + tp)}</b></div></div>` +
     (tpend ? `<div class="estado warn"><div class="ic">$</div><div><b>Productos sin pagar: ${peso(tpend)}</b><small>${pend.map(v => esc(v.nombre) + ' ×' + v.cantidad).join(', ')}</small></div></div>` : '') +
+    cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia') +
     `<div class="card pil">${avatar(p)}<div class="grow"><b>${esc(p?.nombre || 'Sin piletero asignado')}</b><small>Tu piletero · ${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ', los ' + esc(c.dia.toLowerCase()) : ''}</small></div><button class="btn sm" data-t="chat">Escribile</button></div>` +
     (ult ? `<h3>Lo que se hizo en la última visita</h3><div class="card"><p>${esc(ult.nota || 'Mantenimiento de rutina.')}</p>${ult.productos ? `<p class="sub" style="margin:6px 0 0">Productos usados: ${esc(ult.productos)}</p>` : ''}</div><button class="btn sec" data-t="hist">Ver todas las visitas</button>` : '') +
     `<h3>Avisale algo rápido</h3><div class="chips" style="flex-wrap:wrap">${QUICK.slice(0, 4).map(q => `<button class="chip" data-a="rapido" data-id="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
@@ -378,6 +388,11 @@ const foto = (x) => { const n = (x.nombre || '').toLowerCase(), k = x.t === 'k';
   const f = k ? (/pro\b/.test(n) ? 'kit2-pro' : /premium/.test(n) ? 'kit2-premium' : /shock/.test(n) ? 'kit2-shock' : /b[áa]sico|kit/.test(n) ? 'kit2-basico' : '')
     : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado') : /\bph\b|regulador|ácido|acido/.test(n) ? (/10/.test(n) ? 'regulador-ph10' : 'regulador-ph5') : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
   return f ? IMG + f + '.jpg' : ''; };
+const tieneCobro = p => p && (p.alias || p.cbu);
+const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${titulo || 'Datos para transferir'}</h4><p class="sub" style="margin:0 0 6px">${esc(p.titular || p.nombre || '')}${p.banco ? ' · ' + esc(p.banco) : ''}</p>` +
+  (p.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(p.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.alias)}" data-q="Alias">Copiar</button></div>` : '') +
+  (p.cbu ? `<div class="dato"><div class="grow"><small>CBU / CVU</small><b>${esc(p.cbu)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.cbu)}" data-q="CBU">Copiar</button></div>` : '') +
+  `<p class="sub" style="margin:8px 0 0">Después de transferir, mandale el comprobante por Mensajes.</p></div>`;
 const icono = x => x.t === 'k' ? '🧰' : /ph|ácido|acido/i.test(x.nombre) ? '⚗️' : /clarif|flocul/i.test(x.nombre) ? '💧' : /pastilla/i.test(x.nombre) ? '⚪' : '🧪';
 function itemHTML(x, rec) {
   const n = enCarro(x.t, x.id), ft = foto(x);
@@ -399,7 +414,7 @@ function verCarro() {
   if (!C.cart.length) return closeSheet();
   sheet(`<h2>Tu pedido</h2><p class="sub">Tu piletero lo recibe al instante y te lo lleva en la próxima visita.</p>` +
     C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} c/u</small><div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${x.n}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
-    `<div class="stats"><div><small>Total</small><b>${peso(cartTot())}</b></div><div><small>Entrega</small><b style="font-size:16px">Con la próxima visita</b></div></div><label>¿Cómo lo pagás?<select id="pago">${Object.entries(PAGO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label><label>Algo para aclarar (opcional)<input id="pnota" maxlength="300" placeholder="Ej: dejalo en el quincho"></label><button class="btn" data-a="pedir">Enviar pedido</button><button class="btn sec" data-a="cerrar">Seguir comprando</button>`);
+    `<div class="stats"><div><small>Total</small><b>${peso(cartTot())}</b></div><div><small>Entrega</small><b style="font-size:16px">Con la próxima visita</b></div></div><label>¿Cómo lo pagás?<select id="pago" onchange="document.getElementById('cobroCarro').hidden=this.value!=='transferencia'">${Object.entries(PAGO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label><div id="cobroCarro" hidden>${tieneCobro(C.d.piletero) ? cobroHTML(C.d.piletero) : '<p class="note">Tu piletero todavía no cargó sus datos para transferir. Pedíselos por Mensajes.</p>'}</div><label>Algo para aclarar (opcional)<input id="pnota" maxlength="300" placeholder="Ej: dejalo en el quincho"></label><button class="btn" data-a="pedir">Enviar pedido</button><button class="btn sec" data-a="cerrar">Seguir comprando</button>`);
 }
 function renderChatHead() {
   const p = C.d.piletero;
@@ -433,6 +448,7 @@ function renderCuenta() {
   const c = C.d.cliente, u = C.user || {};
   $('#cuenta').innerHTML = `<h1>Mi <em>cuenta</em></h1><p class="sub">${esc(u.user_metadata?.nombre || u.user_metadata?.full_name || '')}${u.user_metadata?.nombre || u.user_metadata?.full_name ? ' · ' : ''}${esc(u.email || '')}</p>` +
     `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>Valor de cada visita</b><small>${c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
+    cobroHTML(C.d.piletero, 'Datos para transferir a tu piletero') +
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
@@ -581,6 +597,10 @@ async function act(e) {
     case 'sinFoto': C.foto = null; return preview();
     case 'verFoto': return sheet(`<img class="full" src="${esc(d.src)}" alt="Foto"><button class="btn sec" data-a="cerrar">Cerrar</button>`);
     case 'cerrar': return closeSheet();
+    case 'copiar':
+      try { await navigator.clipboard.writeText(d.id); toast((d.q || 'Dato') + ' copiado'); }
+      catch (err) { toast('Mantené apretado el dato para copiarlo'); }
+      return;
     case 'mas': return sumar(tp, ip, 1);
     case 'menos': return sumar(tp, ip, -1);
     case 'masC': sumar(tp, ip, 1); return verCarro();

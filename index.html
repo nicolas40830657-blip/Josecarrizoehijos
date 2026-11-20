@@ -38,7 +38,19 @@ main{flex:1;position:relative;overflow:hidden}
 .view.on{display:block}
 #v-mapa{padding:0;overflow:hidden}
 #map{position:absolute;inset:0;background:var(--g50)}
-#chipsMap{position:absolute;z-index:500;top:calc(env(safe-area-inset-top) + 12px);left:12px;right:12px}
+#topMap{position:absolute;z-index:500;top:calc(env(safe-area-inset-top) + 12px);left:12px;right:12px;pointer-events:none}
+#topMap>*{pointer-events:auto}
+#avisosMap{display:flex;flex-direction:column;gap:8px;margin-left:auto;width:min(360px,100%)}
+#avisosMap:empty{display:none}
+.avm{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fffffff2;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:18px;padding:10px 12px;box-shadow:0 10px 26px #0b254530;animation:avIn .35s ease-out}
+.avm .ic{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:18px;background:var(--soft,#EAF3FF)}
+.avm .ic.n{background:linear-gradient(135deg,#0B2545,#1b4a86);color:#fff}
+.avm b{display:block;font-size:15px;line-height:1.2}
+.avm small{display:block;font-size:13px;color:var(--g600);line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.avm i{font-style:normal;font-size:12px;color:var(--g600);flex:none;align-self:flex-start}
+.avm.mas{justify-content:center;font-weight:600;font-size:14px;padding:8px}
+@keyframes avIn{from{opacity:0;transform:translateY(-8px)}}
+.cobro{border:1px solid var(--g200);border-radius:18px;padding:14px 16px;margin:6px 0 4px;background:#fff}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
 .chip{flex:none;padding:8px 16px;border-radius:9999px;background:#ffffffd9;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--g200);font-weight:600;font-size:14px;letter-spacing:-.224px;display:flex;gap:6px;align-items:center;transition:transform .12s}
 .chip:active{transform:scale(.95)}
@@ -245,7 +257,7 @@ nav button{position:relative}
 
 <div id="app" hidden>
   <main>
-    <section class="view on" id="v-mapa"><div id="chipsMap"></div><div id="map"></div><button id="gps" data-a="gps"></button><div id="ruta" hidden></div></section>
+    <section class="view on" id="v-mapa"><div id="topMap"><div id="chipsMap"></div><div id="avisosMap"></div></div><div id="map"></div><button id="gps" data-a="gps"></button><div id="ruta" hidden></div></section>
     <section class="view" id="v-clientes">
       <h1>Clientes</h1><div id="pedBox"></div><div id="cal"></div><div id="dayList"></div><h3 id="todos">Todos los clientes</h3><div id="chipsList"></div>
       <input id="q" placeholder="Buscar por nombre o dirección">
@@ -418,7 +430,7 @@ async function load() {
 async function cargarPortal(silencio) {
   if (!sb) return;
   const [m, pe, re] = await Promise.all([
-    sb.from('mensajes').select('id,cliente_id,creado').eq('de_cliente', true).eq('leido_equipo', false),
+    sb.from('mensajes').select('id,cliente_id,creado,texto,foto').eq('de_cliente', true).eq('leido_equipo', false).order('creado', { ascending: false }),
     sb.from('pedidos').select().order('creado', { ascending: false }).limit(150),
     sb.from('recomendaciones').select().eq('estado', 'activa')
   ]);
@@ -602,7 +614,7 @@ function renderHerr() {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
@@ -773,7 +785,18 @@ function renderAll() {
 function renderPortal() {
   const pa = pedAbiertos().filter(p => misCli(p.cliente_id)), nm = S.msg.filter(m => misCli(m.cliente_id)).length, nu = pa.filter(p => p.estado === 'nuevo').length;
   const b = $('#bdgCli'); b.hidden = !(nm + nu); b.textContent = nm + nu;
+  renderAvisosMapa(pa);
   $('#pedBox').innerHTML = pa.length ? `<button class="pedbar" data-a="pedidos"><i>🛒</i><div class="grow"><b>${pa.length} ${pa.length === 1 ? 'pedido de cliente' : 'pedidos de clientes'} para entregar</b><small>${nu ? nu + ' sin confirmar · ' : ''}${peso(pa.reduce((a, p) => a + (+p.total || 0), 0))} en total</small></div><span>›</span></button>` : '';
+}
+const haceMin = f => { const m = Math.round((Date.now() - new Date(f)) / 6e4); return m < 1 ? 'ahora' : m < 60 ? m + ' min' : m < 1440 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + ' d'; };
+function renderAvisosMapa(pa) {
+  const ult = {};
+  S.msg.filter(m => misCli(m.cliente_id)).forEach(m => { if (!ult[m.cliente_id] || m.creado > ult[m.cliente_id].creado) ult[m.cliente_id] = m; });
+  const items = [
+    ...Object.values(ult).map(m => ({ f: m.creado, h: `<button class="avm" data-a="chat" data-id="${m.cliente_id}"><span class="ic">💬</span><span class="grow"><b>${esc(clN(m.cliente_id) || 'Cliente')}</b><small>${m.texto ? esc(m.texto) : m.foto ? '📷 Te mandó una foto' : 'Mensaje nuevo'}${nuevos(m.cliente_id) > 1 ? ' · ' + nuevos(m.cliente_id) + ' mensajes' : ''}</small></span><i>${haceMin(m.creado)}</i></button>` })),
+    ...(pa || []).filter(p => p.estado === 'nuevo').map(p => ({ f: p.creado, h: `<button class="avm" data-a="verPedido" data-id="${p.id}"><span class="ic n">🛒</span><span class="grow"><b>Pedido de ${esc(clN(p.cliente_id) || 'cliente')}</b><small>${(p.items || []).map(i => esc(i.nombre) + ' ×' + i.n).join(', ')} · ${peso(p.total)}</small></span><i>${haceMin(p.creado)}</i></button>` }))
+  ].sort((a, b) => (b.f || '').localeCompare(a.f || ''));
+  $('#avisosMap').innerHTML = items.slice(0, 3).map(x => x.h).join('') + (items.length > 3 ? `<button class="avm mas" data-t="clientes">Ver ${items.length - 3} más en Clientes</button>` : '');
 }
 const PAGO = { cuenta: 'Se suma a su cuenta', transferencia: 'Paga por transferencia', efectivo: 'Paga en efectivo' };
 const EST = { nuevo: 'Nuevo', confirmado: 'Confirmado', entregado: 'Entregado', cancelado: 'Cancelado' };
@@ -1216,6 +1239,14 @@ async function act(e) {
     case 'ventaCli': S.vcl = d.id; S.inv = 'prod'; closeSheet(); go('inv'); renderInv(); return toast('Elegí el producto y tocá Vender');
     case 'cerrar': S.chat = null; return closeSheet();
     case 'reintentar': return location.reload();
+    case 'guardarCobro': {
+      const cbu = $('#pgC').value.replace(/\D/g, '');
+      if (cbu && cbu.length !== 22) return toast('El CBU o CVU tiene 22 números');
+      t.disabled = true;
+      try { S.me = await put('p', 'perfiles', { ...S.me, pago_alias: $('#pgA').value.trim() || null, pago_cbu: cbu || null, pago_titular: $('#pgT').value.trim() || null, pago_banco: $('#pgB').value.trim() || null }) || S.me; }
+      finally { t.disabled = false; }
+      renderAll(); return toast('Listo. Tus clientes ya ven tus datos para transferir');
+    }
     case 'habilitar': {
       if (!isGestor()) return;
       await upd('p', 'perfiles', d.id, { activo: true }); renderAll(); return toast('Cuenta habilitada');
