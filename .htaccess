@@ -11,3 +11,18 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 <FilesMatch "\.sql$">
   Require all denied
 </FilesMatch>
+
+# Reglas de seguridad (las ve solo el navegador)
+<IfModule mod_headers.c>
+  # Siempre por conexión segura (https) durante un año
+  Header always set Strict-Transport-Security "max-age=31536000"
+  # Ninguna otra página puede meter este sitio adentro (evita engaños tipo "clickjacking")
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Content-Security-Policy "frame-ancestors 'self'"
+  # El navegador no "adivina" tipos de archivo
+  Header always set X-Content-Type-Options "nosniff"
+  # No mandar la dirección completa de la página a otros sitios
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Permisos: cámara, micrófono y ubicación solo para este sitio
+  Header always set Permissions-Policy "camera=(self), microphone=(self), geolocation=(self), payment=()"
+</IfModule>

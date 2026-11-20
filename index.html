@@ -109,6 +109,7 @@ nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.75;s
 .day{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 #mic{position:fixed;right:16px;bottom:calc(128px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;z-index:700;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .12s}
 #mic:active{transform:scale(.95)}
+#mic.off{display:none}
 #mic svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 #mic.on{background:#D72113;animation:pulse 1.2s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 14px #d7211333}}
@@ -298,7 +299,7 @@ nav button{position:relative}
     <button data-t="inv"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg>Inventario</button>
     <button data-t="perfil"><svg viewBox="0 0 24 24"><path d="M20 21v-1a5 5 0 00-5-5H9a5 5 0 00-5 5v1"/><circle cx="12" cy="8" r="4"/></svg>Mi perfil</button>
   </nav>
-  <button id="mic" aria-label="Asistente de voz"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+  <button id="mic" class="off" aria-label="Asistente de voz"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
   <div id="heard" hidden></div>
 </div>
 
@@ -618,7 +619,7 @@ function tourEquipo() {
     { el: 'nav [data-t=mapa]', pad: 4, radio: 22, antes: ir('mapa'), titulo: 'Mapa', texto: 'Tus clientes aparecen como pines. Tocá uno para ver su ficha, agendar o confirmar la visita.' },
     { el: '#avisosMap .avm', titulo: 'Mensajes y pedidos', texto: 'Cuando un cliente te escribe o te pide productos, aparece acá arriba. Tocalo y se abre el chat o el pedido.' },
     { el: '#gps', pad: 6, radio: 24, titulo: 'Compartir tu ubicación', texto: 'Activalo cuando salís a trabajar: así la empresa ve por dónde andás y puede coordinar mejor.' },
-    { el: '#mic', pad: 6, radio: 40, titulo: 'Asistente de voz', texto: 'Mantené apretado el micrófono y hablá. Ej: “Programá una visita con Familia Pérez el viernes a las 9”. Te muestra lo que va a hacer y vos confirmás.' },
+    { el: '#mic:not(.off)', pad: 6, radio: 40, titulo: 'Asistente de voz', texto: 'Mantené apretado el micrófono y hablá. Ej: “Programá una visita con Familia Pérez el viernes a las 9”. Te muestra lo que va a hacer y vos confirmás.' },
     { el: '#cal', antes: ir('clientes'), titulo: 'Tu agenda', texto: 'Tocá un día para ver las visitas. Mantené apretado un día para programar una visita nueva.' },
     { el: ['#dayList .chk', '#dayList'], pad: 6, radio: 24, titulo: 'Confirmar la visita', texto: 'Cuando terminás una visita, tocá el ✓ que tiene a la derecha. Ahí cargás qué hiciste, los productos que usaste y las fotos (la de antes y la de cómo quedó). El cliente ve la foto en su app.' },
     { el: '#dayList .vis', titulo: 'Avisos del cliente', texto: 'Si el cliente te avisó que no vayas, que está de viaje o que la llave está con el vecino, lo ves en la visita de ese día.' },

@@ -84,6 +84,7 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .opc{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:18px;padding:14px;margin:0 0 10px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.opc .ic{font-size:24px}.opc b{flex:1}.opc .fl{color:#8a97a8;font-size:22px}
 .repetir{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:20px;padding:12px 14px;margin:6px 0 4px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.repetir .ic{width:40px;height:40px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-size:20px;flex:none}.repetir b{display:block}.repetir small{display:block;color:var(--g600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.repetir .grow{min-width:0}.repetir .fl{color:#8a97a8;font-size:22px}
 .reco{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#EAF3FF,#fff);border-radius:20px;padding:14px;margin:14px 0;box-shadow:var(--sh)}.reco b{display:block}.reco small{display:block;color:var(--g600);margin-top:2px}
+.legal{font-size:12.5px;color:var(--g600);text-align:center;line-height:1.45;margin:16px 6px 0}.legal a{color:inherit;text-decoration:underline}
 .heroW{position:relative;margin:14px 0 12px}.heroW .hero{margin:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.heroW .cap{padding-right:62px}
 .lk{position:absolute;right:16px;bottom:15px;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent}
 .lk svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round;overflow:visible}
@@ -626,6 +627,7 @@ function renderCuenta() {
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Notificaciones</h3><div class="pago" id="pushBox" style="margin-top:0"></div>` +
     `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + recomendarHTML() +
+    `<p class="legal">Tus datos se usan solo para el servicio de tu pileta. <a href="${PRIV}" target="_blank" rel="noopener">Política de privacidad</a> · Para ver, corregir o borrar tus datos, escribinos por Mensajes o al WhatsApp de la empresa.</p>` +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
     `<button class="btn sec" data-a="salir">Cerrar sesión</button>`;
   if (window.JCPush) JCPush.montar($('#pushBox'), pushOpc());
@@ -697,8 +699,10 @@ function authUI() {
     `<button class="btn" data-a="${modo === 'crear' ? 'registro' : 'login'}">${modo === 'crear' ? 'Crear mi cuenta' : 'Entrar'}</button>` +
     (modo === 'entrar' ? '<button class="btn sec" data-a="olvide">Me olvidé la contraseña</button>' : `<p class="note" style="margin-top:14px">${Q.get('c') ? 'Tu código <b>' + esc(Q.get('c').toUpperCase()) + '</b> ya está cargado: después de crear la cuenta se vincula solo.' : 'Después de crear la cuenta te vamos a pedir el código que te pasó tu piletero.'}</p>`)
     : '<p class="note">No se pudo conectar con el servidor. Revisá tu conexión.</p>') +
-    '<button class="btn sec" data-a="demo" style="margin-top:22px">Ver cómo funciona (demo)</button>';
+    '<button class="btn sec" data-a="demo" style="margin-top:22px">Ver cómo funciona (demo)</button>' +
+    `<p class="legal">Al ${modo === 'crear' ? 'crear tu cuenta' : 'entrar'} aceptás nuestra <a href="${PRIV}" target="_blank" rel="noopener">política de privacidad</a>.</p>`;
 }
+const PRIV = 'https://www.josecarrizoehijos.ar/privacidad.html';
 const volver = () => location.origin + location.pathname + (Q.get('c') ? '?c=' + encodeURIComponent(Q.get('c')) : '');
 async function auth(reg) {
   const email = $('#em').value.trim(), pw = $('#pw').value;
@@ -719,6 +723,7 @@ async function auth(reg) {
 async function vincular(cod) {
   const r = await sb.rpc('vincular_pileta', { p_codigo: cod });
   if (r.error) throw new Error(r.error.message);
+  if (!r.data) throw new Error('El código no es válido o ya lo usa otra cuenta. Revisalo con tu piletero.');
 }
 async function start(u) {
   C.user = u;
