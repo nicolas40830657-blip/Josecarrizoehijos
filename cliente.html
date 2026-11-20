@@ -373,8 +373,8 @@ function renderInicio() {
 }
 const IMG = 'https://jxdvrwjkcluskdaeockt.supabase.co/storage/v1/object/public/web/tienda-';
 const foto = (x) => { const n = (x.nombre || '').toLowerCase(), k = x.t === 'k';
-  const f = k ? (/pro\b/.test(n) ? 'kit-pro' : /premium/.test(n) ? 'kit-premium' : /shock/.test(n) ? 'kit-shock' : /b[áa]sico|kit/.test(n) ? 'kit-basico' : '')
-    : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado') : /\bph\b|regulador|ácido|acido/.test(n) ? 'regulador-ph' : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
+  const f = k ? (/pro\b/.test(n) ? 'kit2-pro' : /premium/.test(n) ? 'kit2-premium' : /shock/.test(n) ? 'kit2-shock' : /b[áa]sico|kit/.test(n) ? 'kit2-basico' : '')
+    : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado') : /\bph\b|regulador|ácido|acido/.test(n) ? (/10/.test(n) ? 'regulador-ph10' : 'regulador-ph5') : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
   return f ? IMG + f + '.jpg' : ''; };
 const icono = x => x.t === 'k' ? '🧰' : /ph|ácido|acido/i.test(x.nombre) ? '⚗️' : /clarif|flocul/i.test(x.nombre) ? '💧' : /pastilla/i.test(x.nombre) ? '⚪' : '🧪';
 function itemHTML(x, rec) {

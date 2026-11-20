@@ -682,9 +682,9 @@ function equipoHTML() {
 // ── Productos, kits y ventas
 const FOTOS = 'https://jxdvrwjkcluskdaeockt.supabase.co/storage/v1/object/public/web/tienda-';
 const fotoDe = (nombre, kit) => { const n = (nombre || '').toLowerCase();
-  const f = kit ? (/pro\b/.test(n) ? 'kit-pro' : /premium/.test(n) ? 'kit-premium' : /shock/.test(n) ? 'kit-shock' : 'kit-basico')
+  const f = kit ? (/pro\b/.test(n) ? 'kit2-pro' : /premium/.test(n) ? 'kit2-premium' : /shock/.test(n) ? 'kit2-shock' : 'kit2-basico')
     : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado')
-    : /\bph\b|regulador|ácido|acido/.test(n) ? 'regulador-ph' : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
+    : /\bph\b|regulador|ácido|acido/.test(n) ? (/10/.test(n) ? 'regulador-ph10' : 'regulador-ph5') : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
   return f ? FOTOS + f + '.jpg' : ''; };
 const imgCard = (nombre, kit) => { const f = fotoDe(nombre, kit); return f ? `<img src="${f}" alt="${esc(nombre)}" loading="lazy" onerror="this.outerHTML='<div class=noimg>🧪</div>'">` : `<div class="noimg">${kit ? '🧰' : '🧪'}</div>`; };
 const ud = l => l.reduce((a, v) => a + (+v.cantidad || 0), 0), fa = l => l.reduce((a, v) => a + (+v.total || 0), 0), cm = l => l.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0), cs = l => l.reduce((a, v) => a + (+S.vc[v.id] || 0), 0);
