@@ -40,3 +40,9 @@ Vista de prueba sin cuenta: `cliente.html?demo`
 - Precios: los productos sueltos están en $0 (no aparecen en la tienda) y el kit “BÁSICO 90%” figura a $30.
 - Notificaciones push de mensajes y pedidos.
 - Pago online (Mobbex) cuando esté dado de alta.
+
+## Notificaciones y sonidos
+- `sw.js` (service worker, solo notificaciones), `js/push.js` (activar/apagar, preferencias), `js/sonidos.js` (sonidos cortos, se silencian desde Mi perfil / Cuenta).
+- Servidor: función de Supabase `enviar-push` (`supabase/functions/enviar-push`) y migración `supabase/05_notificaciones.sql`. Las claves VAPID están en Supabase Vault, no en el repo.
+- Avisan: mensajes nuevos, pedidos (nuevo, confirmado, entregado, cancelado), visita registrada y "te estás quedando sin productos".
+- En iPhone solo llegan si la app está agregada a la pantalla de inicio.

@@ -40,6 +40,7 @@ main{flex:1;position:relative;overflow:hidden}
 #map{position:absolute;inset:0;background:var(--g50)}
 #topMap{position:absolute;z-index:500;top:calc(env(safe-area-inset-top) + 12px);left:12px;right:12px;pointer-events:none}
 #topMap>*{pointer-events:auto}
+#pushAviso{margin:8px 0 0 auto;width:min(360px,100%)}#pushAviso .jp-av{margin:0}
 #avisosMap{display:flex;flex-direction:column;gap:8px;margin-left:auto;width:min(360px,100%)}
 #avisosMap:empty{display:none}
 .avm{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fffffff2;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:18px;padding:10px 12px;box-shadow:0 10px 26px #0b254530;animation:avIn .35s ease-out}
@@ -257,7 +258,7 @@ nav button{position:relative}
 
 <div id="app" hidden>
   <main>
-    <section class="view on" id="v-mapa"><div id="topMap"><div id="chipsMap"></div><div id="avisosMap"></div></div><div id="map"></div><button id="gps" data-a="gps"></button><div id="ruta" hidden></div></section>
+    <section class="view on" id="v-mapa"><div id="topMap"><div id="chipsMap"></div><div id="avisosMap"></div><div id="pushAviso"></div></div><div id="map"></div><button id="gps" data-a="gps"></button><div id="ruta" hidden></div></section>
     <section class="view" id="v-clientes">
       <h1>Clientes</h1><div id="pedBox"></div><div id="cal"></div><div id="dayList"></div><h3 id="todos">Todos los clientes</h3><div id="chipsList"></div>
       <input id="q" placeholder="Buscar por nombre o dirección">
@@ -283,6 +284,8 @@ nav button{position:relative}
 <div id="sh"><div class="scrim" data-a="cerrar"></div><div class="panel"><i class="grab"></i><div id="sheetBody"></div></div></div>
 <div id="toast" role="status"></div>
 
+<script src="js/sonidos.js"></script>
+<script src="js/push.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -438,7 +441,7 @@ async function cargarPortal(silencio) {
   if (!m.error) S.msg = m.data; if (!pe.error) S.ped = pe.data; if (!re.error) S.rec = re.data;
   if (silencio || !S.me) return;
   const nm = S.msg.length > antes.m, np = S.ped.filter(x => x.estado === 'nuevo').length > antes.p;
-  if (nm || np) { toast(np ? '🛒 Llegó un pedido nuevo de un cliente' : '💬 Tenés un mensaje nuevo de un cliente'); renderAll(); }
+  if (nm || np) { son(np ? 'pedido' : 'plin'); toast(np ? '🛒 Llegó un pedido nuevo de un cliente' : '💬 Tenés un mensaje nuevo de un cliente'); renderAll(); }
 }
 async function put(k, table, row) {
   let r = row;
@@ -569,7 +572,23 @@ async function start(u, name) {
   $('#auth').hidden = true; $('#app').hidden = false;
   S.sel = ymd(new Date()); S.mes = S.sel.slice(0, 7); S.F = isGestor() ? null : S.me.id; initMap(); go('mapa'); renderAll(); pollU();
   try { if (localStorage.getItem('share') === '1') startShare(); } catch (e) {}
+  if (window.JCPush) { JCPush.sincronizar(sb, 'equipo'); JCPush.montarAviso($('#pushAviso'), PUSH); }
+  if (location.hash) abrirDestino(location.href).catch(e => toast(e.message));
 }
+
+// ── Notificaciones y sonidos
+const PUSH = { sb, app: 'equipo', toast: t => toast(t), titulo: 'Activá las notificaciones', corto: 'Mensajes y pedidos de clientes al instante.', texto: 'Enterate al instante cuando un cliente te escribe o te hace un pedido, aunque tengas la app cerrada.', opciones: [['mensajes', 'Mensajes de clientes'], ['pedidos', 'Pedidos de la tienda', 'Nuevos y cancelados']], como: () => sheet(`<h2>Instalá la app</h2><p class="sub">En iPhone, las notificaciones llegan solo si la app está en tu pantalla de inicio.</p>${JCPush.pasosIOS}<button class="btn sec" data-a="cerrarSh">Entendido</button>`), cambio: () => { JCPush.montarAviso($('#pushAviso'), PUSH); montarPush(); } };
+function montarPush() { if (window.JCPush) JCPush.montar($('#pushBox'), PUSH); }
+const son = n => window.JCSon && JCSon.play(n);
+async function abrirDestino(url) {
+  const h = new URL(url, location.href).hash.slice(1), [k, id] = h.split('=');
+  if (!k || !id || !S.me) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if (sb) await cargarPortal(true).catch(() => {});
+  if (k === 'chat' && S.c.some(c => c.id === id)) { go('mapa'); return openChat(id); }
+  if (k === 'pedido' && S.ped.some(p => p.id === id)) { renderAll(); return verPedido(id); }
+}
+if (window.JCPush) JCPush.onAbrir(u => abrirDestino(u).catch(e => toast(e.message)));
 
 // ── Mapa
 let map, layer, ulayer, rlayer;
@@ -614,7 +633,8 @@ function renderHerr() {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  montarPush();
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
@@ -1017,14 +1037,15 @@ document.addEventListener('pointermove', e => { if (Math.abs(e.clientX - lpX) + 
 document.addEventListener('contextmenu', e => { if (e.target.closest('.card, .day')) e.preventDefault(); });
 
 // ── Acciones
-document.addEventListener('click', e => act(e).catch(err => toast(err.message || 'Algo salió mal')));
+document.addEventListener('click', e => act(e).catch(err => { son('error'); toast(err.message || 'Algo salió mal'); }));
 async function act(e) {
   if (lpDone) { lpDone = false; return; }
   const t = e.target.closest('[data-a],[data-f],[data-t]'); if (!t) return;
   const d = t.dataset, h = S.h.find(x => x.id === d.id);
   if ('f' in d) { S.F = d.f || null; return renderAll(); }
-  if (d.t) return go(d.t);
+  if (d.t) { if (t.closest('nav')) son('tap'); return go(d.t); }
   switch (d.a) {
+    case 'cerrarSh': return closeSheet();
     case 'sem': { const x = new Date(S.sel + 'T12:00'); x.setDate(x.getDate() + (+d.id)); S.sel = ymd(x); return renderCal(); }
     case 'dia': S.sel = d.id; return renderCal();
     case 'gps': return S.share ? stopShare() : startShare();
@@ -1114,7 +1135,7 @@ async function act(e) {
       if (ex && ex.pago_id) return toast('Esa visita ya está incluida en un pago');
       let nuevo = null;
       if (ex) { if ((ex.nota || ex.productos) && !confirm('Esta visita tiene notas o fotos guardadas. Si la desmarcás se borran. ¿Seguir?')) return; await del('r', 'realizadas', ex.id); toast('Visita desmarcada'); }
-      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: c.piletero_id || S.me.id, fecha: S.sel, valor: +c.valor_visita || 0 }); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
+      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: c.piletero_id || S.me.id, fecha: S.sel, valor: +c.valor_visita || 0 }); son('ok'); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
       renderAll(); if (nuevo) abrirRegistro(nuevo.id); return;
     }
     case 'mes': { const x = mesDe(S.mes); x.setMonth(x.getMonth() + (+d.id)); S.mes = ymd(x).slice(0, 7); return renderPerfil(); }
@@ -1245,7 +1266,7 @@ async function act(e) {
       t.disabled = true;
       try { S.me = await put('p', 'perfiles', { ...S.me, pago_alias: $('#pgA').value.trim() || null, pago_cbu: cbu || null, pago_titular: $('#pgT').value.trim() || null, pago_banco: $('#pgB').value.trim() || null }) || S.me; }
       finally { t.disabled = false; }
-      renderAll(); return toast('Listo. Tus clientes ya ven tus datos para transferir');
+      son('ok'); renderAll(); return toast('Listo. Tus clientes ya ven tus datos para transferir');
     }
     case 'habilitar': {
       if (!isGestor()) return;
@@ -1259,13 +1280,13 @@ async function act(e) {
     case 'verPedido': return verPedido(d.id);
     case 'pedConfirmar': {
       await upd('ped', 'pedidos', d.id, { estado: 'confirmado', atendido_por: S.me.id, actualizado: new Date().toISOString() });
-      renderAll(); verPedido(d.id); return toast('Pedido confirmado. El cliente lo ve en su app.');
+      son('ok'); renderAll(); verPedido(d.id); return toast('Pedido confirmado. El cliente lo ve en su app.');
     }
     case 'pedEntregar': {
       t.disabled = true;
       try { await rpc('entregar_pedido', { p_id: d.id, p_cobrado: $('#pco').value === 'si' }); if (sb) await cargarPortal(true); }
       finally { t.disabled = false; }
-      closeSheet(); renderAll(); return toast('Pedido entregado: la venta quedó registrada');
+      son('ok'); closeSheet(); renderAll(); return toast('Pedido entregado: la venta quedó registrada');
     }
     case 'pedCancelar': {
       if (!confirm('¿Cancelar este pedido? El cliente lo va a ver cancelado.')) return;
@@ -1283,7 +1304,7 @@ async function act(e) {
         if (sb) { const x = await sb.from('mensajes').insert(row).select().single(); if (x.error) throw new Error(x.error.message); S.ms.push(x.data); }
         else S.ms.push({ id: crypto.randomUUID(), creado: new Date().toISOString(), leido_equipo: true, ...row });
       } finally { t.disabled = false; }
-      $('#chatTxt').value = ''; S.chatFoto = null; $('#chatPrev').innerHTML = '';
+      son('envio'); $('#chatTxt').value = ''; S.chatFoto = null; $('#chatPrev').innerHTML = '';
       const el = $('#chatMsgs'); el.innerHTML = bubbles(S.ms.filter(m => m.cliente_id === c.id), c); el.scrollTop = el.scrollHeight;
       return;
     }
@@ -1366,7 +1387,7 @@ async function act(e) {
     case 'color':
       S.me = await put('p', 'perfiles', { ...S.me, color: d.id }) || S.me; return renderAll();
     case 'salir':
-      if (S.me) await stopShare(); return sb ? sb.auth.signOut().then(() => location.reload()) : location.reload();
+      if (S.me) await stopShare(); if (window.JCPush) await JCPush.olvidar(sb); return sb ? sb.auth.signOut().then(() => location.reload()) : location.reload();
   }
 }
 $('#q').addEventListener('input', renderClients);
