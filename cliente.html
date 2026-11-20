@@ -151,6 +151,7 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
 #auth .btn,#link .btn{background:#fff;color:var(--navy)}
 #auth .btn.sec,#link .btn.sec{background:#ffffff1f;color:#fff;box-shadow:none}
 #auth .note,#link .note{background:#ffffff1a;color:#d5deec}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:50px;border-radius:9999px;background:#fff!important;background-image:none!important;color:#1f1f1f!important;border:1px solid #dadce0;font-weight:600;font-size:16px;margin-top:4px}.btn-google:active{transform:scale(.98)}.o-sep{display:flex;align-items:center;gap:10px;margin:16px 0 8px;color:#b9c6da;font-size:13px}.o-sep:before,.o-sep:after{content:"";flex:1;height:1px;background:currentColor;opacity:.4}
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:#ffffff1a;border-radius:9999px;padding:4px;margin-bottom:18px}
 .tabs button{padding:10px;border-radius:9999px;font-weight:600;color:#d5deec}
 .tabs button.on{background:#fff;color:var(--navy)}
@@ -169,6 +170,7 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
 </style>
 </head>
 <body>
+<script src="js/splash.js" data-logo="img/logo-blanco.png" data-equipo="img/equipo-cut.webp"></script>
 
 <section id="auth"><div>
   <div class="brand">José Carrizo<br>e Hijos</div>
@@ -355,7 +357,7 @@ function renderInicio() {
   const pend = d.ventas.filter(v => v.cobrado === false), tpend = pend.reduce((a, v) => a + (+v.total || 0), 0);
   const pr = proxima(), vino = ult && ult.fecha === h, recs = d.recomendaciones || [], peds = (d.pedidos || []).filter(x => x.estado === 'nuevo' || x.estado === 'confirmado');
   const fr = f && r.find(x => x.id === f.realizada_id), ff = fr ? fr.fecha : f ? ymd(new Date(f.creado)) : null;
-  const nombre = (C.user?.user_metadata?.nombre || c.nombre || '').split(' ')[0];
+  const nombre = (C.user?.user_metadata?.nombre || C.user?.user_metadata?.full_name || c.nombre || '').split(' ')[0];
   $('#inicio').innerHTML =
     `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1><p class="sub" style="margin:0">${esc(c.direccion)}</p>` +
     (f ? `<button class="hero" data-a="verFoto" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button>`
@@ -429,7 +431,7 @@ async function renderHist() {
 }
 function renderCuenta() {
   const c = C.d.cliente, u = C.user || {};
-  $('#cuenta').innerHTML = `<h1>Mi <em>cuenta</em></h1><p class="sub">${esc(u.user_metadata?.nombre || '')}${u.user_metadata?.nombre ? ' · ' : ''}${esc(u.email || '')}</p>` +
+  $('#cuenta').innerHTML = `<h1>Mi <em>cuenta</em></h1><p class="sub">${esc(u.user_metadata?.nombre || u.user_metadata?.full_name || '')}${u.user_metadata?.nombre || u.user_metadata?.full_name ? ' · ' : ''}${esc(u.email || '')}</p>` +
     `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>Valor de cada visita</b><small>${c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
@@ -497,6 +499,7 @@ let modo = Q.get('c') ? 'crear' : 'entrar';
 function authUI() {
   $('#auth').hidden = false; $('#link').hidden = true; $('#app').hidden = true;
   $('#authForm').innerHTML = (sb ? `<div class="tabs"><button class="${modo === 'entrar' ? 'on' : ''}" data-a="modo" data-id="entrar">Ya tengo cuenta</button><button class="${modo === 'crear' ? 'on' : ''}" data-a="modo" data-id="crear">Soy nuevo</button></div>` +
+    `<button class="btn-google" data-a="google"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>${modo === 'crear' ? 'Registrarme con Google' : 'Continuar con Google'}</button><div class="o-sep">o con tu mail</div>` +
     (modo === 'crear' ? '<input id="nm" placeholder="Tu nombre" autocomplete="name">' : '') +
     `<input id="em" type="email" placeholder="Mail" autocomplete="email"><input id="pw" type="password" placeholder="Contraseña${modo === 'crear' ? ' (mínimo 6 caracteres)' : ''}" autocomplete="${modo === 'crear' ? 'new-password' : 'current-password'}">` +
     `<button class="btn" data-a="${modo === 'crear' ? 'registro' : 'login'}">${modo === 'crear' ? 'Crear mi cuenta' : 'Entrar'}</button>` +
@@ -549,6 +552,12 @@ async function act(e) {
     case 'modo': modo = d.id; return authUI();
     case 'login': return auth(false);
     case 'registro': return auth(true);
+    case 'google': {
+      t.disabled = true;
+      const r = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: volver() } });
+      if (r.error) { t.disabled = false; return toast('No se pudo abrir Google. Probá de nuevo.'); }
+      return;
+    }
     case 'olvide': {
       const email = $('#em').value.trim();
       if (!email) return toast('Escribí tu mail arriba y tocá de nuevo');
