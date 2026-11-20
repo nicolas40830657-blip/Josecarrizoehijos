@@ -241,6 +241,7 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
 
 <script src="js/sonidos.js"></script>
 <script src="js/push.js"></script>
+<script src="js/tour.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 // Misma base de datos que la app del equipo
@@ -401,6 +402,31 @@ function renderInicio() {
 // ── Notificaciones y sonidos
 const son = n => window.JCSon && JCSon.play(n);
 const pushOpc = () => ({ sb: C.demo ? null : sb, app: 'cliente', toast: t => toast(t), titulo: 'Activá las notificaciones', corto: 'Te avisamos cuando pasa tu piletero y cuando te escribe.', texto: 'Activá las notificaciones: te avisamos cuando termina la visita, cuando te escribe y cómo va tu pedido.', opciones: [['visitas', 'Cuando pasa tu piletero'], ['mensajes', 'Mensajes'], ['pedidos', 'Tus pedidos'], ['productos', 'Avisos de productos', '“Te estás quedando sin…”']], como: () => sheet(`<h2>Agregá la app a tu inicio</h2><p class="sub">En iPhone, las notificaciones llegan solo si la app está en tu pantalla de inicio.</p>${JCPush.pasosIOS}<button class="btn sec" data-a="cerrar">Entendido</button>`), cambio: () => { renderCuenta(); renderInicio(); } });
+// ── Recorrido de bienvenida (primeras sesiones; se puede omitir y repetir desde Cuenta)
+const TOUR = 'jch-tour-cliente';
+function tourCliente() {
+  if (!window.JCTour) return;
+  const ir = t => () => { closeSheet(); if (C.tab !== t) go(t); if (t === 'inicio') scrollTo({ top: 0 }); return new Promise(z => setTimeout(z, 120)); };
+  const pil = (C.d?.piletero?.nombre || '').split(' ')[0] || 'tu piletero';
+  JCTour.start([
+    { el: null, antes: ir('inicio'), titulo: '¡Bienvenido a tu pileta! 👋', texto: `En 30 segundos te mostramos todo lo que podés hacer desde acá.` },
+    { el: '.heroW, #inicio .hero', antes: ir('inicio'), titulo: 'Cómo quedó tu pileta', texto: `Cada vez que ${pil} pasa, sube la foto de cómo quedó. Si te gusta, tocá el ❤️ o tocá dos veces la foto.` },
+    { el: '#inicio .estado', titulo: '¿Ya vino?', texto: 'Acá ves si tu piletero pasó hoy y cuándo fue la última visita.' },
+    { el: '#inicio .stats', titulo: 'Tu próxima visita', texto: 'Cuándo vuelve, cuánto sale cada visita y lo que llevás gastado en el mes.' },
+    { el: 'nav [data-t=tienda]', pad: 4, radio: 24, titulo: 'Tienda', texto: `Pedí cloro y todos los productos para tu pileta. ${pil[0].toUpperCase() + pil.slice(1)} te los lleva en la próxima visita.` },
+    { el: 'nav [data-t=chat]', pad: 4, radio: 24, titulo: 'Mensajes', texto: 'Escribile a tu piletero y mandale fotos cuando necesites algo.' },
+    { el: 'nav [data-t=hist]', pad: 4, radio: 24, titulo: 'Historial', texto: 'Todas las visitas con sus fotos y los productos que compraste.' },
+    { el: 'nav [data-t=cuenta]', pad: 4, radio: 24, titulo: 'Cuenta', texto: 'Los datos para transferir, las notificaciones y tus datos.' },
+    { el: null, antes: ir('inicio'), titulo: '¡Listo! 🎉', texto: 'Te recomendamos activar las notificaciones para enterarte cuando pasa tu piletero. Podés volver a ver este recorrido desde Cuenta.' }
+  ], { ultimo: 'Empezar', alTerminar: () => { try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+}
+function quizasTour() {
+  let v; try { v = localStorage.getItem(TOUR); } catch (e) { return; }
+  if (v === 'hecho' || +v >= 2) return;   // se muestra en la primera sesión (y en la segunda si no lo terminó)
+  try { localStorage.setItem(TOUR, String((+v || 0) + 1)); } catch (e) {}
+  const esperar = () => document.getElementById('jchSplash') ? setTimeout(esperar, 300) : setTimeout(tourCliente, 600);
+  esperar();
+}
 const TABS = ['inicio', 'tienda', 'chat', 'hist', 'cuenta'];
 async function abrirDestino(url) {
   const t = new URL(url, location.href).hash.slice(1);
@@ -496,6 +522,7 @@ function renderCuenta() {
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Notificaciones</h3><div class="pago" id="pushBox" style="margin-top:0"></div>` +
+    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
     `<button class="btn sec" data-a="salir">Cerrar sesión</button>`;
   if (window.JCPush) JCPush.montar($('#pushBox'), pushOpc());
@@ -601,6 +628,7 @@ async function start(u) {
   if (!ok) { $('#auth').hidden = true; $('#app').hidden = true; $('#link').hidden = false; if (Q.get('c')) $('#cod').value = Q.get('c').toUpperCase().slice(0, 6); return; }
   $('#auth').hidden = true; $('#link').hidden = true; $('#app').hidden = false;
   renderAll(); go(C.tab);
+  quizasTour();
   if (window.JCPush) JCPush.sincronizar(sb, 'cliente');
   if (location.hash) abrirDestino(location.href);
 }
@@ -628,7 +656,8 @@ async function act(e) {
       const r = await sb.auth.resetPasswordForEmail(email, { redirectTo: volver() });
       return toast(r.error ? r.error.message : 'Te mandamos un mail para cambiar la contraseña');
     }
-    case 'demo': C.demo = true; demo(); $('#auth').hidden = true; $('#link').hidden = true; $('#app').hidden = false; renderAll(); return go('inicio');
+    case 'demo': C.demo = true; demo(); $('#auth').hidden = true; $('#link').hidden = true; $('#app').hidden = false; renderAll(); go('inicio'); return quizasTour();
+    case 'tour': return tourCliente();
     case 'vincular': {
       const cod = $('#cod').value.trim().toUpperCase();
       if (cod.length < 6) return toast('El código tiene 6 caracteres');
@@ -731,7 +760,7 @@ document.addEventListener('visibilitychange', async () => {
 
 // ── Arranque
 (async () => {
-  if (Q.has('demo')) { C.demo = true; demo(); $('#auth').hidden = true; $('#app').hidden = false; renderAll(); return go('inicio'); }
+  if (Q.has('demo')) { C.demo = true; demo(); $('#auth').hidden = true; $('#app').hidden = false; renderAll(); go('inicio'); return quizasTour(); }
   if (sb) {
     const { data } = await sb.auth.getSession();
     if (data.session) return start(data.session.user);
