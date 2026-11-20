@@ -217,6 +217,20 @@ nav button{position:relative}
 .ib{width:46px;height:46px;flex:none;border-radius:50%;background:var(--g50);display:grid;place-items:center;cursor:pointer;font-size:20px}
 .ib.send{background:var(--navy);color:#fff}
 .ib input{display:none}
+/* Inventario: tarjetas de productos con foto */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+.pcard{background:#fff;border-radius:20px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
+.pcard img,.pcard .noimg{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#EAF3FF}
+.pcard .noimg{display:grid;place-items:center;font-size:52px}
+.pcard .pb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;flex:1}
+.pcard .pb b{font-size:16px;line-height:1.2;letter-spacing:-.2px}
+.pcard .pb small{font-size:13px;color:var(--g600);line-height:1.35;letter-spacing:-.1px}
+.pcard .pb small.u{color:var(--warn)}.pcard .pb small.a{color:var(--ok)}
+.pcard .pr{font-weight:600;font-size:17px;margin-top:2px}
+.pcard .acts{flex-wrap:wrap;margin-top:auto;padding-top:8px;gap:6px}
+.pcard .acts .btn.sm{padding:0 12px;height:34px;flex:1}
+.pcard.bajo{box-shadow:0 0 0 2px #F59E0B,var(--sh)}
+@media (min-width:700px){.pgrid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -666,6 +680,13 @@ function equipoHTML() {
 }
 
 // ── Productos, kits y ventas
+const FOTOS = 'https://jxdvrwjkcluskdaeockt.supabase.co/storage/v1/object/public/web/tienda-';
+const fotoDe = (nombre, kit) => { const n = (nombre || '').toLowerCase();
+  const f = kit ? (/pro\b/.test(n) ? 'kit-pro' : /premium/.test(n) ? 'kit-premium' : /shock/.test(n) ? 'kit-shock' : 'kit-basico')
+    : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado')
+    : /\bph\b|regulador|ácido|acido/.test(n) ? 'regulador-ph' : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
+  return f ? FOTOS + f + '.jpg' : ''; };
+const imgCard = (nombre, kit) => { const f = fotoDe(nombre, kit); return f ? `<img src="${f}" alt="${esc(nombre)}" loading="lazy" onerror="this.outerHTML='<div class=noimg>🧪</div>'">` : `<div class="noimg">${kit ? '🧰' : '🧪'}</div>`; };
 const ud = l => l.reduce((a, v) => a + (+v.cantidad || 0), 0), fa = l => l.reduce((a, v) => a + (+v.total || 0), 0), cm = l => l.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0), cs = l => l.reduce((a, v) => a + (+S.vc[v.id] || 0), 0);
 const MOV = { venta: 'Venta', reposicion: 'Reposición', ajuste: 'Ajuste', anulacion: 'Venta anulada' };
 const lowP = () => S.pr.filter(p => +p.stock_min > 0 && +p.stock <= +p.stock_min);
@@ -711,9 +732,9 @@ function renderProd() {
   const kcost = k => (k.items || []).reduce((a, i) => a + (+S.co[i.p] || 0) * i.n, 0);
   const ult = S.vt.slice().sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || ''))).slice(0, 15), pe = pend(), low = lowP();
   $('#listP').innerHTML = (isGestor() && low.length ? `<div class="alert">⚠ Stock bajo: ${low.map(p => `${esc(p.nombre)} (${p.stock})`).join(', ')}</div>` : '') + (isGestor() ? metricasProd() : '') + '<h3>Productos</h3>' +
-    (S.pr.map(p => { const bajo = p.stock <= 0 || (+p.stock_min > 0 && +p.stock <= +p.stock_min); return `<div class="row"><div class="grow"><b>${esc(p.nombre)}</b><small class="${bajo ? 'u' : 'a'}">${esc(p.detalle || '')}${p.detalle ? ' · ' : ''}Stock: ${p.stock}${+p.stock_min > 0 ? ' (mín. ' + p.stock_min + ')' : ''} · ${peso(p.precio)}${isGestor() && S.co[p.id] ? ' · costo ' + peso(S.co[p.id]) : ''}${p.stock <= 0 ? ' · SIN STOCK' : bajo ? ' · STOCK BAJO' : ''}</small></div><div class="acts"><button class="btn sm" data-a="venderP" data-id="${p.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="reponer" data-id="${p.id}">Reponer</button><button class="btn sm sec" data-a="editarP" data-id="${p.id}">Editar</button>` : ''}</div></div>`; }).join('') || '<p class="note">Todavía no hay productos.</p>') +
+    (S.pr.length ? '<div class="pgrid">' + S.pr.map(p => { const bajo = p.stock <= 0 || (+p.stock_min > 0 && +p.stock <= +p.stock_min); return `<div class="pcard ${bajo ? 'bajo' : ''}">${imgCard(p.nombre)}<div class="pb"><b>${esc(p.nombre)}</b>${p.detalle ? `<small>${esc(p.detalle)}</small>` : ''}<span class="pr">${+p.precio ? peso(p.precio) : 'Sin precio'}</span><small class="${bajo ? 'u' : 'a'}">Stock: ${p.stock}${+p.stock_min > 0 ? ' (mín. ' + p.stock_min + ')' : ''}${p.stock <= 0 ? ' · SIN STOCK' : bajo ? ' · STOCK BAJO' : ''}</small>${isGestor() && S.co[p.id] ? `<small>Costo ${peso(S.co[p.id])}</small>` : ''}${p.tienda === false ? '<small>No se muestra en la tienda</small>' : ''}<div class="acts"><button class="btn sm" data-a="venderP" data-id="${p.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="reponer" data-id="${p.id}">Reponer</button><button class="btn sm sec" data-a="editarP" data-id="${p.id}">Editar</button>` : ''}</div></div></div>`; }).join('') + '</div>' : '<p class="note">Todavía no hay productos.</p>') +
     `<div class="dh"><h3>Kits</h3>${isGestor() ? '<button class="btn sm" data-a="nuevoK">+ Kit</button>' : ''}</div>` +
-    (S.k.map(k => `<div class="row"><div class="grow"><b>${esc(k.nombre)}</b><small>${esc((k.items || []).map(i => ((S.pr.find(x => x.id === i.p) || {}).nombre || '?') + ' ×' + i.n).join(', '))}</small><small class="${kd(k) > 0 ? 'a' : 'u'}">Disponibles: ${kd(k)} · ${peso(k.precio)}${isGestor() && kcost(k) ? ' · costo ' + peso(kcost(k)) + ' · ganancia ' + peso(k.precio - kcost(k)) : ''}</small></div><div class="acts"><button class="btn sm" data-a="venderK" data-id="${k.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="editarK" data-id="${k.id}">Editar</button>` : ''}</div></div>`).join('') || '<p class="note">No hay kits armados.</p>') +
+    (S.k.length ? '<div class="pgrid">' + S.k.map(k => `<div class="pcard">${imgCard(k.nombre, true)}<div class="pb"><b>${esc(k.nombre)}</b><small>${esc((k.items || []).map(i => ((S.pr.find(x => x.id === i.p) || {}).nombre || '?') + ' ×' + i.n).join(', '))}</small><span class="pr">${peso(k.precio)}</span><small class="${kd(k) > 0 ? 'a' : 'u'}">Disponibles: ${kd(k)}</small>${isGestor() && kcost(k) ? `<small>Costo ${peso(kcost(k))} · ganancia ${peso(k.precio - kcost(k))}</small>` : ''}<div class="acts"><button class="btn sm" data-a="venderK" data-id="${k.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="editarK" data-id="${k.id}">Editar</button>` : ''}</div></div></div>`).join('') + '</div>' : '<p class="note">No hay kits armados.</p>') +
     (pe.length ? `<h3>Cobros pendientes · ${peso(fa(pe))}</h3>` + pe.map(ventaRow).join('') : '') +
     '<h3>Últimas ventas</h3>' + (ult.map(ventaRow).join('') || '<p class="note">Todavía no hay ventas.</p>') + (isGestor() ? gestionProd() : '');
 }
