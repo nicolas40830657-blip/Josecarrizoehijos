@@ -138,6 +138,10 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .promo small{color:var(--g600);font-size:13px;line-height:1.3}
 .promo .rg{display:inline-block;align-self:flex-start;background:#EBFBEE;color:#2B8A3E;font-weight:700;font-size:13px;border-radius:10px;padding:3px 8px;margin-top:2px}
 .promo .fila{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px}
+.pk{display:block;font-size:12.5px;font-weight:700;color:#5F3DC4}
+.pkn{margin:-4px 0 10px;font-size:13px;font-weight:600;color:#5F3DC4;background:#F3F0FF;border-radius:12px;padding:7px 11px}
+.promo.pack{background:linear-gradient(135deg,#F3F0FF,#fff 70%);border-color:#B197FC}.promo.pack .ptag{background:linear-gradient(135deg,#7048E8,#5F3DC4);box-shadow:0 4px 10px #7048e855}.promo.pack .precio{color:#5F3DC4}
+.num s{display:block;font-size:12px;color:var(--g500,#8a97a8);font-weight:500;text-align:right}
 .promo .precio{font-weight:800;font-size:19px;color:#C92A2A}.promo .precio s{color:var(--g500,#8a97a8);font-weight:500;font-size:13px;display:block}
 .pcard .precio s,.prod .precio s{color:var(--g500,#8a97a8);font-weight:500;font-size:13px;margin-right:4px}
 .carro{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:700;max-width:616px;margin:0 auto;display:flex;align-items:center;gap:12px;background:var(--grad);color:#fff;border-radius:9999px;padding:10px 10px 10px 20px;box-shadow:0 12px 30px #0b254559}
@@ -330,8 +334,8 @@ function demo() {
       { t: 'k', id: 'k2', nombre: 'PREMIUM 90%', detalle: 'Cloro granulado 90% ×2, Regulador de pH ×1, Pastillas multiacción ×1, Clarificador ×1', precio: 50000, hay: true },
       { t: 'k', id: 'k3', nombre: 'SHOCK BÁSICO', detalle: 'Para recuperar el agua verde', precio: 35000, hay: false },
       { t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', detalle: 'Bolsa de 1 kg', precio: 9000, hay: true },
-      { t: 'p', id: 'pr3', nombre: 'Regulador de pH (ácido)', detalle: 'Bidón de 5 litros', precio: 6000, hay: true },
-      { t: 'p', id: 'pr4', nombre: 'Pastillas de cloro multiacción', detalle: 'Pote de 1 kg', precio: 12000, hay: true },
+      { t: 'p', id: 'pr3', nombre: 'Regulador de pH (ácido)', detalle: 'Bidón de 5 litros', precio: 6000, hay: true, pack_cant: 2, pack_desc: 10 },
+      { t: 'p', id: 'pr4', nombre: 'Pastillas de cloro multiacción', detalle: 'Pote de 1 kg', precio: 12000, hay: true, pack_cant: 3, pack_desc: 10 },
       { t: 'p', id: 'pr5', nombre: 'Clarificador', detalle: 'Bidón de 1 litro', precio: 5000, hay: true }
     ],
     recomendaciones: [
@@ -387,7 +391,10 @@ function proxima() {
 // ── Carrito
 const cat = (t, id) => (C.d.catalogo || []).find(x => x.t === t && x.id === id);
 const cartN = () => C.cart.reduce((a, x) => a + x.n, 0);
-const cartTot = () => C.cart.reduce((a, x) => a + (+(cat(x.t, x.id) || {}).precio || 0) * x.n, 0);
+// Total de una línea: cada pack completo con su descuento, lo que sobra a precio normal (igual que en la base)
+const linea = (it, n) => { const p = +(it || {}).precio || 0, pc = it && it.pack_cant, pd = +(it && it.pack_desc) || 10; return !pc || n < pc ? Math.round(p * n) : Math.round(Math.floor(n / pc) * pc * p * (1 - pd / 100) + (n % pc) * p); };
+const cartTot = () => C.cart.reduce((a, x) => a + linea(cat(x.t, x.id), x.n), 0);
+const packChip = x => x.pack_cant ? `<small class="pk">📦 Llevando ${x.pack_cant}${kg(x) ? ' kg' : ''}: ${+x.pack_desc || 10}% OFF</small>` : '';
 const kg = x => /\b1\s*kg\b/i.test((x && x.detalle) || '');
 const cant = (x, n) => kg(x) ? n + ' kg' : n;
 const ultimoPedido = () => (C.d.pedidos || []).find(p => p.estado !== 'cancelado' && (p.items || []).some(i => cat(i.t, i.id)));
@@ -556,11 +563,15 @@ function itemHTML(x, rec) {
   return `<div class="prod ${rec ? 'rec' : ''}"><div class="ico">${icono(x)}</div><div class="grow"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock ahora: lo conseguimos en unos días</small>' : ''}<div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${n}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div><div class="precio">${peso(x.precio)}</div></div>`;
 }
 // ── Promociones
-const promos = () => (C.d?.catalogo || []).filter(x => x.promo);
+const promos = () => (C.d?.catalogo || []).filter(x => x.promo || x.pack_cant);
+function packHTML(x) {
+  const N = x.pack_cant, n = enCarro(x.t, x.id), ft = foto(x), lleno = linea(x, N), sin = Math.round(x.precio * N);
+  return `<div class="promo pack"><span class="ptag">📦 PACK · ${+x.pack_desc || 10}% OFF</span>${ft ? `<img src="${ft}" alt="${esc(x.nombre)}" loading="lazy">` : `<div class="ico">${icono(x)}</div>`}<div class="grow"><h4>Pack ${N}${kg(x) ? ' kg' : ''} · ${esc(x.nombre)}</h4>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}<span class="rg">Ahorrás ${peso(sin - lleno)}</span><div class="fila"><span class="precio"><s>${peso(sin)}</s>${peso(lleno)}</span>${n ? `<div class="step"><button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span><button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div>` : `<button class="btn sm" data-a="pack" data-id="${x.t}:${x.id}" style="margin:0;width:auto">Agregar pack</button>`}</div></div></div>`;
+}
 const precioHTML = x => `${x.promo && +x.precio_lista > +x.precio ? `<s>${peso(x.precio_lista)}</s>` : ''}${peso(x.precio)}`;
 function promoHTML(x) {
   const n = enCarro(x.t, x.id), ft = foto(x);
-  return `<div class="promo"><span class="ptag">🏷️ PROMO${x.promo && +x.precio_lista > +x.precio ? ' · ' + Math.round((1 - x.precio / x.precio_lista) * 100) + '% OFF' : ''}</span>${ft ? `<img src="${ft}" alt="${esc(x.nombre)}" loading="lazy">` : `<div class="ico">${icono(x)}</div>`}<div class="grow"><h4>${esc(x.promo_texto || x.nombre)}</h4>${x.promo_texto ? `<small><b>${esc(x.nombre)}</b></small>` : ''}${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${x.regalo ? `<span class="rg">🎁 ${esc(x.regalo)}</span>` : ''}${x.promo_hasta ? `<small>Hasta el ${largo(x.promo_hasta)}</small>` : ''}<div class="fila"><span class="precio">${precioHTML(x)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
+  return `<div class="promo"><span class="ptag">🏷️ PROMO${x.promo && +x.precio_lista > +x.precio ? ' · ' + Math.round((1 - x.precio / x.precio_lista) * 100) + '% OFF' : ''}</span>${ft ? `<img src="${ft}" alt="${esc(x.nombre)}" loading="lazy">` : `<div class="ico">${icono(x)}</div>`}<div class="grow"><h4>${esc(x.promo_texto || x.nombre)}</h4>${x.promo_texto ? `<small><b>${esc(x.nombre)}</b></small>` : ''}${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${x.regalo ? `<span class="rg">🎁 ${esc(x.regalo)}</span>` : ''}${packChip(x)}${x.promo_hasta ? `<small>Hasta el ${largo(x.promo_hasta)}</small>` : ''}<div class="fila"><span class="precio">${precioHTML(x)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
 }
 function burbuja() {
   const b = $('#burb'); if (!b) return;
@@ -574,10 +585,10 @@ function burbuja() {
 function renderTienda() {
   const d = C.d, catl = d.catalogo || [], recs = d.recomendaciones || [], peds = d.pedidos || [];
   const recItems = recs.map(r => ({ r, x: cat(r.t, r.id_item) })).filter(z => z.x);
-  const pr = catl.filter(x => x.promo), kits = catl.filter(x => x.t === 'k' && !x.promo), prods = catl.filter(x => x.t === 'p' && !x.promo);
+  const pr = catl.filter(x => x.promo), pk = catl.filter(x => !x.promo && x.pack_cant), kits = catl.filter(x => x.t === 'k' && !x.promo), prods = catl.filter(x => x.t === 'p' && !x.promo && !x.pack_cant);
   $('#tienda').innerHTML = `<h1>Productos para tu <em>pileta</em></h1><p class="sub">Los mismos productos que usa tu piletero. Pedilos acá y te los lleva en la próxima visita.</p>` +
     (ultimoPedido() ? `<button class="repetir" data-a="repetir"><span class="ic">↻</span><span class="grow"><b>Repetir mi último pedido</b><small>${esc(ultimoPedido().items.filter(i => cat(i.t, i.id)).map(i => i.nombre + ' ×' + i.n).join(', '))}</small></span><span class="fl">›</span></button>` : '') +
-    (pr.length ? `<h3 id="promos">🔥 ${pr.length === 1 ? 'Promoción' : 'Promociones'}</h3>` + pr.map(promoHTML).join('') : '') +
+    (pr.length + pk.length ? `<h3 id="promos">🔥 ${pr.length + pk.length === 1 ? 'Promoción' : 'Promociones'}</h3>` + pr.map(promoHTML).join('') + pk.map(packHTML).join('') : '') +
     (recItems.length ? '<h3>Te recomienda tu piletero</h3><div class="pgrid">' + recItems.map(z => itemHTML(z.x, z.r)).join('') + '</div>' : '') +
     (!catl.length ? '<p class="note">Todavía no hay productos a la venta. Escribile a tu piletero si necesitás algo.</p>' : '') +
     (kits.length ? '<h3>Kits</h3><div class="pgrid">' + kits.map(x => itemHTML(x)).join('') + '</div>' : '') +
@@ -587,7 +598,7 @@ function renderTienda() {
 function verCarro() {
   if (!C.cart.length) return closeSheet();
   sheet(`<h2>Tu pedido</h2><p class="sub">Tu piletero lo recibe al instante y te lo lleva en la próxima visita.</p>` +
-    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} ${kg(it) ? 'el kilo' : 'c/u'}${it.promo ? ' · 🏷️ promo' : ''}</small>${it.regalo ? `<small style="color:#2B8A3E;font-weight:700">🎁 ${esc(it.regalo)}</small>` : ''}<div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${cant(it, x.n)}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
+    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} ${kg(it) ? 'el kilo' : 'c/u'}${it.promo ? ' · 🏷️ promo' : ''}</small>${it.regalo ? `<small style="color:#2B8A3E;font-weight:700">🎁 ${esc(it.regalo)}</small>` : ''}<div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${cant(it, x.n)}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num">${linea(it, x.n) < Math.round(it.precio * x.n) ? `<s>${peso(it.precio * x.n)}</s>` : ''}<b>${peso(linea(it, x.n))}</b></div></div>${it.pack_cant ? `<p class="pkn">${x.n >= it.pack_cant ? `📦 Pack aplicado: ahorrás ${peso(Math.round(it.precio * x.n) - linea(it, x.n))}` : `📦 Sumá ${it.pack_cant - x.n} más y ${it.pack_cant - x.n === 1 ? 'te sale' : 'te salen'} con ${+it.pack_desc || 10}% de descuento`}</p>` : ''}`; }).join('') +
     `<div class="stats"><div><small>Total</small><b>${peso(cartTot())}</b></div><div><small>Entrega</small><b style="font-size:16px">Con la próxima visita</b></div></div><label>¿Cómo lo pagás?<select id="pago" onchange="document.getElementById('cobroCarro').hidden=this.value!=='transferencia'">${Object.entries(PAGO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label><div id="cobroCarro" hidden>${tieneCobro(C.d.piletero) ? cobroHTML(C.d.piletero) : '<p class="note">Tu piletero todavía no cargó sus datos para transferir. Pedíselos por Mensajes.</p>'}</div><label>Algo para aclarar (opcional)<input id="pnota" maxlength="300" placeholder="Ej: dejalo en el quincho"></label><button class="btn" data-a="pedir">Enviar pedido</button><button class="btn sec" data-a="cerrar">Seguir comprando</button>`);
 }
 function renderChatHead() {
@@ -781,6 +792,11 @@ async function act(e) {
     case 'enviar': t.disabled = true; try { await enviar(); } finally { t.disabled = false; } return;
     case 'rapido': if (C.tab !== 'chat') go('chat'); return enviar(d.id);
     case 'sinFoto': C.foto = null; return preview();
+    case 'pack': {
+      const [tt, id] = d.id.split(':'), x = cat(tt, id); if (!x) return;
+      const k = C.cart.find(z => z.t === tt && z.id === id); if (k) k.n += x.pack_cant; else C.cart.push({ t: tt, id, n: x.pack_cant });
+      guardarCarro(); renderTienda(); renderCarro(); son('tap'); return toast(`Pack de ${x.pack_cant} agregado: ahorrás ${peso(Math.round(x.precio * x.pack_cant) - linea(x, x.pack_cant))}`);
+    }
     case 'verPromos': { son('tap'); go('tienda'); renderTienda(); setTimeout(() => { const h = $('#promos'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); return; }
     case 'repetir': {
       const u = ultimoPedido(); if (!u) return;
