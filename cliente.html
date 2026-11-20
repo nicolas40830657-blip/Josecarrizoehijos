@@ -123,6 +123,22 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .step button{width:34px;height:34px;border-radius:50%;background:var(--g50);font-size:20px;line-height:1;display:grid;place-items:center}
 .step button.mas{background:var(--grad);color:#fff}
 .step span{min-width:22px;text-align:center;font-weight:600}
+.burb{position:fixed;right:max(16px,calc(50% - 308px + 4px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:690;width:66px;height:66px;border-radius:50%;border:3px solid #fff;padding:0;background:#fff center/cover no-repeat;box-shadow:0 10px 26px #e0313166,0 0 0 0 #f7670788;cursor:pointer;animation:burbIn .5s cubic-bezier(.2,1.5,.4,1),burbLat 2.4s ease-in-out 1s infinite}
+.burb .bi{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,#FFF4E6,#FFE8CC)}
+.burb .bt{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#F76707,#E03131);color:#fff;font-size:10px;font-weight:800;letter-spacing:.4px;border-radius:999px;padding:3px 7px;white-space:nowrap;box-shadow:0 3px 8px #e0313166}
+.burb .bn{position:absolute;bottom:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:#0b2545;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
+@keyframes burbIn{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes burbLat{0%,100%{box-shadow:0 10px 26px #e0313166,0 0 0 0 #f7670788}50%{box-shadow:0 10px 26px #e0313166,0 0 0 10px #f7670700}}
+.promo{position:relative;display:flex;gap:14px;background:linear-gradient(135deg,#FFF4E6,#fff 70%);border:1.5px solid #FFC078;border-radius:22px;padding:12px;margin:0 0 12px;box-shadow:var(--sh)}
+.promo img,.promo .ico{width:118px;height:118px;flex:none;border-radius:16px;object-fit:cover;background:#fff;display:grid;place-items:center;font-size:44px}
+.promo .ptag{position:absolute;top:-9px;left:14px;background:linear-gradient(135deg,#F76707,#E03131);color:#fff;font-size:11px;font-weight:800;letter-spacing:.4px;border-radius:999px;padding:4px 10px;box-shadow:0 4px 10px #e0313155}
+.promo .grow{min-width:0;display:flex;flex-direction:column;gap:3px}
+.promo h4{margin:4px 0 0;font-size:17px;letter-spacing:-.3px;line-height:1.2}
+.promo small{color:var(--g600);font-size:13px;line-height:1.3}
+.promo .rg{display:inline-block;align-self:flex-start;background:#EBFBEE;color:#2B8A3E;font-weight:700;font-size:13px;border-radius:10px;padding:3px 8px;margin-top:2px}
+.promo .fila{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px}
+.promo .precio{font-weight:800;font-size:19px;color:#C92A2A}.promo .precio s{color:var(--g500,#8a97a8);font-weight:500;font-size:13px;display:block}
+.pcard .precio s,.prod .precio s{color:var(--g500,#8a97a8);font-weight:500;font-size:13px;margin-right:4px}
 .carro{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:700;max-width:616px;margin:0 auto;display:flex;align-items:center;gap:12px;background:var(--grad);color:#fff;border-radius:9999px;padding:10px 10px 10px 20px;box-shadow:0 12px 30px #0b254559}
 .carro .grow small{color:#c3d2ee}
 .carro .btn{background:#fff;color:var(--navy);margin:0;width:auto;padding:0 20px;height:42px;font-size:15px}
@@ -239,6 +255,7 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
     <section class="view" id="v-cuenta"><div class="wrap" id="cuenta"></div></section>
   </main>
   <div class="carro" id="carro" hidden></div>
+  <button class="burb" id="burb" data-a="verPromos" hidden aria-label="Ver promociones"></button>
   <nav>
     <button data-t="inicio" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>Mi pileta</button>
     <button data-t="tienda"><svg viewBox="0 0 24 24"><path d="M5 7h14l-1.2 12.1a1 1 0 01-1 .9H7.2a1 1 0 01-1-.9z"/><path d="M9 10V6a3 3 0 016 0v4"/></svg>Tienda<i class="bdg" id="bdgT" hidden></i></button>
@@ -308,7 +325,7 @@ function demo() {
       { id: 's2', fecha: back(14), nombre: 'BÁSICO 90%', cantidad: 1, total: 30000, cobrado: true }
     ],
     catalogo: [
-      { t: 'k', id: 'k1', nombre: 'BÁSICO 90%', detalle: 'Cloro granulado 90% ×1, Regulador de pH ×1, Pastillas multiacción ×1', precio: 30000, hay: true },
+      { t: 'k', id: 'k1', nombre: 'BÁSICO 90%', detalle: 'Cloro granulado 90% ×1, Regulador de pH ×1, Pastillas multiacción ×1', precio: 25000, precio_lista: 30000, promo: true, regalo: '+ 1 clarificador de regalo', promo_texto: '¡Kit básico en promo!', promo_hasta: ymd(new Date(Date.now() + 9 * 864e5)), hay: true },
       { t: 'k', id: 'k2', nombre: 'PREMIUM 90%', detalle: 'Cloro granulado 90% ×2, Regulador de pH ×1, Pastillas multiacción ×1, Clarificador ×1', precio: 50000, hay: true },
       { t: 'k', id: 'k3', nombre: 'SHOCK BÁSICO', detalle: 'Para recuperar el agua verde', precio: 35000, hay: false },
       { t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', detalle: 'Bolsa de 1 kg', precio: 9000, hay: true },
@@ -437,13 +454,13 @@ function tourCliente() {
     { el: 'nav [data-t=hist]', pad: 4, radio: 24, titulo: 'Historial', texto: 'Todas las visitas con sus fotos y los productos que compraste.' },
     { el: 'nav [data-t=cuenta]', pad: 4, radio: 24, titulo: 'Cuenta', texto: 'Los datos para transferir, las notificaciones y tus datos.' },
     { el: null, antes: ir('inicio'), titulo: '¡Listo! 🎉', texto: 'Te recomendamos activar las notificaciones para enterarte cuando pasa tu piletero. Podés volver a ver este recorrido desde Cuenta.' }
-  ], { ultimo: 'Empezar', alTerminar: () => { try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+  ], { ultimo: 'Empezar', alTerminar: () => { try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); setTimeout(burbuja, 300); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
 }
 function quizasTour() {
   let v; try { v = localStorage.getItem(TOUR); } catch (e) { return; }
   if (v === 'hecho' || +v >= 2) return;   // se muestra en la primera sesión (y en la segunda si no lo terminó)
   try { localStorage.setItem(TOUR, String((+v || 0) + 1)); } catch (e) {}
-  const esperar = () => document.getElementById('jchSplash') ? setTimeout(esperar, 300) : setTimeout(tourCliente, 600);
+  const esperar = () => document.getElementById('jchSplash') ? setTimeout(esperar, 300) : setTimeout(() => { tourCliente(); burbuja(); }, 600);
   esperar();
 }
 const TABS = ['inicio', 'tienda', 'chat', 'hist', 'cuenta'];
@@ -534,15 +551,32 @@ const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${
 const icono = x => x.t === 'k' ? '🧰' : /ph|ácido|acido/i.test(x.nombre) ? '⚗️' : /clarif|flocul/i.test(x.nombre) ? '💧' : /pastilla/i.test(x.nombre) ? '⚪' : '🧪';
 function itemHTML(x, rec) {
   const n = enCarro(x.t, x.id), ft = foto(x);
-  if (ft) return `<div class="pcard ${rec ? 'rec' : ''}"><img src="${ft}" alt="${esc(x.nombre)}" loading="lazy"><div class="pb"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock: lo conseguimos en unos días</small>' : ''}<div class="fila"><span class="precio">${peso(x.precio)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
+  if (ft) return `<div class="pcard ${rec ? 'rec' : ''}"><img src="${ft}" alt="${esc(x.nombre)}" loading="lazy"><div class="pb"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock: lo conseguimos en unos días</small>' : ''}<div class="fila"><span class="precio">${precioHTML(x)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
   return `<div class="prod ${rec ? 'rec' : ''}"><div class="ico">${icono(x)}</div><div class="grow"><b>${esc(x.nombre)}</b>${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${rec ? `<small style="color:var(--blue);font-weight:600">Te lo recomendó tu piletero${rec.nota ? ': ' + esc(rec.nota) : ''}</small>` : ''}${false ? '<small class="u">Sin stock ahora: lo conseguimos en unos días</small>' : ''}<div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${n}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div><div class="precio">${peso(x.precio)}</div></div>`;
+}
+// ── Promociones
+const promos = () => (C.d?.catalogo || []).filter(x => x.promo);
+const precioHTML = x => `${x.promo && +x.precio_lista > +x.precio ? `<s>${peso(x.precio_lista)}</s>` : ''}${peso(x.precio)}`;
+function promoHTML(x) {
+  const n = enCarro(x.t, x.id), ft = foto(x);
+  return `<div class="promo"><span class="ptag">🏷️ PROMO${x.promo && +x.precio_lista > +x.precio ? ' · ' + Math.round((1 - x.precio / x.precio_lista) * 100) + '% OFF' : ''}</span>${ft ? `<img src="${ft}" alt="${esc(x.nombre)}" loading="lazy">` : `<div class="ico">${icono(x)}</div>`}<div class="grow"><h4>${esc(x.promo_texto || x.nombre)}</h4>${x.promo_texto ? `<small><b>${esc(x.nombre)}</b></small>` : ''}${x.detalle ? `<small>${esc(x.detalle)}</small>` : ''}${x.regalo ? `<span class="rg">🎁 ${esc(x.regalo)}</span>` : ''}${x.promo_hasta ? `<small>Hasta el ${largo(x.promo_hasta)}</small>` : ''}<div class="fila"><span class="precio">${precioHTML(x)}${kg(x) ? '<small> / kg</small>' : ''}</span><div class="step">${n ? `<button data-a="menos" data-id="${x.t}:${x.id}" aria-label="Quitar uno">−</button><span>${cant(x, n)}</span>` : ''}<button class="mas" data-a="mas" data-id="${x.t}:${x.id}" aria-label="Agregar uno">+</button></div></div></div></div>`;
+}
+function burbuja() {
+  const b = $('#burb'); if (!b) return;
+  const ps = promos(), mostrar = ps.length > 0 && C.tab === 'inicio' && !(window.JCTour && JCTour.activo());
+  b.hidden = !mostrar;
+  if (!mostrar) return;
+  const ft = foto(ps[0]);
+  const html = `${ft ? '' : `<span class="bi">${icono(ps[0])}</span>`}<span class="bt">PROMO</span>${ps.length > 1 ? `<span class="bn">${ps.length}</span>` : ''}`;
+  if (b.dataset.h !== html + ft) { b.dataset.h = html + ft; b.innerHTML = html; b.style.backgroundImage = ft ? `url("${ft}")` : ''; }
 }
 function renderTienda() {
   const d = C.d, catl = d.catalogo || [], recs = d.recomendaciones || [], peds = d.pedidos || [];
   const recItems = recs.map(r => ({ r, x: cat(r.t, r.id_item) })).filter(z => z.x);
-  const kits = catl.filter(x => x.t === 'k'), prods = catl.filter(x => x.t === 'p');
+  const pr = catl.filter(x => x.promo), kits = catl.filter(x => x.t === 'k' && !x.promo), prods = catl.filter(x => x.t === 'p' && !x.promo);
   $('#tienda').innerHTML = `<h1>Productos para tu <em>pileta</em></h1><p class="sub">Los mismos productos que usa tu piletero. Pedilos acá y te los lleva en la próxima visita.</p>` +
     (ultimoPedido() ? `<button class="repetir" data-a="repetir"><span class="ic">↻</span><span class="grow"><b>Repetir mi último pedido</b><small>${esc(ultimoPedido().items.filter(i => cat(i.t, i.id)).map(i => i.nombre + ' ×' + i.n).join(', '))}</small></span><span class="fl">›</span></button>` : '') +
+    (pr.length ? `<h3 id="promos">🔥 ${pr.length === 1 ? 'Promoción' : 'Promociones'}</h3>` + pr.map(promoHTML).join('') : '') +
     (recItems.length ? '<h3>Te recomienda tu piletero</h3><div class="pgrid">' + recItems.map(z => itemHTML(z.x, z.r)).join('') + '</div>' : '') +
     (!catl.length ? '<p class="note">Todavía no hay productos a la venta. Escribile a tu piletero si necesitás algo.</p>' : '') +
     (kits.length ? '<h3>Kits</h3><div class="pgrid">' + kits.map(x => itemHTML(x)).join('') + '</div>' : '') +
@@ -552,7 +586,7 @@ function renderTienda() {
 function verCarro() {
   if (!C.cart.length) return closeSheet();
   sheet(`<h2>Tu pedido</h2><p class="sub">Tu piletero lo recibe al instante y te lo lleva en la próxima visita.</p>` +
-    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} ${kg(it) ? 'el kilo' : 'c/u'}</small><div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${cant(it, x.n)}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
+    C.cart.map(x => { const it = cat(x.t, x.id); return `<div class="row">${foto(it) ? `<img class="thumb" src="${foto(it)}" alt="">` : ''}<div class="grow"><b>${esc(it.nombre)}</b><small>${peso(it.precio)} ${kg(it) ? 'el kilo' : 'c/u'}${it.promo ? ' · 🏷️ promo' : ''}</small>${it.regalo ? `<small style="color:#2B8A3E;font-weight:700">🎁 ${esc(it.regalo)}</small>` : ''}<div class="step"><button data-a="menosC" data-id="${x.t}:${x.id}">−</button><span>${cant(it, x.n)}</span><button class="mas" data-a="masC" data-id="${x.t}:${x.id}">+</button></div></div><div class="num"><b>${peso(it.precio * x.n)}</b></div></div>`; }).join('') +
     `<div class="stats"><div><small>Total</small><b>${peso(cartTot())}</b></div><div><small>Entrega</small><b style="font-size:16px">Con la próxima visita</b></div></div><label>¿Cómo lo pagás?<select id="pago" onchange="document.getElementById('cobroCarro').hidden=this.value!=='transferencia'">${Object.entries(PAGO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label><div id="cobroCarro" hidden>${tieneCobro(C.d.piletero) ? cobroHTML(C.d.piletero) : '<p class="note">Tu piletero todavía no cargó sus datos para transferir. Pedíselos por Mensajes.</p>'}</div><label>Algo para aclarar (opcional)<input id="pnota" maxlength="300" placeholder="Ej: dejalo en el quincho"></label><button class="btn" data-a="pedir">Enviar pedido</button><button class="btn sec" data-a="cerrar">Seguir comprando</button>`);
 }
 function renderChatHead() {
@@ -606,7 +640,7 @@ async function marcarLeidos() {
   badge();
   if (!C.demo) await sb.rpc('marcar_leidos_cliente');
 }
-function renderAll() { renderInicio(); renderTienda(); renderChatHead(); renderMsgs(); renderCuenta(); badge(); renderCarro(); if (C.tab === 'hist') renderHist(); }
+function renderAll() { renderInicio(); renderTienda(); renderChatHead(); renderMsgs(); renderCuenta(); badge(); renderCarro(); burbuja(); if (C.tab === 'hist') renderHist(); }
 function go(t) {
   C.tab = t;
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + t));
@@ -614,7 +648,7 @@ function go(t) {
   document.querySelectorAll('.view.on').forEach(v => { if (t !== 'chat') v.scrollTop = 0; });
   if (t === 'chat') { renderMsgs.first = true; renderMsgs(); marcarLeidos(); }
   if (t === 'hist') renderHist();
-  renderCarro();
+  renderCarro(); burbuja();
 }
 
 // ── Mensajes
@@ -742,6 +776,7 @@ async function act(e) {
     case 'enviar': t.disabled = true; try { await enviar(); } finally { t.disabled = false; } return;
     case 'rapido': if (C.tab !== 'chat') go('chat'); return enviar(d.id);
     case 'sinFoto': C.foto = null; return preview();
+    case 'verPromos': { son('tap'); go('tienda'); renderTienda(); setTimeout(() => { const h = $('#promos'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); return; }
     case 'repetir': {
       const u = ultimoPedido(); if (!u) return;
       u.items.forEach(i => { if (cat(i.t, i.id)) { const k = C.cart.find(x => x.t === i.t && x.id === i.id); if (k) k.n = Math.max(k.n, i.n); else C.cart.push({ t: i.t, id: i.id, n: i.n }); } });
