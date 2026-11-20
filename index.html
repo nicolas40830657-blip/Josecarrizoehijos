@@ -308,6 +308,7 @@ nav button{position:relative}
 <script src="js/sonidos.js"></script>
 <script src="js/push.js"></script>
 <script src="js/fotos.js"></script>
+<script src="js/tour.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -603,8 +604,40 @@ async function start(u, name) {
   try { if (localStorage.getItem('share') === '1') startShare(); } catch (e) {}
   if (window.JCPush) { JCPush.sincronizar(sb, 'equipo'); JCPush.montarAviso($('#pushAviso'), PUSH); }
   if (location.hash) abrirDestino(location.href).catch(e => toast(e.message));
+  else quizasTourEquipo();
 }
 
+// ── Recorrido de la app para pileteros (primeras sesiones; siempre disponible desde Mi perfil)
+const TOUR_EQ = 'jch-tour-equipo';
+function tourEquipo() {
+  if (!window.JCTour || !S.me) return;
+  const ir = t => async () => { closeSheet(); go(t); scrollTo({ top: 0 }); document.querySelectorAll('.view.on').forEach(v => v.scrollTop = 0); await new Promise(z => setTimeout(z, 160)); };
+  const nom = (S.me.nombre || '').split(' ')[0];
+  JCTour.start([
+    { el: null, antes: ir('mapa'), titulo: `¡Hola${nom ? ', ' + nom : ''}! 👋`, texto: 'Te mostramos en un minuto lo que podés hacer con la app. Lo podés volver a ver cuando quieras desde Mi perfil.' },
+    { el: 'nav [data-t=mapa]', pad: 4, radio: 22, antes: ir('mapa'), titulo: 'Mapa', texto: 'Tus clientes aparecen como pines. Tocá uno para ver su ficha, agendar o confirmar la visita.' },
+    { el: '#avisosMap .avm', titulo: 'Mensajes y pedidos', texto: 'Cuando un cliente te escribe o te pide productos, aparece acá arriba. Tocalo y se abre el chat o el pedido.' },
+    { el: '#gps', pad: 6, radio: 24, titulo: 'Compartir tu ubicación', texto: 'Activalo cuando salís a trabajar: así la empresa ve por dónde andás y puede coordinar mejor.' },
+    { el: '#mic', pad: 6, radio: 40, titulo: 'Asistente de voz', texto: 'Mantené apretado el micrófono y hablá. Ej: “Programá una visita con Familia Pérez el viernes a las 9”. Te muestra lo que va a hacer y vos confirmás.' },
+    { el: '#cal', antes: ir('clientes'), titulo: 'Tu agenda', texto: 'Tocá un día para ver las visitas. Mantené apretado un día para programar una visita nueva.' },
+    { el: ['#dayList .chk', '#dayList'], pad: 6, radio: 24, titulo: 'Confirmar la visita', texto: 'Cuando terminás una visita, tocá el ✓ que tiene a la derecha. Ahí cargás qué hiciste, los productos que usaste y las fotos (la de antes y la de cómo quedó). El cliente ve la foto en su app.' },
+    { el: '#dayList .vis', titulo: 'Avisos del cliente', texto: 'Si el cliente te avisó que no vayas, que está de viaje o que la llave está con el vecino, lo ves en la visita de ese día.' },
+    { el: '#segC', antes: ir('clientes'), titulo: 'Chats', texto: 'Todas las conversaciones con tus clientes, con respuestas rápidas como “Paso mañana 👍” o “Ya quedó lista 👌”.' },
+    { el: '#listC .card', titulo: 'Ficha del cliente', texto: 'Tocá un cliente para ver sus datos, el historial con fotos, mandarle el código de la app por WhatsApp, escribirle o avisarle que le faltan productos.' },
+    { el: '#seg', antes: ir('inv'), titulo: 'Inventario', texto: 'En Herramientas tomás y devolvés lo que usás. En Productos y kits vendés y ves lo que hay en stock.' },
+    { el: '#pushBox', antes: ir('perfil'), titulo: 'Notificaciones', texto: 'Activalas para enterarte al instante de los mensajes, pedidos y “me gusta” de tus clientes, aunque tengas la app cerrada.' },
+    { el: '#pgA', titulo: 'Tus datos para cobrar', texto: 'Cargá tu alias o CBU: tus clientes los ven en su app para pagarte por transferencia.' },
+    { el: null, antes: ir('mapa'), titulo: '¡Listo! 🎉', texto: 'Ya conocés lo principal. Si te olvidás de algo, en Mi perfil tenés “Ver el recorrido de la app”.' }
+  ], { ultimo: 'Empezar', alTerminar: () => { try { localStorage.setItem(TOUR_EQ, 'hecho'); } catch (e) {} son('ok'); } });
+}
+function quizasTourEquipo() {
+  if (!S.me || isGestor()) return;   // automático solo para pileteros; los coordinadores lo pueden abrir desde Mi perfil
+  let v; try { v = localStorage.getItem(TOUR_EQ); } catch (e) { return; }
+  if (v === 'hecho' || +v >= 2) return;
+  try { localStorage.setItem(TOUR_EQ, String((+v || 0) + 1)); } catch (e) {}
+  const esperar = () => document.getElementById('jchSplash') ? setTimeout(esperar, 300) : setTimeout(tourEquipo, 700);
+  esperar();
+}
 // ── Notificaciones y sonidos
 const PUSH = { sb, app: 'equipo', toast: t => toast(t), titulo: 'Activá las notificaciones', corto: 'Mensajes y pedidos de clientes al instante.', texto: 'Enterate al instante cuando un cliente te escribe o te hace un pedido, aunque tengas la app cerrada.', opciones: [['mensajes', 'Mensajes de clientes'], ['pedidos', 'Pedidos de la tienda', 'Nuevos y cancelados'], ['megusta', 'Me gusta de clientes', 'Cuando a un cliente le gusta cómo quedó la pileta']], como: () => sheet(`<h2>Instalá la app</h2><p class="sub">En iPhone, las notificaciones llegan solo si la app está en tu pantalla de inicio.</p>${JCPush.pasosIOS}<button class="btn sec" data-a="cerrarSh">Entendido</button>`), cambio: () => { JCPush.montarAviso($('#pushAviso'), PUSH); montarPush(); } };
 function montarPush() { if (window.JCPush) JCPush.montar($('#pushBox'), PUSH); }
@@ -694,7 +727,7 @@ function renderHerr() {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn sec" data-a="tourEq" style="margin-top:14px">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush();
 }
 function renderCal() {
@@ -1120,6 +1153,7 @@ async function act(e) {
   if (d.t) { if (t.closest('nav')) son('tap'); return go(d.t); }
   switch (d.a) {
     case 'cerrarSh': return closeSheet();
+    case 'tourEq': return tourEquipo();
     case 'resp': { const x = $('#chatTxt'); x.value = d.id; x.focus(); return; }
     case 'ctab': S.ctab = d.id; son('tap'); return renderClients();
     case 'verChats': S.ctab = 'chats'; renderClients(); return go('clientes');

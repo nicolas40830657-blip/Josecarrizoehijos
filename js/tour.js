@@ -22,9 +22,11 @@ window.JCTour = (() => {
 #jcTour .flecha{position:absolute;width:16px;height:16px;background:#fff;transform:rotate(45deg);border-radius:3px}`;
   document.head.appendChild(css);
 
+  // el puede ser un selector o una lista de selectores (usa el primero que exista)
+  const buscar = el => !el ? null : Array.isArray(el) ? el.map(q => document.querySelector(q)).find(Boolean) || null : document.querySelector(el);
   function start(pasos, o = {}) {
     if (raiz) raiz.remove();
-    pasos = pasos.filter(p => !p.el || p.antes || document.querySelector(p.el));
+    pasos = pasos.filter(p => !p.el || p.antes || buscar(p.el));
     let i = 0;
     raiz = document.createElement('div'); raiz.id = 'jcTour';
     raiz.innerHTML = `<div class="tapa"></div><div class="aro sin"></div><div class="tj" role="dialog" aria-live="polite"><span class="flecha"></span><h4></h4><p></p><div class="pie"><div class="pts">${pasos.map(() => '<i></i>').join('')}</div><button class="saltar">Omitir</button><button class="sig">Siguiente</button></div></div>`;
@@ -36,7 +38,7 @@ window.JCTour = (() => {
     raiz.querySelector('.tapa').onclick = () => raiz.querySelector('.sig').click();
 
     function ubicar() {
-      const p = pasos[i], el = p.el && document.querySelector(p.el), W = innerWidth, H = innerHeight, w = Math.min(340, W - 32);
+      const p = pasos[i], el = buscar(p.el), W = innerWidth, H = innerHeight, w = Math.min(340, W - 32);
       if (!el) {
         aro.classList.add('sin');
         tj.style.left = (W - w) / 2 + 'px'; tj.style.top = Math.max(16, H * 0.42 - tj.offsetHeight / 2) + 'px'; fl.style.display = 'none';
@@ -61,7 +63,7 @@ window.JCTour = (() => {
       raiz.querySelectorAll('.pts i').forEach((d, k) => d.classList.toggle('on', k === i));
       raiz.querySelector('.sig').textContent = i === pasos.length - 1 ? (o.ultimo || '¡Listo!') : 'Siguiente';
       raiz.querySelector('.saltar').style.visibility = i === pasos.length - 1 ? 'hidden' : '';
-      const el = p.el && document.querySelector(p.el);
+      const el = buscar(p.el);
       if (el) {
         const r = el.getBoundingClientRect();
         if (r.top < 70 || r.bottom > innerHeight - 110) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); await new Promise(z => setTimeout(z, 380)); }
