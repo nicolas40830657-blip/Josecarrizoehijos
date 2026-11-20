@@ -72,6 +72,18 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .hero img{width:100%;height:100%;object-fit:cover;display:block}
 .hero .cap{position:absolute;left:12px;bottom:12px;right:12px;background:#0b2545cc;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;border-radius:14px;padding:10px 14px;font-size:13px;text-align:left}
 .hero .cap b{display:block;font-size:15px}
+.heroW{position:relative;margin:14px 0 12px}.heroW .hero{margin:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.heroW .cap{padding-right:62px}
+.lk{position:absolute;right:16px;bottom:15px;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent}
+.lk svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round;overflow:visible}
+.lk.on svg{fill:#ff3040;stroke:#ff3040}
+.lk.pop svg{animation:latido .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes latido{0%{transform:scale(1)}30%{transform:scale(1.35)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+.bigh{position:absolute;left:50%;top:42%;width:104px;height:104px;margin:-52px 0 0 -52px;pointer-events:none;opacity:0;z-index:3}
+.bigh svg{width:100%;height:100%;fill:#fff;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
+.bigh.go{animation:bigh .95s ease forwards}
+@keyframes bigh{0%{opacity:0;transform:scale(.2)}15%{opacity:1;transform:scale(1.15)}28%{transform:scale(.95)}40%{transform:scale(1)}78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.7) translateY(-28px)}}
+.fw{position:relative;display:block}.fw img{display:block}
+.fw .lk{right:2px;bottom:2px;width:34px;height:34px}.fw .lk svg{width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
 .hero .empty{position:absolute;inset:0;display:grid;place-items:center;color:#fff;text-align:center;padding:24px;font-weight:600}
 .hero .empty span{display:block;font-size:44px;margin-bottom:6px}
 .estado{display:flex;gap:12px;align-items:center;border-radius:18px;padding:14px 16px;margin-bottom:12px;background:#fff;box-shadow:var(--sh)}
@@ -371,7 +383,7 @@ function renderInicio() {
   const nombre = (C.user?.user_metadata?.nombre || C.user?.user_metadata?.full_name || c.nombre || '').split(' ')[0];
   $('#inicio').innerHTML =
     `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1><p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
-    (f ? `<button class="hero" data-a="verFoto" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button>`
+    (f ? `<div class="heroW"><button class="hero" data-a="fotoToque" data-id="${esc(f.id)}" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button><span class="bigh" aria-hidden="true">${CORAZON}</span>${botonGusta(f)}</div>`
        : `<div class="hero"><div class="empty"><div><span>🏊</span>Cuando tu piletero pase, vas a ver acá la foto de cómo quedó tu pileta.</div></div></div>`) +
     (vino ? `<div class="estado ok"><div class="ic">✓</div><div><b>Tu piletero pasó hoy</b><small>${esc(ult.piletero || 'Tu piletero')} ya hizo el mantenimiento.</small></div></div>`
       : ult ? `<div class="estado"><div class="ic">🕒</div><div><b>Última visita: ${hace(ult.fecha)}</b><small>${largo(ult.fecha)}${ult.piletero ? ' · ' + esc(ult.piletero) : ''}</small></div></div>`
@@ -403,6 +415,23 @@ const foto = (x) => { const n = (x.nombre || '').toLowerCase(), k = x.t === 'k';
   const f = k ? (/pro\b/.test(n) ? 'kit2-pro' : /premium/.test(n) ? 'kit2-premium' : /shock/.test(n) ? 'kit2-shock' : /b[áa]sico|kit/.test(n) ? 'kit2-basico' : '')
     : /pastilla/.test(n) ? 'pastillas-pote' : /granulado|cloro/.test(n) ? (/90/.test(n) ? 'cloro-granulado-90' : /70/.test(n) ? 'cloro-granulado-70' : 'cloro-granulado') : /\bph\b|regulador|ácido|acido/.test(n) ? (/10/.test(n) ? 'regulador-ph10' : 'regulador-ph5') : /clarific/.test(n) ? 'clarificador' : /flocul/.test(n) ? 'floculante' : /percarb/.test(n) ? 'percarbonato' : '';
   return f ? IMG + f + '.jpg' : ''; };
+// "Me gusta" en las fotos (como en Instagram: corazón o doble toque)
+const CORAZON = '<svg viewBox="0 0 24 24"><path d="M16.8 3.9c-2 0-3.6 1-4.8 2.6C10.8 4.9 9.2 3.9 7.2 3.9 4.1 3.9 1.8 6.4 1.8 9.6c0 5.3 8.2 10.4 10.2 11.6 2-1.2 10.2-6.3 10.2-11.6 0-3.2-2.3-5.7-5.4-5.7z"/></svg>';
+const botonGusta = f => `<button class="lk ${f.gusta ? 'on' : ''}" data-a="gusta" data-id="${esc(f.id)}" aria-pressed="${!!f.gusta}" aria-label="${f.gusta ? 'Ya no me gusta' : 'Me gusta'}">${CORAZON}</button>`;
+const toque = { t: 0, timer: null };
+async function darGusta(id, si, grande) {
+  const fs = [...C.fotos, ...(C.fotosAll || [])].filter(f => f.id === id);
+  if (!fs.length) return;
+  const antes = !!fs[0].gusta;
+  if (grande) { const b = document.querySelector('.heroW .bigh'); if (b) { b.classList.remove('go'); void b.offsetWidth; b.classList.add('go'); } }
+  if (antes === si) return;
+  fs.forEach(f => f.gusta = si);
+  document.querySelectorAll(`.lk[data-id="${CSS.escape(id)}"]`).forEach(b => { b.classList.toggle('on', si); b.setAttribute('aria-pressed', si); b.setAttribute('aria-label', si ? 'Ya no me gusta' : 'Me gusta'); b.classList.remove('pop'); void b.offsetWidth; if (si) b.classList.add('pop'); });
+  son('tap');
+  if (C.demo) return;
+  const x = await sb.rpc('dar_me_gusta', { p_foto: id, p_si: si });
+  if (x.error) { fs.forEach(f => f.gusta = antes); renderInicio(); if (C.tab === 'hist') renderHist(); throw new Error('No se pudo guardar el me gusta'); }
+}
 const tieneCobro = p => p && (p.alias || p.cbu);
 const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${titulo || 'Datos para transferir'}</h4><p class="sub" style="margin:0 0 6px">${esc(p.titular || p.nombre || '')}${p.banco ? ' · ' + esc(p.banco) : ''}</p>` +
   (p.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(p.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.alias)}" data-q="Alias">Copiar</button></div>` : '') +
@@ -456,7 +485,7 @@ async function renderHist() {
   }
   const fo = id => C.fotosAll.filter(f => f.realizada_id === id), vs = C.d.ventas;
   $('#hist').innerHTML = `<h1>Tu <em>historial</em></h1><p class="sub">Todas las visitas a tu pileta y los productos que compraste.</p>` +
-    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small><small style="color:var(--ink);margin-top:4px">${esc(x.nota || 'Mantenimiento de rutina')}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">`).join('')}</div>` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
+    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small><small style="color:var(--ink);margin-top:4px">${esc(x.nota || 'Mantenimiento de rutina')}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<span class="fw"><img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">${botonGusta(f)}</span>`).join('')}</div>` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
     '<h3>Productos comprados</h3>' + (vs.length ? vs.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${largo(v.fecha)}</small><small class="${v.cobrado === false ? 'u' : 'a'}">${v.cobrado === false ? 'Pendiente de pago' : 'Pagado'}</small></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('') : '<p class="note">No compraste productos todavía.</p>');
 }
 function renderCuenta() {
@@ -615,6 +644,14 @@ async function act(e) {
     case 'enviar': t.disabled = true; try { await enviar(); } finally { t.disabled = false; } return;
     case 'rapido': if (C.tab !== 'chat') go('chat'); return enviar(d.id);
     case 'sinFoto': C.foto = null; return preview();
+    case 'gusta': { const f = [...C.fotos, ...(C.fotosAll || [])].find(x => x.id === d.id); return darGusta(d.id, !(f && f.gusta)); }
+    case 'fotoToque': {
+      const ahora = Date.now();
+      if (ahora - toque.t < 320) { clearTimeout(toque.timer); toque.t = 0; return darGusta(d.id, true, true); }
+      toque.t = ahora; const src = d.src;
+      toque.timer = setTimeout(() => { toque.t = 0; sheet(`<img class="full" src="${esc(src)}" alt="Foto"><button class="btn sec" data-a="cerrar">Cerrar</button>`); }, 320);
+      return;
+    }
     case 'verFoto': return sheet(`<img class="full" src="${esc(d.src)}" alt="Foto"><button class="btn sec" data-a="cerrar">Cerrar</button>`);
     case 'cerrar': return closeSheet();
     case 'copiar':

@@ -95,6 +95,16 @@ async function armar(b: any): Promise<Aviso | null> {
     const a = r.autor_id ? await uno("perfiles", r.autor_id, "nombre") : null;
     return { usuarios: [c.usuario_id], app: "cliente", pref: "productos", title: "🧪 Te estás quedando sin productos", body: corto(`${primer(a?.nombre) || "Tu piletero"} te avisa: ${nombres.join(", ")}`), url: "cliente.html#inicio", tag: "recs" };
   }
+  if (tabla === "me_gusta") {
+    const g = await uno("me_gusta", id);
+    if (!g) return null;
+    const c = await uno("clientes", g.cliente_id);
+    if (!c) return null;
+    const f = await uno("fotos", g.foto_id, "id,realizada_id");
+    const r = f?.realizada_id ? await uno("realizadas", f.realizada_id, "piletero_id,fecha") : null;
+    const fecha = r?.fecha ? new Date(r.fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long" }) : "";
+    return { usuarios: r?.piletero_id ? [r.piletero_id] : await equipoDe(c), app: "equipo", pref: "megusta", title: `❤️ A ${c.nombre} le gustó cómo quedó la pileta`, body: fecha ? `Le dio me gusta a la foto de la visita del ${fecha}.` : "Le dio me gusta a una foto de su pileta.", url: `index.html#fotos=${c.id}`, tag: `gusta-${g.foto_id}` };
+  }
   return null;
 }
 
