@@ -1,0 +1,13 @@
+# Forzar HTTPS y no cachear las páginas (así cada cambio se ve enseguida)
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+<FilesMatch "\.(html|webmanifest)$">
+  Header set Cache-Control "no-cache"
+</FilesMatch>
+
+# No publicar los archivos SQL
+<FilesMatch "\.sql$">
+  Require all denied
+</FilesMatch>

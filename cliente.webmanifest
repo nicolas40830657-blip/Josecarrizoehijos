@@ -1,0 +1,17 @@
+{
+  "name": "Mi pileta · José Carrizo e Hijos",
+  "short_name": "Mi pileta",
+  "description": "Seguí el mantenimiento de tu pileta y pedí tus productos",
+  "start_url": "cliente.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B2545",
+  "theme_color": "#0B2545",
+  "lang": "es-AR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

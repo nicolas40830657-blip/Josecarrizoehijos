@@ -191,6 +191,32 @@ nav button.on{background-image:var(--grad);color:#fff}
 #auth{background:linear-gradient(160deg,#0B2545 0%,#13315C 55%,#24539b 100%)}
 #auth .btn{background-image:none}
 .swb.on{box-shadow:0 0 0 3px var(--navy)}
+/* Portal de clientes: mensajes, pedidos, código */
+nav button{position:relative}
+.bdg{position:absolute;top:2px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:9px;background:#D72113;color:#fff;font-size:11px;font-style:normal;font-weight:600;display:grid;place-items:center;padding:0 5px;letter-spacing:0}
+.grow small.msgN{color:#D72113;font-weight:600}
+.card .grow small.msgN{color:inherit;font-weight:600}
+.box{border:1px solid var(--g200);border-radius:18px;padding:16px;margin:14px 0 4px}
+.box .cod{font-size:28px;font-weight:600;letter-spacing:6px;margin:4px 0 2px}
+.pedbar{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(135deg,#0B2545,#1F63E8);color:#fff;border-radius:18px;padding:14px 18px;margin:0 0 14px}
+.pedbar .grow small{display:block;color:#c3d2ee;font-size:14px}
+.pedbar .grow b{color:#fff}
+.pedbar i{font-style:normal;font-size:24px}
+.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:9999px;padding:2px 10px;background:var(--g50);color:var(--g600)}
+.tag.nuevo{background:#FEF3C7;color:#92400E}.tag.confirmado{background:#DBEAFE;color:#1E40AF}.tag.entregado{background:#DCFCE7;color:#166534}.tag.cancelado{background:#F3F4F6;color:#6B7280}
+.recs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.recs .chip{background:#fff}
+.recs .chip.on{background:var(--navy);color:#fff}
+.msgs{display:flex;flex-direction:column;gap:8px;margin:10px 0 12px;max-height:46vh;overflow:auto;padding:2px}
+.bub{max-width:82%;padding:10px 12px;border-radius:18px 18px 18px 6px;background:var(--g50);align-self:flex-start;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px}
+.bub.me{align-self:flex-end;background:var(--navy);color:#fff;border-radius:18px 18px 6px 18px}
+.bub small{display:block;font-size:11px;opacity:.65;margin-top:4px}
+.bub img{display:block;max-width:100%;max-height:260px;border-radius:12px;margin-bottom:6px}
+.cbar{display:flex;gap:8px;align-items:flex-end}
+.cbar textarea{margin:0;flex:1;resize:none;border-radius:22px}
+.ib{width:46px;height:46px;flex:none;border-radius:50%;background:var(--g50);display:grid;place-items:center;cursor:pointer;font-size:20px}
+.ib.send{background:var(--navy);color:#fff}
+.ib input{display:none}
 </style>
 </head>
 <body>
@@ -205,7 +231,7 @@ nav button.on{background-image:var(--grad);color:#fff}
   <main>
     <section class="view on" id="v-mapa"><div id="chipsMap"></div><div id="map"></div><button id="gps" data-a="gps"></button><div id="ruta" hidden></div></section>
     <section class="view" id="v-clientes">
-      <h1>Clientes</h1><div id="cal"></div><div id="dayList"></div><h3 id="todos">Todos los clientes</h3><div id="chipsList"></div>
+      <h1>Clientes</h1><div id="pedBox"></div><div id="cal"></div><div id="dayList"></div><h3 id="todos">Todos los clientes</h3><div id="chipsList"></div>
       <input id="q" placeholder="Buscar por nombre o dirección">
       <div id="listC"></div>
       <button class="fab" data-a="nuevoC">+ Nuevo cliente</button>
@@ -218,7 +244,7 @@ nav button.on{background-image:var(--grad);color:#fff}
   </main>
   <nav>
     <button data-t="mapa" class="on"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Mapa</button>
-    <button data-t="clientes"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Clientes</button>
+    <button data-t="clientes"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Clientes<i class="bdg" id="bdgCli" hidden></i></button>
     <button data-t="inv"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg>Inventario</button>
     <button data-t="perfil"><svg viewBox="0 0 24 24"><path d="M20 21v-1a5 5 0 00-5-5H9a5 5 0 00-5 5v1"/><circle cx="12" cy="8" r="4"/></svg>Mi perfil</button>
   </nav>
@@ -238,7 +264,7 @@ const CFG = { url: 'https://gqromisweyqvdeeahxnl.supabase.co', key: 'sb_publisha
 
 const sb = CFG.url ? supabase.createClient(CFG.url, CFG.key) : null;
 const COLORS = ['#2563EB', '#0E9F6E', '#F59E0B', '#DB2777', '#7C3AED', '#0891B2'];
-const S = { p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
+const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 const P = id => S.p.find(x => x.id === id);
@@ -250,7 +276,7 @@ const opts = (a, s) => a.map(x => `<option ${x === s ? 'selected' : ''}>${x}</op
 const isCoord = () => S.me?.rol === 'coordinador';
 const canDel = c => isGestor() || c.piletero_id === S.me?.id;
 const isGestor = () => ['coordinador', 'administrador'].includes(S.me?.rol);
-const pileteros = () => S.p.filter(p => p.rol !== 'administrador');
+const pileteros = () => S.p.filter(p => p.rol !== 'administrador' && p.activo !== false);
 const mesStats = k => {
   const rs = S.r.filter(r => (r.fecha || '').startsWith(k)), vs = S.vt.filter(v => (v.fecha || '').startsWith(k)), ps = S.pg.filter(x => (x.fecha || '').startsWith(k));
   const sv = sumar(rs), tp = vs.reduce((a, v) => a + (+v.total || 0), 0);
@@ -353,12 +379,38 @@ function demo() {
     { id: 's1', fecha: back(1), tipo: 'p', item_id: 'pr1', nombre: 'Cloro granulado 90%', cantidad: 2, total: 18000, porc: 10, vendedor_id: 'p2', cliente_id: 'c2', items: [{ p: 'pr1', n: 1 }], cobrado: true },
     { id: 's2', fecha: back(2), tipo: 'k', item_id: 'k1', nombre: 'Kit de arranque', cantidad: 1, total: 24000, porc: 10, vendedor_id: 'p3', cliente_id: 'c4', items: [{ p: 'pr1', n: 1 }, { p: 'pr3', n: 1 }, { p: 'pr5', n: 1 }], cobrado: false }
   ];
+  // Portal de clientes (demo)
+  S.p.forEach(p => { p.activo = true; });
+  S.c.forEach((c, i) => { c.codigo = ['K7F2A9', 'B3D81C', '5E0A7F', 'C29D4B', '8A1F3E', 'D4E6B0'][i]; });
+  S.c[0].usuario_id = 'u-demo'; S.pr.forEach(p => { p.tienda = true; }); S.k.forEach(k => { k.tienda = true; });
+  S.ms = [
+    { id: 'm1', cliente_id: 'c1', de_cliente: true, texto: 'Hola José! El lunes no hay nadie, te dejo la llave con el vecino.', creado: ago(60 * 26), leido_equipo: true },
+    { id: 'm2', cliente_id: 'c1', de_cliente: false, texto: 'Perfecto, gracias! Paso a las 9.', creado: ago(60 * 25), leido_equipo: true },
+    { id: 'm3', cliente_id: 'c1', de_cliente: true, texto: 'El agua está un poco verde, ¿podés pasar antes?', creado: ago(20), leido_equipo: false }
+  ];
+  S.msg = S.ms.filter(m => m.de_cliente && !m.leido_equipo);
+  S.ped = [{ id: 'pe1', cliente_id: 'c1', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 2 }, { t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 23000, pago: 'cuenta', nota: 'Si pueden traerlo el lunes con la visita', estado: 'nuevo', creado: ago(45) }];
+  S.rec = [{ id: 're1', cliente_id: 'c3', tipo: 'p', item_id: 'pr3', cantidad: 1, estado: 'activa', creado: ago(60 * 30) }];
 }
 
 // ── Capa de datos (Supabase o memoria)
 async function load() {
   const [p, c, h, v, r, vt, pr, k, pg, mv, co, vcs] = await Promise.all([sb.from('perfiles').select(), sb.from('clientes').select(), sb.from('herramientas').select(), sb.from('visitas').select(), sb.from('realizadas').select(), sb.from('ventas').select(), sb.from('productos').select(), sb.from('kits').select(), sb.from('pagos').select(), sb.from('movimientos').select().order('creado', { ascending: false }).limit(200), sb.from('costos').select(), sb.from('ventas_costos').select()]);
-  S.p = p.data || []; S.c = c.data || []; S.h = h.data || []; S.v = v.data || []; S.r = r.data || []; S.vt = (vt.data || []).filter(x => !x.anulada); S.pr = pr.data || []; S.k = k.data || []; S.pg = pg.data || []; S.mov = mv.data || []; S.co = {}; (co.data || []).forEach(x => { S.co[x.producto_id] = +x.costo; }); S.vc = {}; (vcs.data || []).forEach(x => { S.vc[x.venta_id] = +x.costo; });
+  S.p = p.data || []; S.c = c.data || []; await cargarPortal(true); S.h = h.data || []; S.v = v.data || []; S.r = r.data || []; S.vt = (vt.data || []).filter(x => !x.anulada); S.pr = pr.data || []; S.k = k.data || []; S.pg = pg.data || []; S.mov = mv.data || []; S.co = {}; (co.data || []).forEach(x => { S.co[x.producto_id] = +x.costo; }); S.vc = {}; (vcs.data || []).forEach(x => { S.vc[x.venta_id] = +x.costo; });
+}
+// ── Portal de clientes: mensajes sin leer, pedidos y recomendaciones
+async function cargarPortal(silencio) {
+  if (!sb) return;
+  const [m, pe, re] = await Promise.all([
+    sb.from('mensajes').select('id,cliente_id,creado').eq('de_cliente', true).eq('leido_equipo', false),
+    sb.from('pedidos').select().order('creado', { ascending: false }).limit(150),
+    sb.from('recomendaciones').select().eq('estado', 'activa')
+  ]);
+  const antes = { m: S.msg.length, p: S.ped.filter(x => x.estado === 'nuevo').length };
+  if (!m.error) S.msg = m.data; if (!pe.error) S.ped = pe.data; if (!re.error) S.rec = re.data;
+  if (silencio || !S.me) return;
+  const nm = S.msg.length > antes.m, np = S.ped.filter(x => x.estado === 'nuevo').length > antes.p;
+  if (nm || np) { toast(np ? '🛒 Llegó un pedido nuevo de un cliente' : '💬 Tenés un mensaje nuevo de un cliente'); renderAll(); }
 }
 async function put(k, table, row) {
   let r = row;
@@ -412,6 +464,11 @@ function localRpc(n, a) {
     const v = S.vt.find(x => x.id === a.p_id); if (!v) throw new Error('La venta no existe');
     (v.items || []).forEach(i => { const p = S.pr.find(x => x.id === i.p); if (p) { p.stock += i.n * v.cantidad; log(p, 'anulacion', i.n * v.cantidad, v.id); } });
     S.vt = S.vt.filter(x => x.id !== v.id); return;
+  }
+  if (n === 'entregar_pedido') {
+    const pe = S.ped.find(x => x.id === a.p_id);
+    for (const it of pe.items) localRpc('vender', { p_tipo: it.t, p_item: it.id, p_cant: it.n, p_cliente: pe.cliente_id, p_cobrado: a.p_cobrado });
+    pe.estado = 'entregado'; return;
   }
   if (n === 'cobrar_venta') { const v = S.vt.find(x => x.id === a.p_id); if (v) v.cobrado = a.p_cobrado; return; }
   if (n === 'ajustar_stock') {
@@ -468,9 +525,17 @@ async function auth(reg) {
 }
 async function start(u, name) {
   if (sb) {
+    if (u.user_metadata?.tipo === 'cliente') {
+      await sb.auth.signOut(); authUI();
+      return toast('Esta es una cuenta de cliente. Entrá desde la app de clientes.');
+    }
     await load();
     let me = P(u.id);
-    if (!me) me = await put('p', 'perfiles', { id: u.id, nombre: name || u.email.split('@')[0], color: COLORS[S.p.length % COLORS.length] });
+    if (!me) { me = await put('p', 'perfiles', { id: u.id, nombre: name || u.email.split('@')[0], color: COLORS[S.p.length % COLORS.length] }); await load(); me = P(u.id) || me; }
+    if (me.activo === false) {
+      $('#authForm').innerHTML = `<p class="note">Hola ${esc(me.nombre)}. Tu cuenta quedó creada pero falta que un coordinador la habilite. Avisale a José y volvé a entrar cuando te confirme.</p><button class="btn" data-a="reintentar">Ya me habilitaron</button><button class="btn sec" data-a="salir">Cerrar sesión</button>`;
+      return;
+    }
     S.me = me;
   } else S.me = P(u);
   $('#auth').hidden = true; $('#app').hidden = false;
@@ -521,7 +586,7 @@ function renderHerr() {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
@@ -588,6 +653,10 @@ function gananciasHTML() {
     (sem || '<p class="note">Todavía no confirmaste visitas este mes. Tocá el check de cada visita en el calendario.</p>') +
     (pagos.length ? '<h3>Pagos a la empresa</h3>' + pagos.map(x => `<div class="row"><div class="grow"><b>${corto(new Date(x.fecha + 'T12:00'))}</b><small>${x.visitas} ${x.visitas === 1 ? 'visita' : 'visitas'}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
 }
+function pendientesHTML() {
+  const pe = S.p.filter(p => p.activo === false);
+  return pe.length ? '<h3>Cuentas nuevas para habilitar</h3>' + pe.map(p => `<div class="row"><div class="grow"><b>${esc(p.nombre)}</b><small>Se registró en la app del equipo. Si no lo conocés, rechazala.</small></div><div class="acts"><button class="btn sm" data-a="habilitar" data-id="${p.id}">Habilitar</button><button class="btn sm sec" data-a="rechazar" data-id="${p.id}">Rechazar</button></div></div>`).join('') : '';
+}
 function equipoHTML() {
   const m = mesStats(S.mes), rs = delMes(S.r);
   const meses = [...new Set([...S.r, ...S.vt, ...S.pg].map(x => (x.fecha || '').slice(0, 7)).filter(Boolean))].sort().reverse().slice(0, 12);
@@ -605,7 +674,14 @@ const puedeAnular = v => isGestor() || (v.vendedor_id === S.me.id && v.fecha ===
 const puedeCobro = v => isGestor() || v.vendedor_id === S.me.id;
 const clN = id => (S.c.find(c => c.id === id) || {}).nombre;
 const ventasDe = id => S.vt.filter(v => v.cliente_id === id).sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || '')));
+const nuevos = id => S.msg.filter(m => m.cliente_id === id).length;
+const pedAbiertos = id => S.ped.filter(p => (!id || p.cliente_id === id) && (p.estado === 'nuevo' || p.estado === 'confirmado'));
+const misCli = id => { const c = S.c.find(x => x.id === id); return c && (isGestor() || c.piletero_id === S.me?.id); };
 const avisoCliente = c => {
+  const n = nuevos(c.id), pa = pedAbiertos(c.id).length;
+  return (n ? `<small class="msgN">💬 ${n} ${n === 1 ? 'mensaje nuevo' : 'mensajes nuevos'} del cliente</small>` : '') + (pa ? `<small class="msgN">🛒 ${pa} ${pa === 1 ? 'pedido' : 'pedidos'} sin entregar</small>` : '') + avisoVentas(c);
+};
+const avisoVentas = c => {
   const vs = ventasDe(c.id); if (!vs.length) return '';
   const f = vs[0].fecha, dia = vs.filter(v => v.fecha === f), mios = dia.every(v => v.vendedor_id === S.me.id);
   const debe = fa(vs.filter(v => v.cobrado === false));
@@ -655,12 +731,12 @@ function renderInv() {
 }
 function formProducto(p) {
   p = p || {};
-  sheet(`<h2>${p.id ? 'Editar producto' : 'Nuevo producto'}</h2><label>Nombre<input id="pn" value="${esc(p.nombre)}" placeholder="Ej: Cloro granulado 90%"></label><label>Detalle (presentación)<input id="pd" value="${esc(p.detalle)}" placeholder="Ej: bolsa de 1 kg"></label><label>Stock actual (unidades)<input id="ps" type="number" inputmode="decimal" min="0" value="${p.stock ?? 0}"></label>${p.id ? '<p class="sub">Si cambiás el stock a mano queda registrado como ajuste en los movimientos.</p>' : ''}<label>Avisar cuando quede (stock mínimo)<input id="pm" type="number" inputmode="decimal" min="0" value="${p.stock_min ?? 0}"></label><label>Costo por unidad ($)<input id="pcst" type="number" inputmode="decimal" min="0" value="${S.co[p.id] ?? 0}"></label><label>Precio de venta por unidad ($)<input id="pp" type="number" inputmode="decimal" min="0" value="${p.precio ?? 0}"></label><button class="btn" data-a="guardarP" data-id="${p.id || ''}">Guardar</button>${p.id ? `<button class="btn sec" data-a="borrarP" data-id="${p.id}">Eliminar producto</button>` : ''}`);
+  sheet(`<h2>${p.id ? 'Editar producto' : 'Nuevo producto'}</h2><label>Nombre<input id="pn" value="${esc(p.nombre)}" placeholder="Ej: Cloro granulado 90%"></label><label>Detalle (presentación)<input id="pd" value="${esc(p.detalle)}" placeholder="Ej: bolsa de 1 kg"></label><label>Stock actual (unidades)<input id="ps" type="number" inputmode="decimal" min="0" value="${p.stock ?? 0}"></label>${p.id ? '<p class="sub">Si cambiás el stock a mano queda registrado como ajuste en los movimientos.</p>' : ''}<label>Avisar cuando quede (stock mínimo)<input id="pm" type="number" inputmode="decimal" min="0" value="${p.stock_min ?? 0}"></label><label>Costo por unidad ($)<input id="pcst" type="number" inputmode="decimal" min="0" value="${S.co[p.id] ?? 0}"></label><label>Precio de venta por unidad ($)<input id="pp" type="number" inputmode="decimal" min="0" value="${p.precio ?? 0}"></label><label>¿Se vende en la app de clientes?<select id="ptd"><option value="si">Sí, mostrarlo en la tienda</option><option value="no" ${p.tienda === false ? 'selected' : ''}>No mostrarlo</option></select></label><p class="sub">Solo aparece en la tienda si tiene precio de venta.</p><button class="btn" data-a="guardarP" data-id="${p.id || ''}">Guardar</button>${p.id ? `<button class="btn sec" data-a="borrarP" data-id="${p.id}">Eliminar producto</button>` : ''}`);
 }
 function formKit(k) {
   k = k || {};
   const q = id => ((k.items || []).find(i => i.p === id) || {}).n || 0;
-  sheet(`<h2>${k.id ? 'Editar kit' : 'Nuevo kit'}</h2><label>Nombre<input id="kn" value="${esc(k.nombre)}" placeholder="Ej: Kit de arranque"></label><label>Precio del kit ($)<input id="kp" type="number" inputmode="decimal" min="0" value="${k.precio ?? 0}"></label><h3>Qué incluye (cantidad de cada producto)</h3>${S.pr.map(p => `<label>${esc(p.nombre)}<input type="number" inputmode="numeric" min="0" data-kp="${p.id}" value="${q(p.id)}"></label>`).join('')}<button class="btn" data-a="guardarK" data-id="${k.id || ''}">Guardar kit</button>${k.id ? `<button class="btn sec" data-a="borrarK" data-id="${k.id}">Eliminar kit</button>` : ''}`);
+  sheet(`<h2>${k.id ? 'Editar kit' : 'Nuevo kit'}</h2><label>Nombre<input id="kn" value="${esc(k.nombre)}" placeholder="Ej: Kit de arranque"></label><label>Precio del kit ($)<input id="kp" type="number" inputmode="decimal" min="0" value="${k.precio ?? 0}"></label><label>¿Se vende en la app de clientes?<select id="ktd"><option value="si">Sí, mostrarlo en la tienda</option><option value="no" ${k.tienda === false ? 'selected' : ''}>No mostrarlo</option></select></label><h3>Qué incluye (cantidad de cada producto)</h3>${S.pr.map(p => `<label>${esc(p.nombre)}<input type="number" inputmode="numeric" min="0" data-kp="${p.id}" value="${q(p.id)}"></label>`).join('')}<button class="btn" data-a="guardarK" data-id="${k.id || ''}">Guardar kit</button>${k.id ? `<button class="btn sec" data-a="borrarK" data-id="${k.id}">Eliminar kit</button>` : ''}`);
 }
 function venta(tipo, id) {
   const pre = S.vcl; S.vcl = null;
@@ -669,7 +745,63 @@ function venta(tipo, id) {
 }
 function renderAll() {
   $('#chipsMap').innerHTML = chips(); $('#chipsList').innerHTML = chips();
-  renderMap(); renderClients(); renderCal(); renderInv(); renderPerfil(); renderUsers(); gpsBtn();
+  renderMap(); renderClients(); renderCal(); renderInv(); renderPerfil(); renderUsers(); gpsBtn(); renderPortal();
+}
+function renderPortal() {
+  const pa = pedAbiertos().filter(p => misCli(p.cliente_id)), nm = S.msg.filter(m => misCli(m.cliente_id)).length, nu = pa.filter(p => p.estado === 'nuevo').length;
+  const b = $('#bdgCli'); b.hidden = !(nm + nu); b.textContent = nm + nu;
+  $('#pedBox').innerHTML = pa.length ? `<button class="pedbar" data-a="pedidos"><i>🛒</i><div class="grow"><b>${pa.length} ${pa.length === 1 ? 'pedido de cliente' : 'pedidos de clientes'} para entregar</b><small>${nu ? nu + ' sin confirmar · ' : ''}${peso(pa.reduce((a, p) => a + (+p.total || 0), 0))} en total</small></div><span>›</span></button>` : '';
+}
+const PAGO = { cuenta: 'Se suma a su cuenta', transferencia: 'Paga por transferencia', efectivo: 'Paga en efectivo' };
+const EST = { nuevo: 'Nuevo', confirmado: 'Confirmado', entregado: 'Entregado', cancelado: 'Cancelado' };
+const pedidoHTML = (pe, conCliente) => { const c = S.c.find(x => x.id === pe.cliente_id) || {}; return `<div class="row" style="align-items:flex-start"><div class="grow">${conCliente ? `<b>${esc(c.nombre || 'Cliente')}</b>` : ''}<small>${new Date(pe.creado).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} · <span class="tag ${pe.estado}">${EST[pe.estado]}</span></small><small style="color:var(--ink)">${(pe.items || []).map(i => esc(i.nombre) + ' ×' + i.n).join(', ')}</small><small>${PAGO[pe.pago] || ''}${pe.nota ? ' · “' + esc(pe.nota) + '”' : ''}</small></div><div class="num"><b>${peso(pe.total)}</b>${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<button class="btn sm" style="margin-top:6px" data-a="verPedido" data-id="${pe.id}">Atender</button>` : ''}</div></div>`; };
+function listaPedidos() {
+  const pa = pedAbiertos().filter(p => misCli(p.cliente_id)), hechos = S.ped.filter(p => !pa.includes(p) && misCli(p.cliente_id)).slice(0, 10);
+  sheet(`<h2>Pedidos de clientes</h2><p class="sub">Los clientes los hacen desde su app. Al entregar, se registra la venta en su ficha y se descuenta el stock.</p>${pa.length ? pa.map(p => pedidoHTML(p, true)).join('') : '<p class="note">No hay pedidos pendientes.</p>'}${hechos.length ? '<h3>Últimos atendidos</h3>' + hechos.map(p => pedidoHTML(p, true)).join('') : ''}`);
+}
+function verPedido(id) {
+  const pe = S.ped.find(x => x.id === id), c = S.c.find(x => x.id === pe.cliente_id) || {};
+  sheet(`<h2>Pedido de ${esc(c.nombre || 'cliente')}</h2><p class="sub">${esc(c.direccion || '')} · ${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>${(pe.items || []).map(i => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.precio)} c/u</small></div><div class="num"><b>${peso(i.precio * i.n)}</b></div></div>`).join('')}<div class="stats"><div><small>Total</small><b>${peso(pe.total)}</b></div><div><small>Forma de pago</small><b style="font-size:16px">${PAGO[pe.pago]}</b></div></div>${pe.nota ? `<p class="note">“${esc(pe.nota)}”</p>` : ''}${pe.estado === 'nuevo' ? `<button class="btn" data-a="pedConfirmar" data-id="${pe.id}">Confirmar pedido (el cliente lo ve)</button>` : ''}<label>Al entregarlo, ¿se cobró?<select id="pco"><option value="no">No, queda pendiente en su cuenta</option><option value="si">Sí, ya está cobrado</option></select></label><button class="btn" data-a="pedEntregar" data-id="${pe.id}">Entregado: registrar la venta</button><button class="btn sec" data-a="chat" data-id="${c.id}">Escribirle al cliente</button><button class="btn sec" data-a="pedCancelar" data-id="${pe.id}">Cancelar pedido</button>`);
+}
+// Mensajes con el cliente
+function bubbles(ms, c) {
+  return ms.length ? ms.map(m => { const d = new Date(m.creado); return `<div class="bub ${m.de_cliente ? '' : 'me'}">${m.foto ? `<img src="${esc(m.foto)}" alt="Foto">` : ''}${esc(m.texto || '')}<small>${m.de_cliente ? esc(c.nombre) + ' · ' : ''}${corto(d)} ${d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</small></div>`; }).join('')
+    : '<p class="note">Todavía no hay mensajes con este cliente.</p>';
+}
+async function openChat(id, refresco) {
+  const c = S.c.find(x => x.id === id); if (!c) return;
+  S.chat = id;
+  if (sb) {
+    const x = await sb.from('mensajes').select().eq('cliente_id', id).order('creado', { ascending: true }).limit(300);
+    if (x.error) throw new Error(x.error.message);
+    S.ms = [...S.ms.filter(m => m.cliente_id !== id), ...x.data];
+    if (S.msg.some(m => m.cliente_id === id)) await sb.from('mensajes').update({ leido_equipo: true }).eq('cliente_id', id).eq('de_cliente', true).eq('leido_equipo', false);
+  } else S.ms.forEach(m => { if (m.cliente_id === id) m.leido_equipo = true; });
+  S.msg = S.msg.filter(m => m.cliente_id !== id);
+  const ms = S.ms.filter(m => m.cliente_id === id);
+  if (refresco && $('#chatMsgs')) { const el = $('#chatMsgs'), abajo = el.scrollHeight - el.scrollTop - el.clientHeight < 80; el.innerHTML = bubbles(ms, c); if (abajo) el.scrollTop = el.scrollHeight; return renderAll(); }
+  S.chatFoto = null;
+  sheet(`<h2>Mensajes · ${esc(c.nombre)}</h2><p class="sub">${c.usuario_id ? 'El cliente ve estos mensajes en su app.' : 'Este cliente todavía no se registró en la app. Pasale su código desde la ficha.'}</p><div class="msgs" id="chatMsgs">${bubbles(ms, c)}</div><div id="chatPrev"></div><div class="cbar"><label class="ib" aria-label="Adjuntar foto">📷<input type="file" id="chatFile" accept="image/*"></label><textarea id="chatTxt" rows="1" placeholder="Responder…"></textarea><button class="ib send" data-a="chatEnviar" data-id="${c.id}" aria-label="Enviar">➤</button></div><button class="btn sec" data-a="abrir" data-id="${c.id}">Volver a la ficha</button>`);
+  const el = $('#chatMsgs'); el.scrollTop = el.scrollHeight;
+  renderAll();
+}
+// Código de acceso a la app de clientes
+const codNuevo = () => [...crypto.getRandomValues(new Uint8Array(3))].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+const linkClientes = () => new URL('cliente.html', location.href).href.split('#')[0].split('?')[0];
+const accesoHTML = c => `<div class="box"><b>App de clientes</b>${c.usuario_id ? '<p class="sub" style="margin:4px 0 0">✓ Ya usa la app: ve sus visitas y fotos, te escribe y te pide productos.</p>' : `<p class="sub" style="margin:4px 0 6px">Pasale este código para que vea sus visitas, te escriba y compre productos:</p><div class="cod">${esc(c.codigo || '—')}</div>${c.codigo && c.telefono ? `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${waNum(c.telefono)}?text=${encodeURIComponent('Hola ' + c.nombre + '! Ya podés seguir el mantenimiento de tu pileta y pedir productos desde la app de José Carrizo e Hijos: ' + linkClientes() + '?c=' + c.codigo + '\nCreá tu cuenta y poné este código: ' + c.codigo)}">Enviar código por WhatsApp</a>` : ''}`}${canDel(c) ? `<button class="btn sec" data-a="nuevoCod" data-id="${c.id}">${c.usuario_id ? 'Desvincular cuenta y generar código nuevo' : 'Generar código nuevo'}</button>` : ''}</div>`;
+// Recomendaciones: "te estás quedando sin…"
+const itemDe = (t, id) => (t === 'k' ? S.k : S.pr).find(x => x.id === id);
+const recsDe = id => S.rec.filter(r => r.cliente_id === id && r.estado === 'activa');
+const vendibles = () => [...S.pr.filter(p => p.tienda !== false).map(p => ({ t: 'p', ...p })), ...S.k.filter(k => k.tienda !== false).map(k => ({ t: 'k', ...k }))];
+const fichaPortal = c => {
+  const rs = recsDe(c.id), ps = S.ped.filter(p => p.cliente_id === c.id).slice(0, 5);
+  return `<h3>Le avisaste que le faltan</h3>${rs.length ? rs.map(r => { const it = itemDe(r.tipo, r.item_id) || {}; return `<div class="row"><div class="grow"><b>${esc(it.nombre || 'Producto')} ×${r.cantidad}</b><small>${corto(new Date(r.creado))}${r.nota ? ' · ' + esc(r.nota) : ''} · lo ve en su app</small></div><button class="btn sm sec" data-a="quitarRec" data-id="${r.id}">Quitar</button></div>`; }).join('') : '<p class="note">Avisale qué productos se le están terminando: le aparece en su app con el botón para comprarlos.</p>'}<button class="btn sec" data-a="recomendar" data-id="${c.id}">Avisar que le faltan productos</button>` +
+    (ps.length ? '<h3>Pedidos desde la app</h3>' + ps.map(p => pedidoHTML(p, false)).join('') : '');
+};
+function recomendar(id) {
+  const c = S.c.find(x => x.id === id), vs = vendibles();
+  if (!vs.length) return toast('Primero cargá productos o kits en Inventario');
+  sheet(`<h2>Le faltan productos</h2><p class="sub">${esc(c.nombre)} lo va a ver en su app como “Tu piletero te avisa que te estás quedando sin…”, con el botón para comprarlo.</p>${vs.map(v => `<label>${esc(v.nombre)}${v.t === 'k' ? ' (kit)' : ''}${+v.precio ? ' · ' + peso(v.precio) : ' · sin precio cargado'}<input type="number" inputmode="numeric" min="0" value="0" data-rq="${v.t}:${v.id}"></label>`).join('')}<label>Nota para el cliente (opcional)<input id="rnota" placeholder="Ej: con esto llegás a fin de mes"></label><button class="btn" data-a="okRecomendar" data-id="${c.id}">Avisarle al cliente</button>`);
 }
 function go(t) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + t));
@@ -682,7 +814,7 @@ const sheet = h => { $('#sheetBody').innerHTML = h; $('#sh').classList.add('on')
 const closeSheet = () => $('#sh').classList.remove('on');
 function openCliente(id) {
   const c = S.c.find(x => x.id === id), mine = c.piletero_id === S.me.id;
-  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaVentas(c)}${fichaHist(c)}`);
+  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}<button class="btn" data-a="chat" data-id="${c.id}">💬 Mensajes del cliente${nuevos(c.id) ? ' (' + nuevos(c.id) + ' nuevos)' : ''}</button>${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaPortal(c)}${accesoHTML(c)}${fichaVentas(c)}${fichaHist(c)}`);
 }
 function menuCliente(id) {
   const c = S.c.find(x => x.id === id);
@@ -696,7 +828,7 @@ function formCliente(c) {
 function abrirRegistro(id) {
   const r = S.r.find(x => x.id === id); if (!r) return;
   const c = S.c.find(x => x.id === r.cliente_id) || {};
-  sheet(`<h2>Visita confirmada</h2><p class="sub">${esc(c.nombre || '')} · ${new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p><label>¿Qué se hizo?<textarea id="rn" rows="3" placeholder="Ej: limpieza de fondo, cambio de arena">${esc(r.nota)}</textarea></label><label>Productos usados<input id="rp" value="${esc(r.productos)}" placeholder="Ej: cloro granulado 1 kg, clarificador"></label><label>Fotos (opcional, hasta 4)<input id="rf" type="file" accept="image/*" multiple></label><button class="btn" data-a="guardarReg" data-id="${r.id}">Guardar registro</button><button class="btn sec" data-a="cerrar">Omitir</button>`);
+  sheet(`<h2>Visita confirmada</h2><p class="sub">${esc(c.nombre || '')} · ${new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p><label>¿Qué se hizo?<textarea id="rn" rows="3" placeholder="Ej: limpieza de fondo, cambio de arena">${esc(r.nota)}</textarea></label><label>Productos usados<input id="rp" value="${esc(r.productos)}" placeholder="Ej: cloro granulado 1 kg, clarificador"></label><label>Fotos (hasta 4 · el cliente ve la última en su app como “estado actual”)<input id="rf" type="file" accept="image/*" multiple></label>${vendibles().length ? `<label>¿Se está quedando sin algún producto? (le avisa en su app)</label><div class="recs">${vendibles().map(v => `<button type="button" class="chip ${recsDe(r.cliente_id).some(x => x.tipo === v.t && x.item_id === v.id) ? 'on' : ''}" data-a="recSel" data-id="${v.t}:${v.id}">${esc(v.nombre)}</button>`).join('')}</div>` : ''}<button class="btn" data-a="guardarReg" data-id="${r.id}">Guardar registro</button><button class="btn sec" data-a="cerrar">Omitir</button>`);
 }
 function openVisita(id) {
   const v = S.v.find(x => x.id === id), c = v && S.c.find(x => x.id === v.cliente_id);
@@ -947,7 +1079,7 @@ async function act(e) {
       if (!isGestor()) return;
       const n = $('#pn').value.trim(); if (!n) return toast('Escribí el nombre');
       const old = S.pr.find(x => x.id === d.id), stock = +$('#ps').value || 0, costo = +$('#pcst').value || 0;
-      const f = { nombre: n, detalle: $('#pd').value.trim(), precio: +$('#pp').value || 0, stock_min: +$('#pm').value || 0 };
+      const f = { nombre: n, detalle: $('#pd').value.trim(), precio: +$('#pp').value || 0, stock_min: +$('#pm').value || 0, tienda: $('#ptd').value === 'si' };
       t.disabled = true;
       try {
         const pr = old ? await upd('pr', 'productos', old.id, f) : await put('pr', 'productos', { ...f, stock: 0 });
@@ -966,7 +1098,7 @@ async function act(e) {
       if (!isGestor()) return;
       const n = $('#kn').value.trim(), items = [...document.querySelectorAll('[data-kp]')].map(i => ({ p: i.dataset.kp, n: +i.value || 0 })).filter(i => i.n > 0);
       if (!n || !items.length) return toast('Poné un nombre y al menos un producto');
-      await put('k', 'kits', { ...S.k.find(x => x.id === d.id), nombre: n, precio: +$('#kp').value || 0, items });
+      await put('k', 'kits', { ...S.k.find(x => x.id === d.id), nombre: n, precio: +$('#kp').value || 0, items, tienda: $('#ktd').value === 'si' });
       closeSheet(); renderAll(); return toast('Kit guardado');
     }
     case 'borrarK':
@@ -1044,6 +1176,11 @@ async function act(e) {
       try {
         await upd('r', 'realizadas', r.id, { nota: $('#rn').value.trim() || null, productos: $('#rp').value.trim() || null });
         for (const f of files) await subirFoto(r, f);
+        const ya = recsDe(r.cliente_id);
+        for (const ch of document.querySelectorAll('.recs .chip.on')) {
+          const [tipo, item_id] = ch.dataset.id.split(':');
+          if (!ya.some(x => x.tipo === tipo && x.item_id === item_id)) await put('rec', 'recomendaciones', { cliente_id: r.cliente_id, tipo, item_id, cantidad: 1 });
+        }
       } finally { t.disabled = false; }
       closeSheet(); renderAll(); return toast('Registro guardado');
     }
@@ -1054,7 +1191,70 @@ async function act(e) {
       return sheet(`<h2>Historial · ${esc(c.nombre)}</h2>` + histRows(c, 200, true));
     }
     case 'ventaCli': S.vcl = d.id; S.inv = 'prod'; closeSheet(); go('inv'); renderInv(); return toast('Elegí el producto y tocá Vender');
-    case 'cerrar': return closeSheet();
+    case 'cerrar': S.chat = null; return closeSheet();
+    case 'reintentar': return location.reload();
+    case 'habilitar': {
+      if (!isGestor()) return;
+      await upd('p', 'perfiles', d.id, { activo: true }); renderAll(); return toast('Cuenta habilitada');
+    }
+    case 'rechazar': {
+      if (!isGestor() || !confirm('¿Rechazar esta cuenta? No va a poder usar la app del equipo.')) return;
+      await del('p', 'perfiles', d.id); renderAll(); return toast('Cuenta rechazada');
+    }
+    case 'pedidos': return listaPedidos();
+    case 'verPedido': return verPedido(d.id);
+    case 'pedConfirmar': {
+      await upd('ped', 'pedidos', d.id, { estado: 'confirmado', atendido_por: S.me.id, actualizado: new Date().toISOString() });
+      renderAll(); verPedido(d.id); return toast('Pedido confirmado. El cliente lo ve en su app.');
+    }
+    case 'pedEntregar': {
+      t.disabled = true;
+      try { await rpc('entregar_pedido', { p_id: d.id, p_cobrado: $('#pco').value === 'si' }); if (sb) await cargarPortal(true); }
+      finally { t.disabled = false; }
+      closeSheet(); renderAll(); return toast('Pedido entregado: la venta quedó registrada');
+    }
+    case 'pedCancelar': {
+      if (!confirm('¿Cancelar este pedido? El cliente lo va a ver cancelado.')) return;
+      await upd('ped', 'pedidos', d.id, { estado: 'cancelado', atendido_por: S.me.id, actualizado: new Date().toISOString() });
+      closeSheet(); renderAll(); return toast('Pedido cancelado');
+    }
+    case 'chat': return openChat(d.id);
+    case 'chatSinFoto': S.chatFoto = null; $('#chatPrev').innerHTML = ''; return;
+    case 'chatEnviar': {
+      const c = S.c.find(x => x.id === d.id), txt = $('#chatTxt').value.trim();
+      if (!txt && !S.chatFoto) return toast('Escribí un mensaje o adjuntá una foto');
+      const row = { cliente_id: c.id, de_cliente: false, texto: txt || null, foto: S.chatFoto || null };
+      t.disabled = true;
+      try {
+        if (sb) { const x = await sb.from('mensajes').insert(row).select().single(); if (x.error) throw new Error(x.error.message); S.ms.push(x.data); }
+        else S.ms.push({ id: crypto.randomUUID(), creado: new Date().toISOString(), leido_equipo: true, ...row });
+      } finally { t.disabled = false; }
+      $('#chatTxt').value = ''; S.chatFoto = null; $('#chatPrev').innerHTML = '';
+      const el = $('#chatMsgs'); el.innerHTML = bubbles(S.ms.filter(m => m.cliente_id === c.id), c); el.scrollTop = el.scrollHeight;
+      return;
+    }
+    case 'nuevoCod': {
+      const c = S.c.find(x => x.id === d.id);
+      if (c.usuario_id && !confirm('El cliente va a dejar de ver su pileta en la app hasta que cargue el código nuevo. ¿Seguir?')) return;
+      await upd('c', 'clientes', c.id, { codigo: codNuevo(), usuario_id: null });
+      openCliente(c.id); return toast('Código nuevo generado');
+    }
+    case 'recomendar': return recomendar(d.id);
+    case 'okRecomendar': {
+      const sel = [...document.querySelectorAll('[data-rq]')].map(i => ({ k: i.dataset.rq, n: Math.floor(+i.value || 0) })).filter(x => x.n > 0);
+      if (!sel.length) return toast('Poné la cantidad en al menos un producto');
+      const nota = $('#rnota').value.trim() || null;
+      t.disabled = true;
+      try { for (const x of sel) { const [tipo, item_id] = x.k.split(':'); await put('rec', 'recomendaciones', { cliente_id: d.id, tipo, item_id, cantidad: x.n, nota }); } }
+      finally { t.disabled = false; }
+      openCliente(d.id); renderAll(); return toast('Listo, el cliente lo ve en su app');
+    }
+    case 'quitarRec': {
+      const r = S.rec.find(x => x.id === d.id);
+      await upd('rec', 'recomendaciones', d.id, { estado: 'descartada' }); S.rec = S.rec.filter(x => x.id !== d.id);
+      return openCliente(r.cliente_id);
+    }
+    case 'recSel': return t.classList.toggle('on');
     case 'demo': return start(d.id);
     case 'login': return auth(false);
     case 'registro': return auth(true);
@@ -1106,14 +1306,26 @@ async function act(e) {
     case 'color':
       S.me = await put('p', 'perfiles', { ...S.me, color: d.id }) || S.me; return renderAll();
     case 'salir':
-      await stopShare(); return sb ? sb.auth.signOut().then(() => location.reload()) : location.reload();
+      if (S.me) await stopShare(); return sb ? sb.auth.signOut().then(() => location.reload()) : location.reload();
   }
 }
 $('#q').addEventListener('input', renderClients);
 // Sin zoom con dos dedos en la app; solo el mapa lo permite
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => { if (!e.target.closest('#map')) e.preventDefault(); }, { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1 && !e.target.closest('#map')) e.preventDefault(); }, { passive: false });
-setInterval(() => { if (!document.hidden) pollU(); }, 20000);
+setInterval(() => {
+  if (document.hidden || !S.me) return;
+  pollU(); cargarPortal().catch(() => {});
+  if (S.chat && $('#sh').classList.contains('on') && $('#chatMsgs')) openChat(S.chat, true).catch(() => {});
+}, 20000);
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'chatFile' || !e.target.files[0]) return;
+  try {
+    S.chatFoto = await achicar(e.target.files[0]);
+    $('#chatPrev').innerHTML = `<div class="row" style="padding:6px 0"><img src="${S.chatFoto}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:11px"><span class="grow sub" style="margin:0">Foto lista para enviar</span><button class="btn sm sec" data-a="chatSinFoto">Quitar</button></div>`;
+  } catch (err) { toast(err.message); }
+  e.target.value = '';
+});
 document.addEventListener('change', e => {
   if (e.target.id !== 'foto' || !e.target.files[0]) return;
   const img = new Image();
