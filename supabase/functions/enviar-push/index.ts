@@ -137,6 +137,14 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
     avisos.push({ usuarios: await equipoDe(quien), app: "equipo", pref: "", title: `🎁 Premio para ${quien.nombre}`, body: corto(`Recomendó a ${nuevo?.nombre || "un cliente"} y ya tuvo su primera visita. Llevale: ${pz.texto}`), url: `index.html#chat=${quien.id}`, tag: `premio-${pz.id}` });
     return avisos;
   }
+  if (tabla === "chat_equipo") {
+    const m = await uno("chat_equipo", id);
+    if (!m || !(m.menciones || []).length) return null;
+    const autor = await uno("perfiles", m.autor_id, "nombre");
+    const ok = await sb.from("perfiles").select("id").in("id", m.menciones).eq("activo", true);
+    const usuarios = (ok.data || []).map((x: any) => x.id).filter((x: string) => x !== m.autor_id);
+    return { usuarios, app: "equipo", pref: "equipo", title: `💬 ${primer(autor?.nombre) || "Alguien"} te mencionó en el chat del equipo`, body: m.texto ? corto(m.texto) : "📷 Mandó una foto", url: "index.html#equipo=1", tag: "equipo" };
+  }
   return null;
 }
 
