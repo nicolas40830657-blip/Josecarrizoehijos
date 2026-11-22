@@ -32,7 +32,12 @@ const itemsTxt = (items: any[]) => (items || []).map((i) => `${i.nombre} ×${i.n
 
 type Aviso = { usuarios: string[]; app: "equipo" | "cliente" | null; pref: string; title: string; body: string; url: string; tag: string };
 
-async function armar(b: any): Promise<Aviso | null> {
+async function gestores(): Promise<string[]> {
+  const r = await sb.from("perfiles").select("id").in("rol", ["coordinador", "administrador"]).eq("activo", true);
+  return (r.data || []).map((x: any) => x.id);
+}
+
+async function armar(b: any): Promise<Aviso | Aviso[] | null> {
   const { tabla, id, op, quien } = b;
   if (tabla === "prueba") {
     return { usuarios: [id], app: null, pref: "", title: "🔔 ¡Listo!", body: "Las notificaciones funcionan en este celular.", url: "", tag: "prueba" };
@@ -105,7 +110,55 @@ async function armar(b: any): Promise<Aviso | null> {
     const fecha = r?.fecha ? new Date(r.fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long" }) : "";
     return { usuarios: r?.piletero_id ? [r.piletero_id] : await equipoDe(c), app: "equipo", pref: "megusta", title: `❤️ A ${c.nombre} le gustó cómo quedó la pileta`, body: fecha ? `Le dio me gusta a la foto de la visita del ${fecha}.` : "Le dio me gusta a una foto de su pileta.", url: `index.html#fotos=${c.id}`, tag: `gusta-${g.foto_id}` };
   }
+  if (tabla === "solicitudes") {
+    const s = await uno("solicitudes", id);
+    if (!s) return null;
+    if (op === "INSERT") {
+      const ref = s.referido_por ? await uno("clientes", s.referido_por, "nombre") : null;
+      return { usuarios: await gestores(), app: "equipo", pref: "solicitudes", title: `🆕 Nueva solicitud: ${s.nombre}`, body: corto(`${s.direccion}${ref ? ` · la recomendó ${ref.nombre}` : ""}`), url: `index.html#solicitud=${s.id}`, tag: `sol-${s.id}` };
+    }
+    if (s.estado === "aceptada") {
+      const c = s.cliente_id ? await uno("clientes", s.cliente_id, "piletero_id") : null;
+      const pil = c?.piletero_id ? await uno("perfiles", c.piletero_id, "nombre") : null;
+      return { usuarios: [s.usuario_id], app: "cliente", pref: "", title: "🎉 ¡Listo! Ya tenés tu piletero", body: `${primer(pil?.nombre) || "Tu piletero"} se va a encargar de tu pileta. Entrá a la app para verla.`, url: "cliente.html#inicio", tag: "solicitud" };
+    }
+    if (s.estado === "rechazada") {
+      return { usuarios: [s.usuario_id], app: "cliente", pref: "", title: "Sobre tu pedido de servicio", body: corto(s.respuesta || "Por ahora no podemos tomar tu pileta. ¡Gracias por escribirnos!"), url: "cliente.html", tag: "solicitud" };
+    }
+    return null;
+  }
+  if (tabla === "premios") {
+    const pz = await uno("premios", id);
+    if (!pz) return null;
+    const quien = await uno("clientes", pz.cliente_id), nuevo = await uno("clientes", pz.referido_id, "nombre");
+    if (!quien) return null;
+    const avisos: Aviso[] = [];
+    if (quien.usuario_id) avisos.push({ usuarios: [quien.usuario_id], app: "cliente", pref: "", title: "🎁 ¡Ganaste un premio!", body: corto(`Gracias por recomendar a ${primer(nuevo?.nombre) || "un vecino"}: ${pz.texto}. Tu piletero te lo lleva.`), url: "cliente.html#inicio", tag: `premio-${pz.id}` });
+    avisos.push({ usuarios: await equipoDe(quien), app: "equipo", pref: "", title: `🎁 Premio para ${quien.nombre}`, body: corto(`Recomendó a ${nuevo?.nombre || "un cliente"} y ya tuvo su primera visita. Llevale: ${pz.texto}`), url: `index.html#chat=${quien.id}`, tag: `premio-${pz.id}` });
+    return avisos;
+  }
   return null;
+}
+
+async function mandar(a: Aviso) {
+  if (!a.usuarios.length) return { enviados: 0, de: 0, errores: [] as string[] };
+  let q = sb.from("push_subs").select().in("usuario_id", a.usuarios);
+  if (a.app) q = q.eq("app", a.app);
+  const subs = ((await q).data || []).filter((s: any) => !a.pref || s.prefs?.[a.pref] !== false);
+  const payload = JSON.stringify({ title: a.title, body: a.body, url: a.url, tag: a.tag });
+  let ok = 0;
+  const errores: string[] = [];
+  await Promise.all(subs.map(async (s: any) => {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400, urgency: "high" });
+      ok++;
+      await sb.from("push_subs").update({ usado: new Date().toISOString() }).eq("id", s.id);
+    } catch (e: any) {
+      errores.push(`${e.statusCode || ""} ${e.body || e.message}`.slice(0, 200));
+      if (e.statusCode === 404 || e.statusCode === 410) await sb.from("push_subs").delete().eq("id", s.id);
+    }
+  }));
+  return { enviados: ok, de: subs.length, errores };
 }
 
 Deno.serve(async (req) => {
@@ -113,25 +166,11 @@ Deno.serve(async (req) => {
     const c = await config();
     if (req.headers.get("x-secreto") !== c.secreto) return new Response("no", { status: 401 });
     const b = await req.json();
-    const a = await armar(b);
-    if (!a || !a.usuarios.length) return Response.json({ enviados: 0 });
-    let q = sb.from("push_subs").select().in("usuario_id", a.usuarios);
-    if (a.app) q = q.eq("app", a.app);
-    const subs = ((await q).data || []).filter((s: any) => !a.pref || s.prefs?.[a.pref] !== false);
-    const payload = JSON.stringify({ title: a.title, body: a.body, url: a.url, tag: a.tag });
-    let ok = 0;
-    const errores: string[] = [];
-    await Promise.all(subs.map(async (s: any) => {
-      try {
-        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400, urgency: "high" });
-        ok++;
-        await sb.from("push_subs").update({ usado: new Date().toISOString() }).eq("id", s.id);
-      } catch (e: any) {
-        errores.push(`${e.statusCode || ""} ${e.body || e.message}`.slice(0, 200));
-        if (e.statusCode === 404 || e.statusCode === 410) await sb.from("push_subs").delete().eq("id", s.id);
-      }
-    }));
-    return Response.json({ enviados: ok, de: subs.length, errores });
+    const r = await armar(b);
+    const lista = !r ? [] : Array.isArray(r) ? r : [r];
+    const res = [];
+    for (const a of lista) res.push(await mandar(a));
+    return Response.json(res.length === 1 ? res[0] : { avisos: res });
   } catch (e: any) {
     return Response.json({ error: e.message }, { status: 500 });
   }

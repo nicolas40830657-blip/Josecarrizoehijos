@@ -54,6 +54,23 @@ main{flex:1;position:relative;overflow:hidden}
 @keyframes lwGira{from{transform:translateY(100%) scale(.6);opacity:0}to{transform:none;opacity:1}}
 .lwN{font-weight:800;font-size:14px;color:#e0245e}.likesW.cero .lwN{color:#8a97a8}
 .chk2{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--g600,#5b6b80);margin:-4px 0 12px}.chk2 input{width:20px;height:20px;margin:0;flex:none;-webkit-appearance:checkbox;appearance:auto;min-height:0;padding:0;border:0;box-shadow:none}
+.solc{background:#fff;border-radius:18px;padding:12px 14px;margin:0 0 10px;box-shadow:var(--sh);border-left:4px solid #F76707}.solc.hecha{border-left-color:#cfd8e3;opacity:.85}
+.solc small{display:block;margin-top:3px;color:var(--g600,#5b6b80);font-size:13.5px}.solc .com{font-style:italic}.solc .refd{color:#1864AB;font-weight:600}
+.solh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.solh b{font-size:16.5px}.solh .t{font-size:12px;color:#8a97a8}
+.solb{display:flex;gap:8px;margin-top:10px}.solb .btn{flex:1;margin:0;text-align:center;text-decoration:none}
+.solc .est.aceptada{color:#2B8A3E;font-weight:700}.solc .est.rechazada{color:#C92A2A}
+.btn.verapp{background:linear-gradient(135deg,#1F63E8,#0B2545);color:#fff;display:flex;flex-direction:column;align-items:center;line-height:1.2;padding-top:12px;padding-bottom:12px}.btn.verapp small{font-weight:500;opacity:.8;font-size:12.5px;margin-top:2px}
+.fonos{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 6px 14px;margin:0 -6px;scrollbar-width:none}.fonos::-webkit-scrollbar{display:none}
+.fono{flex:0 0 78%;max-width:300px;scroll-snap-align:center;background:#F4F7FB;border-radius:30px;border:7px solid #0B2545;padding:0 0 12px;overflow:hidden;box-shadow:0 12px 30px #0b254533}
+.fonoH{background:linear-gradient(135deg,#0B2545,#1b4a86);color:#fff;padding:12px 14px 10px}.fonoH small{display:block;font-size:11px;opacity:.75;letter-spacing:.5px;text-transform:uppercase}.fonoH b{font-size:17px}
+.fonoF{position:relative;margin:10px;border-radius:18px;overflow:hidden;aspect-ratio:4/3;background:#dde6f0}.fonoF img{width:100%;height:100%;object-fit:cover;display:block}
+.fonoV{height:100%;display:grid;place-items:center;align-content:center;font-size:34px;color:#8a97a8}.fonoV small{font-size:13px}
+.fonoL{position:absolute;right:10px;bottom:34px;font-size:22px;filter:drop-shadow(0 1px 3px #0007)}.fonoL.off{color:#fff}
+.fonoAD{position:absolute;left:8px;top:8px;background:#ffffffe6;color:#0b2545;font-size:11px;font-weight:700;border-radius:999px;padding:4px 8px}
+.fonoC{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,#0009);color:#fff;font-size:12px;padding:16px 10px 7px}
+.fonoE{display:flex;gap:10px;align-items:center;background:#fff;margin:0 10px 8px;border-radius:14px;padding:9px 11px}.fonoE .ic{width:28px;height:28px;border-radius:50%;background:#EBFBEE;color:#2B8A3E;display:grid;place-items:center;font-weight:800}.fonoE b{font-size:14px;display:block}.fonoE small{font-size:12px;color:#5b6b80}
+.fonoS{display:flex;justify-content:space-between;margin:0 14px 8px;font-size:12.5px;font-weight:600}.fonoS .ok{color:#2B8A3E}.fonoS .no{color:#D9480F}
+.fono .btn{margin:0 10px;width:calc(100% - 20px)}
 .chatc{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:#fff;border-radius:16px;padding:9px 12px;box-shadow:0 1px 3px rgba(11,37,69,.08);margin:0 0 6px;border:0;font:inherit;color:inherit;cursor:pointer}
 .chatc .av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px}
 .chatc b{font-size:15.5px}.chatc small{font-size:13px}.crow .msgN{display:inline-block;margin:3px 6px 0 0;font-size:12px}
@@ -315,6 +332,7 @@ nav button{position:relative}
       <div id="cliMain"><div id="pedBox"></div><div id="cal"></div><div id="dayList"></div><h3 id="todos">Todos los clientes</h3><div id="chipsList"></div>
       <input id="q" placeholder="Buscar por nombre o dirección">
       <div id="listC"></div></div>
+      <div id="solV" hidden></div>
       <div id="chatsV" hidden><div id="chipsChat"></div><input id="qChat" placeholder="Buscar un chat"><div id="listChats"></div></div>
       <button class="fab" id="fabC" data-a="nuevoC">+ Nuevo cliente</button>
     </section>
@@ -351,7 +369,7 @@ const CFG = { url: 'https://gqromisweyqvdeeahxnl.supabase.co', key: 'sb_publisha
 
 const sb = CFG.url ? supabase.createClient(CFG.url, CFG.key) : null;
 const COLORS = ['#2563EB', '#0E9F6E', '#F59E0B', '#DB2777', '#7C3AED', '#0891B2'];
-const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
+const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], sol: [], pz: [], aj: {}, mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 const P = id => S.p.find(x => x.id === id);
@@ -478,6 +496,9 @@ function demo() {
     { id: 'm5', cliente_id: 'c3', de_cliente: false, texto: 'Sí, el jueves te lo llevo 👍', creado: ago(60 * 4), leido_equipo: true }
   ];
   S.c[2].usuario_id = 'u-demo3'; S.c[1].usuario_id = 'u-demo2';
+  S.sol = [{ id: 'so1', nombre: 'Laura Gómez', telefono: '223 155 998877', direccion: 'Güemes 3100', lat: null, lng: null, tamano: 'Mediana (4 a 7 m)', frecuencia: 'Semanal', comentario: 'El agua está un poco verde', referido_por: 'c1', estado: 'pendiente', creado: new Date(Date.now() - 25 * 60000).toISOString() }];
+  S.aj = { premio_recomendar: { activo: true, texto: 'Un clarificador de regalo' } };
+  S.pz = [{ id: 'pz1', cliente_id: 'c1', referido_id: 'c3', texto: 'Un clarificador de regalo', estado: 'disponible', creado: new Date().toISOString() }];
   S.mgl = [['c1', 30], ['c3', 60 * 26], ['c2', 60 * 50], ['c1', 60 * 24 * 9]].map(([c, m], i) => ({ id: 'g' + i, foto_id: 'f' + i, cliente_id: c, piletero_id: 'p1', creado: new Date(Date.now() - m * 60000).toISOString() })); S.mgCargado = true;
   S.av = [{ id: 'av1', cliente_id: 'c1', aviso: 'llave', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }, { id: 'av2', cliente_id: 'c2', aviso: 'saltear', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }];
   S.msg = S.ms.filter(m => m.de_cliente && !m.leido_equipo);
@@ -493,18 +514,23 @@ async function load() {
 // ── Portal de clientes: mensajes sin leer, pedidos y recomendaciones
 async function cargarPortal(silencio) {
   if (!sb) return;
-  const [m, pe, re, rc, mg, av] = await Promise.all([
+  const [m, pe, re, rc, mg, av, so, pz, aj] = await Promise.all([
     sb.from('mensajes').select('id,cliente_id,creado,texto,foto').eq('de_cliente', true).eq('leido_equipo', false).order('creado', { ascending: false }),
     sb.from('pedidos').select().order('creado', { ascending: false }).limit(150),
     sb.from('recomendaciones').select().eq('estado', 'activa'),
     sb.rpc('resumen_chats'),
     sb.from('me_gusta').select('id,foto_id,cliente_id,creado,piletero_id').order('creado', { ascending: false }).limit(500),
-    sb.from('mensajes').select('id,cliente_id,aviso,aviso_desde,aviso_hasta,creado').not('aviso', 'is', null).gte('aviso_hasta', ymd(new Date(Date.now() - 864e5)))
+    sb.from('mensajes').select('id,cliente_id,aviso,aviso_desde,aviso_hasta,creado').not('aviso', 'is', null).gte('aviso_hasta', ymd(new Date(Date.now() - 864e5))),
+    sb.from('solicitudes').select().order('creado', { ascending: false }).limit(100),
+    sb.from('premios').select().order('creado', { ascending: false }).limit(200),
+    sb.from('ajustes').select()
   ]);
-  const antes = { m: S.msg.length, p: S.ped.filter(x => x.estado === 'nuevo').length };
+  const antes = { m: S.msg.length, p: S.ped.filter(x => x.estado === 'nuevo').length, s: S.sol.filter(x => x.estado === 'pendiente').length };
+  if (!so.error) S.sol = so.data || []; if (!pz.error) S.pz = pz.data || []; if (!aj.error) { S.aj = {}; (aj.data || []).forEach(x => { S.aj[x.clave] = x.valor; }); }
   if (!m.error) S.msg = m.data; if (!pe.error) S.ped = pe.data; if (!re.error) S.rec = re.data; if (!rc.error) S.rc = rc.data || []; if (!mg.error) { const antes = new Set(S.mgl.map(x => x.id)), nuevos = silencio || !S.mgl.length && !S.mgCargado ? [] : (mg.data || []).filter(x => !antes.has(x.id) && x.piletero_id === S.me?.id); S.mgl = mg.data || []; S.mgCargado = true; S.mg = new Set(S.mgl.map(x => x.foto_id)); if (nuevos.length) { son('plin'); const c = S.c.find(x => x.id === nuevos[0].cliente_id); toast(`❤️ A ${c ? c.nombre : 'un cliente'} le gustó cómo quedó la pileta`); } } if (!av.error) S.av = av.data || [];
   if (silencio || !S.me) return;
   const nm = S.msg.length > antes.m, np = S.ped.filter(x => x.estado === 'nuevo').length > antes.p;
+  if (isGestor() && S.sol.filter(x => x.estado === 'pendiente').length > antes.s) { son('pedido'); toast('🆕 Nueva solicitud de servicio'); }
   if (nm || np) { son(np ? 'pedido' : 'plin'); toast(np ? '🛒 Llegó un pedido nuevo de un cliente' : '💬 Tenés un mensaje nuevo de un cliente'); renderAll(); }
 }
 async function put(k, table, row) {
@@ -673,7 +699,7 @@ function quizasTourEquipo() {
   esperar();
 }
 // ── Notificaciones y sonidos
-const PUSH = { sb, app: 'equipo', toast: t => toast(t), titulo: 'Activá las notificaciones', corto: 'Mensajes y pedidos de clientes al instante.', texto: 'Enterate al instante cuando un cliente te escribe o te hace un pedido, aunque tengas la app cerrada.', opciones: [['mensajes', 'Mensajes de clientes'], ['pedidos', 'Pedidos de la tienda', 'Nuevos y cancelados'], ['megusta', 'Me gusta de clientes', 'Cuando a un cliente le gusta cómo quedó la pileta']], como: () => sheet(`<h2>Instalá la app</h2><p class="sub">En iPhone, las notificaciones llegan solo si la app está en tu pantalla de inicio.</p>${JCPush.pasosIOS}<button class="btn sec" data-a="cerrarSh">Entendido</button>`), cambio: () => { JCPush.montarAviso($('#pushAviso'), PUSH); montarPush(); } };
+const PUSH = { sb, app: 'equipo', toast: t => toast(t), titulo: 'Activá las notificaciones', corto: 'Mensajes y pedidos de clientes al instante.', texto: 'Enterate al instante cuando un cliente te escribe o te hace un pedido, aunque tengas la app cerrada.', opciones: [['mensajes', 'Mensajes de clientes'], ['pedidos', 'Pedidos de la tienda', 'Nuevos y cancelados'], ['megusta', 'Me gusta de clientes', 'Cuando a un cliente le gusta cómo quedó la pileta'], ['solicitudes', 'Solicitudes nuevas', 'Solo coordinadores: alguien pidió su piletero']], como: () => sheet(`<h2>Instalá la app</h2><p class="sub">En iPhone, las notificaciones llegan solo si la app está en tu pantalla de inicio.</p>${JCPush.pasosIOS}<button class="btn sec" data-a="cerrarSh">Entendido</button>`), cambio: () => { JCPush.montarAviso($('#pushAviso'), PUSH); montarPush(); } };
 function montarPush() { if (window.JCPush) JCPush.montar($('#pushBox'), PUSH); }
 const son = n => window.JCSon && JCSon.play(n);
 async function abrirDestino(url) {
@@ -684,6 +710,7 @@ async function abrirDestino(url) {
   if (k === 'chat' && S.c.some(c => c.id === id)) { go('mapa'); return openChat(id); }
   if (k === 'pedido' && S.ped.some(p => p.id === id)) { renderAll(); return verPedido(id); }
   if (k === 'fotos' && S.c.some(c => c.id === id)) return verHist(id);
+  if (k === 'solicitud') { S.ctab = 'sol'; go('clientes'); return renderClients(); }
 }
 if (window.JCPush) JCPush.onAbrir(u => abrirDestino(u).catch(e => toast(e.message)));
 
@@ -712,10 +739,12 @@ function renderMap() {
 // ── Vistas
 const chips = () => !isGestor() ? '' : `<div class="chips"><button class="chip ${!S.F ? 'on' : ''}" data-f="">Todos</button>${pileteros().map(p => `<button class="chip ${S.F === p.id ? 'on' : ''}" data-f="${p.id}"><i class="dot" style="background:${p.color}"></i>${esc(p.nombre)}</button>`).join('')}</div>`;
 function renderClients() {
-  const ch = S.ctab === 'chats', nl = chatsRes().filter(x => x.sin_leer > 0).length;
-  $('#segC').innerHTML = `<button class="chip ${ch ? '' : 'on'}" data-a="ctab" data-id="cli">Clientes</button><button class="chip ${ch ? 'on' : ''}" data-a="ctab" data-id="chats">💬 Chats${nl ? `<i class="nb">${nl}</i>` : ''}</button>`;
-  $('#cliMain').hidden = ch; $('#chatsV').hidden = !ch; $('#fabC').hidden = ch;
+  if (S.ctab === 'sol' && !isGestor()) S.ctab = 'cli';
+  const ch = S.ctab === 'chats', so = S.ctab === 'sol', nl = chatsRes().filter(x => x.sin_leer > 0).length, ns = solPend().length;
+  $('#segC').innerHTML = `<button class="chip ${ch || so ? '' : 'on'}" data-a="ctab" data-id="cli">Clientes</button><button class="chip ${ch ? 'on' : ''}" data-a="ctab" data-id="chats">💬 Chats${nl ? `<i class="nb">${nl}</i>` : ''}</button>` + (isGestor() ? `<button class="chip ${so ? 'on' : ''}" data-a="ctab" data-id="sol">🆕 Solicitudes${ns ? `<i class="nb">${ns}</i>` : ''}</button>` : '');
+  $('#cliMain').hidden = ch || so; $('#chatsV').hidden = !ch; $('#solV').hidden = !so; $('#fabC').hidden = ch || so;
   if (ch) return renderChats();
+  if (so) return renderSol();
   const q = $('#q').value.toLowerCase();
   const l = vis().filter(c => (c.nombre + ' ' + c.direccion).toLowerCase().includes(q));
   $('#listC').innerHTML = l.length ? l.map(card).join('')
@@ -733,6 +762,78 @@ const RESP = ['Paso mañana 👍', 'Ya quedó lista 👌', 'Te dejé el producto
 const AVI = { saltear: ['🚫', 'Pidió que no vayas', 'no'], viaje: ['✈️', 'Está de viaje: no hace falta ir', 'no'], llave: ['🔑', 'La llave está con el vecino', ''] };
 const avisosDe = (cid, k) => S.av.filter(a => a.cliente_id === cid && (!k || (a.aviso_desde <= k && a.aviso_hasta >= k)));
 const avisoVisita = (cid, k) => avisosDe(cid, k).map(a => `<small class="avv ${AVI[a.aviso][2]}">${AVI[a.aviso][0]} ${AVI[a.aviso][1]}</small>`).join('');
+// ── Solicitudes de servicio (personas que pidieron su piletero desde la app)
+const solPend = () => S.sol.filter(x => x.estado === 'pendiente');
+const telWa = t => { const d = (t || '').replace(/\D/g, ''); return d ? 'https://wa.me/' + (d.startsWith('54') ? d : '549' + d.replace(/^0/, '')) : ''; };
+const mapaLink = x => x.lat != null ? `https://www.google.com/maps?q=${x.lat},${x.lng}` : `https://www.google.com/maps/search/${encodeURIComponent(x.direccion + ', Mar del Plata')}`;
+function solHTML(x) {
+  const ref = x.referido_por ? clN(x.referido_por) : '', pend = x.estado === 'pendiente';
+  return `<div class="solc ${pend ? '' : 'hecha'}"><div class="solh"><b>${esc(x.nombre)}</b><span class="t">${haceMin(x.creado)}</span></div>
+    <small>📍 ${esc(x.direccion)}${x.lat != null ? ' · ubicación exacta ✓' : ''}</small>
+    <small>📞 ${esc(x.telefono)}${x.tamano ? ' · 🏊 ' + esc(x.tamano) : ''}${x.frecuencia ? ' · ' + esc(x.frecuencia) : ''}</small>
+    ${x.comentario ? `<small class="com">“${esc(x.comentario)}”</small>` : ''}
+    ${ref ? `<small class="refd">💙 La recomendó ${esc(ref)}</small>` : ''}
+    ${pend ? `<div class="solb"><a class="btn sm sec" href="${mapaLink(x)}" target="_blank" rel="noopener">Ver en el mapa</a>${telWa(x.telefono) ? `<a class="btn sm sec" href="${telWa(x.telefono)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</div><div class="solb"><button class="btn sm" data-a="aceptarSol" data-id="${x.id}">✓ Aceptar y asignar</button><button class="btn sm sec" data-a="rechazarSol" data-id="${x.id}">Rechazar</button></div>`
+      : `<small class="est ${x.estado}">${x.estado === 'aceptada' ? '✓ Aceptada' + (x.cliente_id && clN(x.cliente_id) ? ' · ' + esc(nom((S.c.find(c => c.id === x.cliente_id) || {}).piletero_id)) : '') : '✕ Rechazada' + (x.respuesta ? ': ' + esc(x.respuesta) : '')}</small>`}</div>`;
+}
+function renderSol() {
+  const p = solPend(), h = S.sol.filter(x => x.estado !== 'pendiente').slice(0, 15);
+  $('#solV').innerHTML = `<p class="sub">Personas que pidieron su piletero desde la app (muchas llegan por recomendación de un cliente). Al aceptar, se crea el cliente y su app se habilita sola.</p>` +
+    (p.length ? p.map(solHTML).join('') : '<p class="note">No hay solicitudes nuevas. Cuando alguien pida su piletero, te llega una notificación y aparece acá.</p>') +
+    (h.length ? '<h3>Respondidas</h3>' + h.map(solHTML).join('') : '');
+}
+function aceptarSol(id) {
+  const x = S.sol.find(z => z.id === id); if (!x) return;
+  const fr = FREQ.includes(x.frecuencia) ? x.frecuencia : 'Semanal';
+  sheet(`<h2>Aceptar a ${esc(x.nombre)}</h2><p class="sub">Se crea el cliente con su app ya habilitada y le llega una notificación.</p><label>Dirección<input id="saD" value="${esc(x.direccion)}"></label>${x.lat != null ? '<p class="note" style="margin-top:-4px">📍 Mandó su ubicación exacta: el pin queda donde está la pileta.</p>' : ''}<label>Lo atiende<select id="saP">${pileteros().map(p => `<option value="${p.id}" ${p.id === S.me.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>Valor de cada visita ($)<input id="saV" type="number" inputmode="decimal" min="0" value="0"></label><label>Frecuencia<select id="saF">${opts(FREQ, fr)}</select></label><label>Día habitual<select id="saY">${opts(DIAS, 'Sin día fijo')}</select></label><button class="btn" data-a="okAceptarSol" data-id="${x.id}">Aceptar y crear cliente</button><button class="btn sec" data-a="ctabSol">Volver</button>`);
+}
+function rechazarSol(id) {
+  const x = S.sol.find(z => z.id === id); if (!x) return;
+  sheet(`<h2>Rechazar a ${esc(x.nombre)}</h2><p class="sub">Le llega este mensaje en la app:</p><label>Mensaje<textarea id="srM" rows="3" maxlength="300">Hola ${esc(x.nombre.split(' ')[0])}, por ahora no llegamos a tu zona. ¡Gracias por escribirnos! Te avisamos si se libera un lugar.</textarea></label><button class="btn" data-a="okRechazarSol" data-id="${x.id}">Rechazar y avisarle</button><button class="btn sec" data-a="ctabSol">Volver</button>`);
+}
+// ── Premio por recomendar (lo configura el coordinador; se da con la primera visita del recomendado)
+const premioCfg = () => S.aj.premio_recomendar || { activo: false, texto: '' };
+const premiosDe = cid => S.pz.filter(p => p.cliente_id === cid);
+function premioBox() {
+  if (!isGestor()) return '';
+  const c = premioCfg();
+  return `<h3>🎁 Premio por recomendar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Cuando un cliente recomienda a alguien y esa persona tiene su <b>primera visita hecha</b>, el que recomendó gana este premio. Le llega una notificación a él y a su piletero para que se lo lleve.</p><label class="chk2" style="margin:0 0 8px"><input type="checkbox" id="prmOn" ${c.activo ? 'checked' : ''}> Dar premio por recomendar</label><label>¿Qué gana?<input id="prmT" maxlength="80" value="${esc(c.texto || '')}" placeholder="Ej: un clarificador de regalo · 10% en su próximo pedido"></label><button class="btn sm" data-a="guardarPremio">Guardar premio</button></div>`;
+}
+function premiosFicha(c) {
+  const mios = premiosDe(c.id), quien = c.referido_por ? S.c.find(x => x.id === c.referido_por) : null, rec = S.c.filter(x => x.referido_por === c.id);
+  if (!mios.length && !quien && !rec.length) return '';
+  return `<h3>Recomendaciones</h3>` + (quien ? `<p class="sub" style="margin:0 0 6px">💙 Lo recomendó <b>${esc(quien.nombre)}</b></p>` : '') +
+    (rec.length ? `<p class="sub" style="margin:0 0 6px">Recomendó a: ${rec.map(x => esc(x.nombre)).join(', ')}</p>` : '') +
+    mios.map(p => `<div class="row"><div class="grow"><b>🎁 ${esc(p.texto)}</b><small>Por recomendar a ${esc(clN(p.referido_id) || 'un cliente')} · ${p.estado === 'entregado' ? '✓ entregado' : 'para entregar'}</small></div>${p.estado === 'disponible' ? `<button class="btn sm" data-a="entregarPremio" data-id="${p.id}">Entregado</button>` : ''}</div>`).join('');
+}
+// ── "Ver app Mi pileta": cómo ven la app mis clientes (con las fotos que subimos)
+let verAppTodos = false;
+async function verApp() {
+  const lista = (verAppTodos ? S.c : misCs()).slice();
+  if (!lista.length) return toast('Todavía no tenés clientes asignados');
+  sheet(`<h2>📱 Así ven la app tus clientes</h2><p class="note">Cargando fotos…</p>`);
+  let fotos = [];
+  if (sb) {
+    const ids = lista.map(c => c.id);
+    for (let i = 0; i < ids.length; i += 80) {
+      const x = await sb.from('fotos').select('id,cliente_id,realizada_id,data,creado,tipo').in('cliente_id', ids.slice(i, i + 80)).order('creado', { ascending: false }).limit(400);
+      if (!x.error) fotos = fotos.concat(x.data);
+    }
+  } else fotos = S.fo || [];
+  const ultF = {}, antesF = {};
+  fotos.forEach(f => { if (f.tipo === 'antes') { if (!antesF[f.realizada_id]) antesF[f.realizada_id] = f; } else if (!ultF[f.cliente_id]) ultF[f.cliente_id] = f; });
+  const ultR = id => S.r.filter(r => r.cliente_id === id).sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''))[0];
+  lista.sort((a, b) => (!!b.usuario_id - !!a.usuario_id) || ((ultF[b.id] || {}).creado || '').localeCompare((ultF[a.id] || {}).creado || ''));
+  const tel = c => { const f = ultF[c.id], r = ultR(c.id), likes = S.mgl.filter(g => g.cliente_id === c.id).length, quien = r ? (S.p.find(p => p.id === r.piletero_id) || {}).nombre : null;
+    return `<div class="fono"><div class="fonoH"><small>Mi pileta</small><b>${esc(c.nombre)}</b></div>
+      <div class="fonoF">${f ? `<img src="${esc(f.data)}" alt="Foto de la pileta" loading="lazy">${S.mg.has(f.id) ? '<span class="fonoL">❤️</span>' : '<span class="fonoL off">♡</span>'}${antesF[f.realizada_id] ? '<span class="fonoAD">↔ Antes y después</span>' : ''}<span class="fonoC">Estado actual · ${corto(new Date(f.creado))}</span>` : '<div class="fonoV">📷<small>Todavía sin foto</small></div>'}</div>
+      <div class="fonoE"><span class="ic">${r ? '✓' : '·'}</span><div><b>${r ? `Pasó ${esc((quien || 'el piletero').split(' ')[0])}` : 'Sin visitas registradas'}</b><small>${r ? new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}</small></div></div>
+      <div class="fonoS">${c.usuario_id ? '<span class="ok">📱 Usa la app</span>' : '<span class="no">Todavía no usa la app</span>'}${likes ? `<span>❤️ ${likes}</span>` : ''}</div>
+      <button class="btn sm sec" data-a="hist" data-id="${c.id}">Ver historial y fotos</button></div>`; };
+  const conApp = lista.filter(c => c.usuario_id).length, conFoto = lista.filter(c => ultF[c.id]).length;
+  sheet(`<h2>📱 Así ven la app tus clientes</h2><p class="sub">${conApp} de ${lista.length} usan la app · ${conFoto} con foto. Deslizá para pasar de un cliente a otro.</p>${isGestor() ? `<label class="chk2"><input type="checkbox" ${verAppTodos ? 'checked' : ''} data-a="verAppTodos"> Ver los clientes de todo el equipo</label>` : ''}<div class="fonos" id="fonos">${lista.map(tel).join('')}</div><p class="sub" style="text-align:center" id="fonoN">1 de ${lista.length}</p><a class="btn sec" href="cliente.html?demo" target="_blank" rel="noopener">Probar la app de clientes completa (demo)</a><button class="btn sec" data-a="cerrar">Cerrar</button>`);
+  const fs = $('#fonos'); fs.addEventListener('scroll', () => { const i = Math.round(fs.scrollLeft / (fs.firstElementChild.offsetWidth + 14)); $('#fonoN').textContent = `${Math.min(i + 1, lista.length)} de ${lista.length}`; }, { passive: true });
+}
 // ── Chats con clientes
 function chatsRes() {
   let l = S.rc;
@@ -782,7 +883,7 @@ function verLikes() {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn sec" data-a="tourEq" style="margin-top:14px">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush();
 }
 function renderCal() {
@@ -882,8 +983,8 @@ const nuevos = id => S.msg.filter(m => m.cliente_id === id).length;
 const pedAbiertos = id => S.ped.filter(p => (!id || p.cliente_id === id) && (p.estado === 'nuevo' || p.estado === 'confirmado'));
 const misCli = id => { const c = S.c.find(x => x.id === id); return c && (isGestor() || c.piletero_id === S.me?.id); };
 const avisoCliente = c => {
-  const n = nuevos(c.id), pa = pedAbiertos(c.id).length;
-  return (n ? `<small class="msgN">💬 ${n} ${n === 1 ? 'mensaje nuevo' : 'mensajes nuevos'} del cliente</small>` : '') + (pa ? `<small class="msgN">🛒 ${pa} ${pa === 1 ? 'pedido' : 'pedidos'} sin entregar</small>` : '') + avisoVentas(c);
+  const n = nuevos(c.id), pa = pedAbiertos(c.id).length, pr = premiosDe(c.id).filter(p => p.estado === 'disponible').length;
+  return (pr ? `<small class="msgN">🎁 Premio para entregar</small>` : '') + (n ? `<small class="msgN">💬 ${n} ${n === 1 ? 'mensaje nuevo' : 'mensajes nuevos'} del cliente</small>` : '') + (pa ? `<small class="msgN">🛒 ${pa} ${pa === 1 ? 'pedido' : 'pedidos'} sin entregar</small>` : '') + avisoVentas(c);
 };
 const avisoVentas = c => {
   const vs = ventasDe(c.id); if (!vs.length) return '';
@@ -1003,7 +1104,8 @@ function renderAll() {
 }
 function renderPortal() {
   const pa = pedAbiertos().filter(p => misCli(p.cliente_id)), nm = S.msg.filter(m => misCli(m.cliente_id)).length, nu = pa.filter(p => p.estado === 'nuevo').length;
-  const b = $('#bdgCli'); b.hidden = !(nm + nu); b.textContent = nm + nu;
+  const ns = isGestor() ? solPend().length : 0;
+  const b = $('#bdgCli'); b.hidden = !(nm + nu + ns); b.textContent = nm + nu + ns;
   renderAvisosMapa(pa);
   $('#pedBox').innerHTML = pa.length ? `<button class="pedbar" data-a="pedidos"><i>🛒</i><div class="grow"><b>${pa.length} ${pa.length === 1 ? 'pedido de cliente' : 'pedidos de clientes'} para entregar</b><small>${nu ? nu + ' sin confirmar · ' : ''}${peso(pa.reduce((a, p) => a + (+p.total || 0), 0))} en total</small></div><span>›</span></button>` : '';
 }
@@ -1013,6 +1115,7 @@ function renderAvisosMapa(pa) {
   S.msg.filter(m => misCli(m.cliente_id)).forEach(m => { if (!ult[m.cliente_id] || m.creado > ult[m.cliente_id].creado) ult[m.cliente_id] = m; });
   const items = [
     ...Object.values(ult).map(m => ({ f: m.creado, h: `<button class="avm" data-a="chat" data-id="${m.cliente_id}"><span class="ic">💬</span><span class="grow"><b>${esc(clN(m.cliente_id) || 'Cliente')}</b><small>${m.texto ? esc(m.texto) : m.foto ? '📷 Te mandó una foto' : 'Mensaje nuevo'}${nuevos(m.cliente_id) > 1 ? ' · ' + nuevos(m.cliente_id) + ' mensajes' : ''}</small></span><i>${haceMin(m.creado)}</i></button>` })),
+    ...(isGestor() ? solPend() : []).map(x => ({ f: x.creado, h: `<button class="avm" data-a="verSol" data-id="${x.id}"><span class="ic n" style="background:#FFF4E6">🆕</span><span class="grow"><b>Solicitud de ${esc(x.nombre)}</b><small>${esc(x.direccion)}${x.referido_por ? ' · la recomendó ' + esc(clN(x.referido_por) || 'un cliente') : ''}</small></span><span class="t">${haceMin(x.creado)}</span></button>` })),
     ...(pa || []).filter(p => p.estado === 'nuevo').map(p => ({ f: p.creado, h: `<button class="avm" data-a="verPedido" data-id="${p.id}"><span class="ic n">🛒</span><span class="grow"><b>Pedido de ${esc(clN(p.cliente_id) || 'cliente')}</b><small>${(p.items || []).map(i => esc(i.nombre) + ' ×' + i.n).join(', ')} · ${peso(p.total)}</small></span><i>${haceMin(p.creado)}</i></button>` }))
   ].sort((a, b) => (b.f || '').localeCompare(a.f || ''));
   $('#avisosMap').innerHTML = items.slice(0, 3).map(x => x.h).join('') + (items.length > 3 ? `<button class="avm mas" data-a="verChats">Ver ${items.length - 3} más en Chats</button>` : '');
@@ -1077,7 +1180,7 @@ const recsDe = id => S.rec.filter(r => r.cliente_id === id && r.estado === 'acti
 const vendibles = () => [...S.pr.filter(p => p.tienda !== false).map(p => ({ t: 'p', ...p })), ...S.k.filter(k => k.tienda !== false).map(k => ({ t: 'k', ...k }))];
 const fichaPortal = c => {
   const rs = recsDe(c.id), ps = S.ped.filter(p => p.cliente_id === c.id).slice(0, 5);
-  return `<h3>Le avisaste que le faltan</h3>${rs.length ? rs.map(r => { const it = itemDe(r.tipo, r.item_id) || {}; return `<div class="row"><div class="grow"><b>${esc(it.nombre || 'Producto')} ×${r.cantidad}</b><small>${corto(new Date(r.creado))}${r.nota ? ' · ' + esc(r.nota) : ''} · lo ve en su app</small></div><button class="btn sm sec" data-a="quitarRec" data-id="${r.id}">Quitar</button></div>`; }).join('') : '<p class="note">Avisale qué productos se le están terminando: le aparece en su app con el botón para comprarlos.</p>'}<button class="btn sec" data-a="recomendar" data-id="${c.id}">Avisar que le faltan productos</button>` +
+  return premiosFicha(c) + `<h3>Le avisaste que le faltan</h3>${rs.length ? rs.map(r => { const it = itemDe(r.tipo, r.item_id) || {}; return `<div class="row"><div class="grow"><b>${esc(it.nombre || 'Producto')} ×${r.cantidad}</b><small>${corto(new Date(r.creado))}${r.nota ? ' · ' + esc(r.nota) : ''} · lo ve en su app</small></div><button class="btn sm sec" data-a="quitarRec" data-id="${r.id}">Quitar</button></div>`; }).join('') : '<p class="note">Avisale qué productos se le están terminando: le aparece en su app con el botón para comprarlos.</p>'}<button class="btn sec" data-a="recomendar" data-id="${c.id}">Avisar que le faltan productos</button>` +
     (ps.length ? '<h3>Pedidos desde la app</h3>' + ps.map(p => pedidoHTML(p, false)).join('') : '');
 };
 function recomendar(id) {
@@ -1266,6 +1369,48 @@ async function act(e) {
   if (d.t) { if (t.closest('nav')) son('tap'); return go(d.t); }
   switch (d.a) {
     case 'cerrarSh': return closeSheet();
+    case 'verSol': S.ctab = 'sol'; closeSheet(); go('clientes'); return renderClients();
+    case 'ctabSol': closeSheet(); S.ctab = 'sol'; return renderClients();
+    case 'aceptarSol': return aceptarSol(d.id);
+    case 'rechazarSol': return rechazarSol(d.id);
+    case 'okAceptarSol': {
+      const x = S.sol.find(z => z.id === d.id), dir = $('#saD').value.trim(), pil = $('#saP').value, fr = $('#saF').value, dia = $('#saY').value;
+      if (!dir) return toast('Escribí la dirección');
+      t.disabled = true;
+      try {
+        let g = x.lat != null && dir === x.direccion ? [x.lat, x.lng] : await geo(dir);
+        if (!g) throw new Error('No encontré esa dirección en el mapa. Probá con calle y número.');
+        if (!sb) throw new Error('En la demo no se pueden aceptar solicitudes');
+        const r = await sb.rpc('aceptar_solicitud', { p_id: x.id, p_piletero: pil, p_valor: +$('#saV').value || 0, p_frecuencia: fr, p_dia: dia, p_lat: g[0], p_lng: g[1], p_direccion: dir });
+        if (r.error) throw new Error(r.error.message);
+        await load();
+        if (DN.includes(dia) && (fr === 'Semanal' || fr === 'Cada 15 días')) {
+          const t2 = new Date(); t2.setDate(t2.getDate() + ((DN.indexOf(dia) - t2.getDay() + 7) % 7));
+          await put('v', 'visitas', { cliente_id: r.data, fecha: ymd(t2), hora: null, repetir: fr === 'Semanal' ? 'semanal' : 'quincenal' });
+        }
+      } finally { t.disabled = false; }
+      son('ok'); closeSheet(); S.ctab = 'sol'; renderAll(); return toast(`¡Listo! ${x.nombre} ya es cliente y le llegó el aviso a su app`);
+    }
+    case 'okRechazarSol': {
+      if (!sb) return toast('En la demo no se pueden rechazar solicitudes');
+      t.disabled = true;
+      try { const r = await sb.rpc('rechazar_solicitud', { p_id: d.id, p_respuesta: $('#srM').value.trim() }); if (r.error) throw new Error(r.error.message); } finally { t.disabled = false; }
+      await cargarPortal(true); closeSheet(); S.ctab = 'sol'; renderAll(); return toast('Solicitud rechazada. Le llegó tu mensaje.');
+    }
+    case 'guardarPremio': {
+      const v = { activo: $('#prmOn').checked, texto: $('#prmT').value.trim() };
+      if (v.activo && !v.texto) return toast('Escribí qué gana el que recomienda');
+      if (sb) { const x = await sb.from('ajustes').upsert({ clave: 'premio_recomendar', valor: v, actualizado: new Date().toISOString() }); if (x.error) throw new Error(x.error.message); }
+      S.aj.premio_recomendar = v; son('ok'); renderPerfil();
+      return toast(v.activo ? 'Premio guardado. Tus clientes ya lo ven al recomendar.' : 'Premio desactivado');
+    }
+    case 'entregarPremio': {
+      if (sb) { const x = await sb.rpc('entregar_premio', { p_id: d.id }); if (x.error) throw new Error(x.error.message); }
+      const pz = S.pz.find(p => p.id === d.id); if (pz) pz.estado = 'entregado';
+      son('ok'); renderAll(); if (pz) openCliente(pz.cliente_id); return toast('Premio marcado como entregado');
+    }
+    case 'verApp': return verApp();
+    case 'verAppTodos': verAppTodos = t.checked; return verApp();
     case 'verLikes': return verLikes();
     case 'cerrarChat': return cerrarChat();
     case 'chatFicha': { const id = S.chat; cerrarChat(); return openCliente(id); }

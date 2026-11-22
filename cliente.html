@@ -84,6 +84,17 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .opc{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:18px;padding:14px;margin:0 0 10px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.opc .ic{font-size:24px}.opc b{flex:1}.opc .fl{color:#8a97a8;font-size:22px}
 .repetir{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:0;border-radius:20px;padding:12px 14px;margin:6px 0 4px;box-shadow:var(--sh);font:inherit;color:inherit;text-align:left;cursor:pointer}.repetir .ic{width:40px;height:40px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-size:20px;flex:none}.repetir b{display:block}.repetir small{display:block;color:var(--g600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.repetir .grow{min-width:0}.repetir .fl{color:#8a97a8;font-size:22px}
 .reco{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#EAF3FF,#fff);border-radius:20px;padding:14px;margin:14px 0;box-shadow:var(--sh)}.reco b{display:block}.reco small{display:block;color:var(--g600);margin-top:2px}
+.muestraBar{position:sticky;top:0;z-index:600;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;background:linear-gradient(135deg,#0B2545,#1b4a86);color:#fff;font-size:13.5px;box-shadow:0 4px 14px #0b254540}
+.muestraBar button{border:0;border-radius:999px;background:#fff;color:#0B2545;font:inherit;font-weight:800;padding:8px 13px;white-space:nowrap;cursor:pointer;animation:latQ 2.4s ease-in-out infinite}
+@keyframes latQ{0%,100%{box-shadow:0 0 0 0 #ffffff88}50%{box-shadow:0 0 0 7px #ffffff00}}
+.btn.quiero{background:linear-gradient(135deg,#F76707,#E8590C);box-shadow:0 8px 22px #e8590c44}
+#solic label,#espera label{display:block;text-align:left;font-size:14px;font-weight:600;color:#d5deec;margin:12px 0 0}
+#solic .btn.quiero,#link .btn.quiero,#espera .btn.quiero{background:linear-gradient(135deg,#F76707,#E8590C);color:#fff}
+#espera h3{color:#fff}#espera .pago{color:var(--ink,#0b2545)}#espera .pago .note{background:#F1F5FA;color:#3d4e63}
+.brand em{font-style:normal;background:#fff;color:#0B2545;border-radius:14px;padding:0 10px}
+#solic input,#solic select,#solic textarea{margin-top:6px}
+.cta{background:linear-gradient(135deg,#FFF4E6,#fff);border:1.5px solid #FFC078;border-radius:20px;padding:16px;text-align:center;margin:8px 0 14px}.cta b{display:block;font-size:18px;margin-bottom:4px}
+.premio{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#EBFBEE,#fff);border:1.5px solid #8CE99A;border-radius:20px;padding:14px;margin:12px 0}.premio .ic{font-size:30px}.premio b{display:block}.premio small{display:block;color:var(--g600);margin-top:2px}
 .legal{font-size:12.5px;color:var(--g600);text-align:center;line-height:1.45;margin:16px 6px 0}.legal a{color:inherit;text-decoration:underline}
 .heroW{position:relative;margin:14px 0 12px}.heroW .hero{margin:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.heroW .cap{padding-right:62px}
 .lk{position:absolute;right:16px;bottom:15px;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent}
@@ -196,15 +207,15 @@ nav button.on{background:var(--grad);color:#fff}
 nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .bdg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:#D72113;color:#fff;font-size:11px;font-style:normal;display:grid;place-items:center;padding:0 5px;letter-spacing:0}
 
-#auth,#link{flex:1;padding:calc(env(safe-area-inset-top) + 56px) 24px 24px;overflow:auto;background:linear-gradient(160deg,#0B2545 0%,#13315C 55%,#24539b 100%);color:#fff}
-#auth>div,#link>div{max-width:440px;margin:0 auto}
+#auth,#link,#solic,#espera{flex:1;padding:calc(env(safe-area-inset-top) + 56px) 24px 24px;overflow:auto;background:linear-gradient(160deg,#0B2545 0%,#13315C 55%,#24539b 100%);color:#fff}
+#auth>div,#link>div,#solic>div,#espera>div{max-width:440px;margin:0 auto}
 .brand{font-size:40px;line-height:1.05;font-weight:600;letter-spacing:-1px;margin-bottom:10px}
-#auth .sub,#link .sub{color:#b9c6da;margin-bottom:28px}
-#auth input,#link input{box-shadow:none}
+#auth .sub,#link .sub,#solic .sub,#espera .sub{color:#b9c6da;margin-bottom:28px}
+#auth input,#link input,#solic input,#solic select,#solic textarea{box-shadow:none}
 #link input#cod{font-size:26px;font-weight:600;letter-spacing:6px;text-align:center;text-transform:uppercase}
-#auth .btn,#link .btn{background:#fff;color:var(--navy)}
-#auth .btn.sec,#link .btn.sec{background:#ffffff1f;color:#fff;box-shadow:none}
-#auth .note,#link .note{background:#ffffff1a;color:#d5deec}
+#auth .btn,#link .btn,#solic .btn,#espera .btn{background:#fff;color:var(--navy)}
+#auth .btn.sec,#link .btn.sec,#solic .btn.sec,#espera .btn.sec{background:#ffffff1f;color:#fff;box-shadow:none}
+#auth .note,#link .note,#espera .note{background:#ffffff1a;color:#d5deec}
 .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:50px;border-radius:9999px;background:#fff!important;background-image:none!important;color:#1f1f1f!important;border:1px solid #dadce0;font-weight:600;font-size:16px;margin-top:4px}.btn-google:active{transform:scale(.98)}.o-sep{display:flex;align-items:center;gap:10px;margin:16px 0 8px;color:#b9c6da;font-size:13px}.o-sep:before,.o-sep:after{content:"";flex:1;height:1px;background:currentColor;opacity:.4}
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:#ffffff1a;border-radius:9999px;padding:4px;margin-bottom:18px}
 .tabs button{padding:10px;border-radius:9999px;font-weight:600;color:#d5deec}
@@ -238,10 +249,29 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
   <input id="cod" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABC123">
   <button class="btn" data-a="vincular">Vincular mi pileta</button>
   <p class="note" style="margin-top:18px">¿No tenés el código? Pedíselo a tu piletero o escribinos por WhatsApp al 223 540-5578.</p>
+  <div class="o-sep"><span>¿Todavía no sos cliente?</span></div>
+  <button class="btn quiero" data-a="quiero">🏊 Quiero mi piletero</button>
   <button class="btn sec" data-a="salir">Cerrar sesión</button>
 </div></section>
 
+<section id="solic" hidden><div>
+  <div class="brand">Pedí tu<br><em>piletero</em></div>
+  <p class="sub">Completá tus datos y te contactamos para coordinar. Cuando te asignemos tu piletero, la app se habilita sola.</p>
+  <label>Tu nombre<input id="sNom" maxlength="80" autocomplete="name" placeholder="Ej: Laura Gómez"></label>
+  <label>Teléfono (WhatsApp)<input id="sTel" type="tel" inputmode="tel" maxlength="30" autocomplete="tel" placeholder="Ej: 223 155 123456"></label>
+  <label>Dirección de la pileta<input id="sDir" maxlength="150" autocomplete="street-address" placeholder="Ej: Güemes 2450, Mar del Plata"></label>
+  <button class="btn sec" data-a="miUbic" id="sUbic">📍 Usar mi ubicación (opcional)</button>
+  <label>Tamaño de la pileta<select id="sTam"><option>No sé</option><option>Chica (hasta 4 m)</option><option>Mediana (4 a 7 m)</option><option>Grande (7 a 10 m)</option><option>Muy grande (más de 10 m)</option></select></label>
+  <label>¿Cada cuánto querés el servicio?<select id="sFre"><option>Semanal</option><option>Cada 15 días</option><option>Mensual</option><option>Una sola vez (puesta a punto)</option><option>No sé, que me asesoren</option></select></label>
+  <label>¿Algo más que tengamos que saber? (opcional)<textarea id="sCom" rows="2" maxlength="500" placeholder="Ej: el agua está verde, tiene climatizador…"></textarea></label>
+  <button class="btn quiero" data-a="mandarSolic">Pedir mi piletero</button>
+  <button class="btn sec" data-a="salir">Cerrar sesión</button>
+</div></section>
+
+<section id="espera" hidden><div id="esperaBody"></div></section>
+
 <div id="app" hidden>
+  <div class="muestraBar" id="muestraBar" hidden><span>👀 Estás viendo una <b>muestra</b> de la app</span><button data-a="quiero">Quiero mi piletero</button></div>
   <main>
     <section class="view on" id="v-inicio"><div class="wrap" id="inicio"></div></section>
     <section class="view" id="v-tienda"><div class="wrap" id="tienda"></div></section>
@@ -439,7 +469,7 @@ function renderInicio() {
     cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia') +
     `<div class="card pil">${avatar(p)}<div class="grow"><b>${esc(p?.nombre || 'Sin piletero asignado')}</b><small>Tu piletero · ${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ', los ' + esc(c.dia.toLowerCase()) : ''}</small></div><button class="btn sm" data-t="chat">Escribile</button></div>` +
     (ult ? `<h3>Lo que se hizo en la última visita</h3><div class="card"><p>${esc(ult.nota || 'Mantenimiento de rutina.')}</p>${ult.productos ? `<p class="sub" style="margin:6px 0 0">Productos usados: ${esc(ult.productos)}</p>` : ''}</div><button class="btn sec" data-t="hist">Ver todas las visitas</button>` : '') +
-    recomendarHTML() +
+    premiosHTML() + recomendarHTML() +
     `<h3>Avisale algo rápido</h3><div class="chips" style="flex-wrap:wrap">${QUICK.slice(0, 4).map(q => `<button class="chip" data-a="rapido" data-id="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
   if (window.JCPush) JCPush.montarAviso($('#pushAviso'), pushOpc());
 }
@@ -461,8 +491,10 @@ function tourCliente() {
     { el: 'nav [data-t=chat]', pad: 4, radio: 24, titulo: 'Mensajes', texto: 'Escribile a tu piletero y mandale fotos cuando necesites algo.' },
     { el: 'nav [data-t=hist]', pad: 4, radio: 24, titulo: 'Historial', texto: 'Todas las visitas con sus fotos y los productos que compraste.' },
     { el: 'nav [data-t=cuenta]', pad: 4, radio: 24, titulo: 'Cuenta', texto: 'Los datos para transferir, las notificaciones y tus datos.' },
-    { el: null, antes: ir('inicio'), titulo: '¡Listo! 🎉', texto: 'Te recomendamos activar las notificaciones para enterarte cuando pasa tu piletero. Podés volver a ver este recorrido desde Cuenta.' }
-  ], { ultimo: 'Empezar', alTerminar: () => { try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); setTimeout(burbuja, 300); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+    C.muestra
+      ? { el: '#muestraBar button', pad: 4, radio: 24, antes: ir('inicio'), titulo: '¿Te gustó? 🏊', texto: 'Tocá «Quiero mi piletero», creá tu cuenta y te contactamos para coordinar la primera visita. Mientras, podés seguir mirando la app.' }
+      : { el: null, antes: ir('inicio'), titulo: '¡Listo! 🎉', texto: 'Te recomendamos activar las notificaciones para enterarte cuando pasa tu piletero. Podés volver a ver este recorrido desde Cuenta.' }
+  ], { ultimo: C.muestra ? 'Quiero mi piletero' : 'Empezar', alTerminar: completo => { if (C.muestra) { if (completo) return quiero(); return setTimeout(burbuja, 300); } try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); setTimeout(burbuja, 300); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
 }
 function quizasTour() {
   let v; try { v = localStorage.getItem(TOUR); } catch (e) { return; }
@@ -528,9 +560,11 @@ function avisosActivos(p) {
   return C.ms.filter(m => m.aviso && m.aviso_hasta >= hoy()).slice(-3).map(m => `<div class="estado warn"><div class="ic">${AVISOS[m.aviso].ic}</div><div><b>Le avisaste a ${esc(nom)}</b><small>${esc(m.texto)}</small></div></div>`).join('');
 }
 // ── Recomendanos
-const recomendarHTML = () => `<div class="reco"><div class="grow"><b>¿Conocés a alguien con pileta?</b><small>Recomendanos y ayudás a que el equipo crezca 💙</small></div><button class="btn sm" data-a="recomendar">Recomendar</button></div>`;
+const recomendarHTML = () => `<div class="reco"><div class="grow"><b>¿Conocés a alguien con pileta?</b><small>${C.d && C.d.premio_recomendar ? `Pasale la app. Si se suma, te regalamos: <b>${esc(C.d.premio_recomendar)}</b> 🎁` : 'Pasale la app: puede ver cómo funciona y pedir su piletero 💙'}</small></div><button class="btn sm" data-a="recomendar">Recomendar</button></div>`;
+const premiosHTML = () => ((C.d && C.d.premios) || []).filter(p => p.estado === 'disponible').map(p => `<div class="premio"><span class="ic">🎁</span><div><b>¡Ganaste un premio!</b><small>Gracias por recomendar a ${esc(p.referido || 'un vecino')}: <b>${esc(p.texto)}</b>. Tu piletero te lo lleva.</small></div></div>`).join('');
 async function recomendar() {
-  const texto = 'Te recomiendo a José Carrizo e Hijos para el mantenimiento de la pileta 🏊 Son de confianza, te mandan foto de cómo queda la pileta después de cada visita y te llevan los productos. Mirá:', url = 'https://www.josecarrizoehijos.ar';
+  const ref = (C.d && C.d.cliente && C.d.cliente.ref) || '', url = location.origin + location.pathname + (ref ? '?invita=' + encodeURIComponent(ref) : '?muestra');
+  const texto = 'Te paso la app de José Carrizo e Hijos, los que me hacen el mantenimiento de la pileta 🏊 Te mandan la foto de cómo quedó después de cada visita, pedís los productos desde el celu y hablás con el piletero. Mirá cómo funciona:';
   if (navigator.share) { try { await navigator.share({ title: 'José Carrizo e Hijos', text: texto, url }); return; } catch (e) { if (e.name === 'AbortError') return; } }
   window.open('https://wa.me/?text=' + encodeURIComponent(texto + ' ' + url), '_blank', 'noopener');
 }
@@ -700,21 +734,71 @@ async function enviar(texto) {
 }
 
 // ── Acceso
-let modo = Q.get('c') ? 'crear' : 'entrar';
+let modo = Q.get('c') || Q.has('quiero') ? 'crear' : 'entrar';
 function authUI() {
-  $('#auth').hidden = false; $('#link').hidden = true; $('#app').hidden = true;
+  mostrar('auth');
+  if (quieroFlag()) { $('#auth .brand').innerHTML = 'Pedí tu<br><em>piletero</em>'; $('#auth .sub').textContent = 'Creá tu cuenta en un minuto. Después completás los datos de tu pileta y te contactamos.'; }
   $('#authForm').innerHTML = (sb ? `<div class="tabs"><button class="${modo === 'entrar' ? 'on' : ''}" data-a="modo" data-id="entrar">Ya tengo cuenta</button><button class="${modo === 'crear' ? 'on' : ''}" data-a="modo" data-id="crear">Soy nuevo</button></div>` +
     `<button class="btn-google" data-a="google"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>${modo === 'crear' ? 'Registrarme con Google' : 'Continuar con Google'}</button><div class="o-sep">o con tu mail</div>` +
     (modo === 'crear' ? '<input id="nm" placeholder="Tu nombre" autocomplete="name">' : '') +
     `<input id="em" type="email" placeholder="Mail" autocomplete="email"><input id="pw" type="password" placeholder="Contraseña${modo === 'crear' ? ' (mínimo 6 caracteres)' : ''}" autocomplete="${modo === 'crear' ? 'new-password' : 'current-password'}">` +
     `<button class="btn" data-a="${modo === 'crear' ? 'registro' : 'login'}">${modo === 'crear' ? 'Crear mi cuenta' : 'Entrar'}</button>` +
-    (modo === 'entrar' ? '<button class="btn sec" data-a="olvide">Me olvidé la contraseña</button>' : `<p class="note" style="margin-top:14px">${Q.get('c') ? 'Tu código <b>' + esc(Q.get('c').toUpperCase()) + '</b> ya está cargado: después de crear la cuenta se vincula solo.' : 'Después de crear la cuenta te vamos a pedir el código que te pasó tu piletero.'}</p>`)
+    (modo === 'entrar' ? '<button class="btn sec" data-a="olvide">Me olvidé la contraseña</button>' : `<p class="note" style="margin-top:14px">${Q.get('c') ? 'Tu código <b>' + esc(Q.get('c').toUpperCase()) + '</b> ya está cargado: después de crear la cuenta se vincula solo.' : quieroFlag() ? 'Después de crear la cuenta completás los datos de tu pileta y te asignamos un piletero.' : 'Después de crear la cuenta te vamos a pedir el código que te pasó tu piletero.'}</p>`)
     : '<p class="note">No se pudo conectar con el servidor. Revisá tu conexión.</p>') +
     '<button class="btn sec" data-a="demo" style="margin-top:22px">Ver cómo funciona (demo)</button>' +
     `<p class="legal">Al ${modo === 'crear' ? 'crear tu cuenta' : 'entrar'} aceptás nuestra <a href="${PRIV}" target="_blank" rel="noopener">política de privacidad</a>.</p>`;
 }
 const PRIV = 'https://www.josecarrizoehijos.ar/privacidad.html';
-const volver = () => location.origin + location.pathname + (Q.get('c') ? '?c=' + encodeURIComponent(Q.get('c')) : '');
+// ── Recomendados, muestra y "Quiero mi piletero"
+const LSx = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} } };
+if (Q.get('invita')) LSx.set('jch-ref', Q.get('invita').toUpperCase().slice(0, 12));
+const MUESTRA = Q.has('invita') || Q.has('muestra');
+const quieroFlag = () => Q.has('quiero') || LSx.get('jch-quiero') === '1';
+const SECCIONES = ['auth', 'link', 'app', 'solic', 'espera'];
+const mostrar = id => SECCIONES.forEach(x => { $('#' + x).hidden = x !== id; });
+const BLOQ = new Set(['pedir', 'enviar', 'rapido', 'mandarAviso', 'recomendar', 'avisar', 'avisoTipo']);
+function ctaServicio(que) {
+  sheet(`<div class="cta"><b>${que || 'Esto lo podés usar cuando seas cliente'}</b><small>Pedí tu piletero: te contactamos, coordinamos la primera visita y la app se habilita sola.</small></div><button class="btn quiero" data-a="quiero">🏊 Quiero mi piletero</button><button class="btn sec" data-a="cerrar">Seguir mirando</button>`);
+}
+function quiero() {
+  LSx.set('jch-quiero', '1');
+  if (C.muestra || !C.user) { location.href = location.pathname + '?quiero=1'; return; }
+  mostrarSolic();
+}
+function mostrarSolic() {
+  mostrar('solic');
+  const m = (C.user && C.user.user_metadata) || {};
+  if (!$('#sNom').value) $('#sNom').value = m.full_name || m.name || m.nombre || '';
+}
+async function sinPileta() {
+  let s = null;
+  try { const r = await sb.rpc('mi_solicitud'); s = r.data; } catch (e) {}
+  if (s && s.estado === 'pendiente') return mostrarEspera(s);
+  if (s && s.estado === 'rechazada' && !quieroFlag()) return mostrarEspera(s);
+  if (quieroFlag() || (LSx.get('jch-ref') && !Q.get('c'))) return mostrarSolic();
+  mostrar('link'); if (Q.get('c')) $('#cod').value = Q.get('c').toUpperCase().slice(0, 6);
+}
+let esperaTimer = null;
+function mostrarEspera(s) {
+  mostrar('espera');
+  const ok = s.estado === 'pendiente';
+  $('#esperaBody').innerHTML = ok
+    ? `<div class="brand">¡Recibimos<br>tu <em>pedido</em>!</div><p class="sub">Gracias, ${esc((s.nombre || '').split(' ')[0])}. Te vamos a escribir para coordinar la primera visita en <b>${esc(s.direccion)}</b>. Cuando te asignemos tu piletero, esta app se habilita sola.</p><h3>Enterate apenas te respondamos</h3><div class="pago" id="pushEsp"></div><button class="btn sec" data-a="verMuestra">👀 Ver la muestra de la app</button><button class="btn sec" data-a="salir">Cerrar sesión</button>`
+    : `<div class="brand">Sobre tu<br><em>pedido</em></div><p class="sub">${esc(s.respuesta || 'Por ahora no podemos tomar tu pileta. ¡Gracias por escribirnos!')}</p><button class="btn quiero" data-a="quiero">Volver a pedir</button><button class="btn sec" data-a="salir">Cerrar sesión</button>`;
+  if (ok && window.JCPush) JCPush.montar($('#pushEsp'), { sb, app: 'cliente', toast: t => toast(t), texto: 'Activá las notificaciones y te avisamos al instante cuando tengas tu piletero.', opciones: [] });
+  clearInterval(esperaTimer);
+  if (ok) esperaTimer = setInterval(async () => { try { const r = await sb.rpc('mi_solicitud'); if (r.data && r.data.estado !== 'pendiente') location.reload(); } catch (e) {} }, 20000);
+}
+async function iniciarMuestra() {
+  C.demo = true; C.muestra = true; demo();
+  try { if (sb) { const r = await sb.rpc('catalogo_publico'); if (!r.error && r.data) { if ((r.data.catalogo || []).length) C.d.catalogo = r.data.catalogo; C.d.premio_recomendar = r.data.premio; } } } catch (e) {}
+  mostrar('app'); $('#muestraBar').hidden = false;
+  renderAll(); go('inicio');
+  const esperar = () => document.getElementById('jchSplash') ? setTimeout(esperar, 300) : setTimeout(() => { tourCliente(); burbuja(); }, 600);
+  esperar();
+}
+
+const volver = () => location.origin + location.pathname + (Q.get('c') ? '?c=' + encodeURIComponent(Q.get('c')) : quieroFlag() ? '?quiero=1' : '');
 async function auth(reg) {
   const email = $('#em').value.trim(), pw = $('#pw').value;
   if (!email || pw.length < 6) return toast('Completá tu mail y una contraseña de al menos 6 caracteres');
@@ -744,8 +828,9 @@ async function start(u) {
     ok = await cargar();
     if (!ok && Q.get('c')) { try { await vincular(Q.get('c')); ok = await cargar(); if (ok) toast('¡Listo! Tu pileta quedó vinculada'); } catch (e) { toast(e.message); } }
   } catch (e) { authUI(); return toast(e.message); }
-  if (!ok) { $('#auth').hidden = true; $('#app').hidden = true; $('#link').hidden = false; if (Q.get('c')) $('#cod').value = Q.get('c').toUpperCase().slice(0, 6); return; }
-  $('#auth').hidden = true; $('#link').hidden = true; $('#app').hidden = false;
+  if (!ok) return sinPileta();
+  LSx.set('jch-quiero', null);
+  mostrar('app');
   renderAll(); go(C.tab);
   quizasTour();
   if (window.JCPush) JCPush.sincronizar(sb, 'cliente');
@@ -758,6 +843,8 @@ async function act(e) {
   const t = e.target.closest('[data-a],[data-t]'); if (!t) return;
   const d = t.dataset;
   if (d.t) { if (t.closest('nav')) son('tap'); closeSheet(); return go(d.t); }
+  if (C.muestra && BLOQ.has(d.a)) { son('tap'); return ctaServicio(d.a === 'pedir' ? 'Para pedir productos, primero sumate como cliente' : d.a === 'enviar' || d.a === 'rapido' ? 'Para hablar con tu piletero, primero sumate como cliente' : null); }
+  if (C.muestra && d.a === 'salir') { location.href = location.pathname; return; }
   const [tp, ip] = (d.id || '').split(':');
   switch (d.a) {
     case 'modo': modo = d.id; return authUI();
@@ -798,6 +885,28 @@ async function act(e) {
       guardarCarro(); renderTienda(); renderCarro(); son('tap'); return toast(`Pack de ${x.pack_cant} agregado: ahorrás ${peso(Math.round(x.precio * x.pack_cant) - linea(x, x.pack_cant))}`);
     }
     case 'verPromos': { son('tap'); go('tienda'); renderTienda(); setTimeout(() => { const h = $('#promos'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); return; }
+    case 'quiero': return quiero();
+    case 'verMuestra': location.href = location.pathname + '?muestra'; return;
+    case 'miUbic': {
+      if (!navigator.geolocation) return toast('Tu celular no permite compartir la ubicación');
+      t.disabled = true; t.textContent = '📍 Buscando…';
+      navigator.geolocation.getCurrentPosition(p => { C.geo = [p.coords.latitude, p.coords.longitude]; t.disabled = false; t.textContent = '📍 Ubicación guardada ✓'; son('ok'); },
+        () => { t.disabled = false; t.textContent = '📍 Usar mi ubicación (opcional)'; toast('No pudimos tomar tu ubicación. Igual alcanza con la dirección.'); }, { enableHighAccuracy: true, timeout: 12000 });
+      return;
+    }
+    case 'mandarSolic': {
+      const nom = $('#sNom').value.trim(), tel = $('#sTel').value.trim(), dir = $('#sDir').value.trim();
+      if (nom.length < 2) return toast('Escribí tu nombre');
+      if (tel.replace(/\D/g, '').length < 8) return toast('Escribí un teléfono válido');
+      if (dir.length < 4) return toast('Escribí la dirección de la pileta');
+      t.disabled = true;
+      try {
+        const r = await sb.rpc('pedir_servicio', { p_nombre: nom, p_telefono: tel, p_direccion: dir, p_lat: C.geo ? C.geo[0] : null, p_lng: C.geo ? C.geo[1] : null, p_tamano: $('#sTam').value, p_frecuencia: $('#sFre').value, p_comentario: $('#sCom').value.trim() || null, p_ref: LSx.get('jch-ref') });
+        if (r.error) throw new Error(r.error.message);
+      } finally { t.disabled = false; }
+      LSx.set('jch-quiero', null); son('ok');
+      const r2 = await sb.rpc('mi_solicitud'); return mostrarEspera(r2.data || { estado: 'pendiente', nombre: nom, direccion: dir });
+    }
     case 'repetir': {
       const u = ultimoPedido(); if (!u) return;
       u.items.forEach(i => { if (cat(i.t, i.id)) { const k = C.cart.find(x => x.t === i.t && x.id === i.id); if (k) k.n = Math.max(k.n, i.n); else C.cart.push({ t: i.t, id: i.id, n: i.n }); } });
@@ -903,6 +1012,7 @@ document.addEventListener('visibilitychange', async () => {
 // ── Arranque
 (async () => {
   if (Q.has('demo')) { C.demo = true; demo(); $('#auth').hidden = true; $('#app').hidden = false; renderAll(); go('inicio'); return quizasTour(); }
+  if (MUESTRA) return iniciarMuestra();
   if (sb) {
     const { data } = await sb.auth.getSession();
     if (data.session) return start(data.session.user);
