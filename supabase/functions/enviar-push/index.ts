@@ -61,7 +61,14 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
     const c = await uno("clientes", p.cliente_id);
     if (!c) return null;
     if (op === "INSERT") {
-      return { usuarios: await equipoDe(c), app: "equipo", pref: "pedidos", title: `🛒 Pedido de ${c.nombre}`, body: corto(`${itemsTxt(p.items)} · ${peso(p.total)}`), url: `index.html#pedido=${p.id}`, tag: `pedido-${p.id}` };
+      // le llega al piletero del cliente y a coordinadores/administración (menos a quien lo cargó)
+      const usuarios = [...new Set([...(await equipoDe(c)), ...(await gestores())])].filter((x) => x !== p.creado_por);
+      const body = corto(`${itemsTxt(p.items)} · ${peso(p.total)}`);
+      if (p.origen === "equipo") {
+        const q = p.creado_por ? await uno("perfiles", p.creado_por, "nombre") : null;
+        return { usuarios, app: "equipo", pref: "pedidos", title: `🧾 ${primer(q?.nombre) || "El equipo"} cargó un pedido para ${c.nombre}`, body, url: `index.html#pedido=${p.id}`, tag: `pedido-${p.id}` };
+      }
+      return { usuarios, app: "equipo", pref: "pedidos", title: `🛒 Pedido de ${c.nombre}`, body, url: `index.html#pedido=${p.id}`, tag: `pedido-${p.id}` };
     }
     if (p.estado === "cancelado" && quien && quien === c.usuario_id) {
       return { usuarios: await equipoDe(c), app: "equipo", pref: "pedidos", title: `${c.nombre} canceló su pedido`, body: corto(itemsTxt(p.items)), url: `index.html#pedido=${p.id}`, tag: `pedido-${p.id}` };

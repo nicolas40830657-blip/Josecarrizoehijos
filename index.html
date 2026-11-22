@@ -63,6 +63,22 @@ main{flex:1;position:relative;overflow:hidden}
 .objDots i.on{width:18px;background:var(--navy)}
 .objBar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;margin:6px 0 2px}
 .objBar i{display:block;height:100%;border-radius:4px}
+.pedC{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;border:0;border-radius:18px;padding:14px;margin:0 0 10px;box-shadow:var(--sh);cursor:pointer;border-left:4px solid #c9d3e3}
+.pedC.nuevo{border-left-color:#E03131}.pedC.confirmado{border-left-color:#1b6fe0}.pedC.entregado{border-left-color:var(--ok);opacity:.85}.pedC.cancelado{opacity:.6}
+.pedC .pt{display:flex;align-items:center;gap:10px}
+.pedC .pt .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.pedC .pt small{display:block;color:var(--g600);font-size:12px}
+.pedC .num{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.pedC .pit{margin:8px 0 6px;font-size:14px;color:var(--ink)}
+.pedC .pinfo{display:flex;flex-wrap:wrap;gap:5px}
+.pedC .pinfo span{font-size:12px;background:var(--g50);border-radius:999px;padding:3px 9px;color:var(--g600)}
+.pedC .pinfo span.falta{background:#fff4e5;color:var(--warn)}
+.pedC .pco{margin:8px 0 0;font-size:13px;color:var(--g600);font-style:italic}
+.pedC .pf{display:block;margin-top:6px;font-size:11px;color:var(--g400)}
+.pst{margin-top:4px}.pchips{margin:4px 0 6px}
+.addrow{display:flex;gap:6px;align-items:center}
+.addrow select{flex:1;min-width:0}.addrow input{width:64px;flex:none}.addrow .btn{margin:0;flex:none}
+.row.tot{background:#eaf1fd}
 .deleg{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:#fff3;border:1px solid currentColor;opacity:.9;white-space:nowrap}
 .btn.pasa{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
 .pils{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
@@ -395,7 +411,7 @@ body.enEq #eqBtn .nb{display:none}
       <button class="fab" id="fabC" data-a="nuevoC">+ Nuevo cliente</button>
     </section>
     <section class="view" id="v-inv">
-      <h1>Inventario</h1><div class="chips" id="seg"></div><div id="listH"></div><div id="listP" hidden></div>
+      <h1>Inventario</h1><div class="chips" id="seg"></div><div id="listH"></div><div id="listP" hidden></div><div id="listPe" hidden></div>
       <button class="fab" id="fabH" data-a="nuevaH">+ Herramienta</button>
     </section>
     <section class="view" id="v-perfil"><div id="perfil"></div></section>
@@ -570,7 +586,9 @@ function demo() {
   S.mgl = [['c1', 30], ['c3', 60 * 26], ['c2', 60 * 50], ['c1', 60 * 24 * 9]].map(([c, m], i) => ({ id: 'g' + i, foto_id: 'f' + i, cliente_id: c, piletero_id: 'p1', creado: new Date(Date.now() - m * 60000).toISOString() })); S.mgCargado = true;
   S.av = [{ id: 'av1', cliente_id: 'c1', aviso: 'llave', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }, { id: 'av2', cliente_id: 'c2', aviso: 'saltear', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }];
   S.msg = S.ms.filter(m => m.de_cliente && !m.leido_equipo);
-  S.ped = [{ id: 'pe1', cliente_id: 'c1', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 2 }, { t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 23000, pago: 'cuenta', nota: 'Si pueden traerlo el lunes con la visita', estado: 'nuevo', creado: ago(45) }];
+  S.ped = [{ id: 'pe1', cliente_id: 'c1', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 2 }, { t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 23000, pago: 'cuenta', nota: 'Si pueden traerlo el lunes con la visita', estado: 'nuevo', creado: ago(45) },
+    { id: 'pe2', cliente_id: 'c4', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 4 }], total: 36000, pago: 'transferencia', estado: 'confirmado', origen: 'equipo', creado_por: 'p3', entrega: ymd(new Date()), lleva_id: 'p3', coordinacion: 'Lo pidió el encargado por WhatsApp. Dejarlo en recepción.', creado: ago(60 * 20) },
+    { id: 'pe3', cliente_id: 'c2', items: [{ t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 2 }], total: 10000, pago: 'efectivo', estado: 'confirmado', origen: 'app', entrega: null, lleva_id: null, creado: ago(60 * 5) }];
   S.rec = [{ id: 're1', cliente_id: 'c3', tipo: 'p', item_id: 'pr3', cantidad: 1, estado: 'activa', creado: ago(60 * 30) }];
 }
 
@@ -777,7 +795,7 @@ async function abrirDestino(url) {
   history.replaceState(null, '', location.pathname + location.search);
   if (sb) await cargarPortal(true).catch(() => {});
   if (k === 'chat' && S.c.some(c => c.id === id)) { go('mapa'); return openChat(id); }
-  if (k === 'pedido' && S.ped.some(p => p.id === id)) { renderAll(); return verPedido(id); }
+  if (k === 'pedido' && S.ped.some(p => p.id === id)) { S.inv = 'ped'; S.pf = 'pend'; go('inv'); renderAll(); return verPedido(id); }
   if (k === 'fotos' && S.c.some(c => c.id === id)) return verHist(id);
   if (k === 'solicitud') { S.ctab = 'sol'; go('clientes'); return renderClients(); }
   if (k === 'equipo') { go('mapa'); await cargarEq(); return abrirEq(); }
@@ -1241,11 +1259,11 @@ function verVenta(id) {
   sheet(`<h2>${esc(v.nombre)} ×${v.cantidad}</h2><p class="sub">${new Date(v.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} · vendió ${esc(nom(v.vendedor_id))}${clN(v.cliente_id) ? ' · cliente ' + esc(clN(v.cliente_id)) : ''}</p><div class="stats"><div><small>Total</small><b>${peso(v.total)}</b></div><div><small>Cobro</small><b>${v.cobrado === false ? 'Pendiente' : 'Cobrada'}</b></div>${isGestor() ? `<div><small>Costo</small><b>${peso(costo)}</b></div><div><small>Ganancia real</small><b>${peso(v.total - costo - com)}</b></div>` : ''}</div>${puedeCobro(v) ? `<button class="btn" data-a="cobro" data-id="${v.id}">${v.cobrado === false ? 'Marcar como cobrada' : 'Marcar como pendiente'}</button>` : ''}${puedeAnular(v) ? `<button class="btn sec" data-a="anular" data-id="${v.id}">Anular venta</button>` : ''}`);
 }
 function renderInv() {
-  const hr = S.inv === 'herr';
-  $('#seg').innerHTML = `<button class="chip ${hr ? 'on' : ''}" data-a="invtab" data-id="herr">Herramientas</button><button class="chip ${hr ? '' : 'on'}" data-a="invtab" data-id="prod">Productos y kits${isGestor() && lowP().length ? ' ⚠ ' + lowP().length : ''}</button>`;
-  $('#listH').hidden = !hr; $('#listP').hidden = hr;
-  const f = $('#fabH'); f.hidden = !isGestor(); f.textContent = hr ? '+ Herramienta' : '+ Producto'; f.dataset.a = hr ? 'nuevaH' : 'nuevoP';
-  if (hr) renderHerr(); else renderProd();
+  const hr = S.inv === 'herr', pe = S.inv === 'ped', np = misPed().filter(x => x.estado === 'nuevo').length;
+  $('#seg').innerHTML = `<button class="chip ${hr ? 'on' : ''}" data-a="invtab" data-id="herr">Herramientas</button><button class="chip ${!hr && !pe ? 'on' : ''}" data-a="invtab" data-id="prod">Productos y kits${isGestor() && lowP().length ? ' ⚠ ' + lowP().length : ''}</button><button class="chip ${pe ? 'on' : ''}" data-a="invtab" data-id="ped">🧾 Pedidos${np ? `<i class="nb">${np}</i>` : ''}</button>`;
+  $('#listH').hidden = !hr; $('#listP').hidden = hr || pe; $('#listPe').hidden = !pe;
+  const f = $('#fabH'); f.hidden = !isGestor() && !pe; f.textContent = pe ? '+ Pedido' : hr ? '+ Herramienta' : '+ Producto'; f.dataset.a = pe ? 'nuevoPed' : hr ? 'nuevaH' : 'nuevoP';
+  if (pe) renderPed(); else if (hr) renderHerr(); else renderProd();
 }
 // ── Promociones (kits y productos)
 const promoVig = x => !!(x && x.promo && (!x.promo_hasta || x.promo_hasta >= ymd(new Date())));
@@ -1336,13 +1354,53 @@ function renderAvisosMapa(pa) {
 const PAGO = { cuenta: 'Se suma a su cuenta', transferencia: 'Paga por transferencia', efectivo: 'Paga en efectivo' };
 const EST = { nuevo: 'Nuevo', confirmado: 'Confirmado', entregado: 'Entregado', cancelado: 'Cancelado' };
 const pedidoHTML = (pe, conCliente) => { const c = S.c.find(x => x.id === pe.cliente_id) || {}; return `<div class="row" style="align-items:flex-start"><div class="grow">${conCliente ? `<b>${esc(c.nombre || 'Cliente')}</b>` : ''}<small>${new Date(pe.creado).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} · <span class="tag ${pe.estado}">${EST[pe.estado]}</span></small><small style="color:var(--ink)">${(pe.items || []).map(i => esc(i.nombre) + ' ×' + i.n).join(', ')}</small><small>${PAGO[pe.pago] || ''}${pe.nota ? ' · “' + esc(pe.nota) + '”' : ''}</small></div><div class="num"><b>${peso(pe.total)}</b>${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<button class="btn sm" style="margin-top:6px" data-a="verPedido" data-id="${pe.id}">Atender</button>` : ''}</div></div>`; };
+// ── Pedidos (Inventario → 🧾 Pedidos): los que hacen los clientes desde la app y los que cargan los pileteros
+const misPed = () => S.ped.filter(p => misCli(p.cliente_id) || p.lleva_id === S.me?.id);
+const diaTxt = k => { if (!k) return 'Sin fecha de entrega'; const h = ymd(new Date()), m = new Date(); m.setDate(m.getDate() + 1); if (k === h) return 'Para hoy'; if (k === ymd(m)) return 'Para mañana'; if (k < h) return '⚠ Atrasado · ' + new Date(k + 'T12:00').toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'numeric' }); return 'Para el ' + new Date(k + 'T12:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'numeric' }); };
+const origenTxt = pe => pe.origen === 'equipo' ? `🧑‍🔧 Lo cargó ${pe.creado_por === S.me.id ? 'vos' : esc(nom(pe.creado_por))}` : '📱 Desde la app del cliente';
+function pedCard(pe) {
+  const c = S.c.find(x => x.id === pe.cliente_id) || {}, abierto = pe.estado === 'nuevo' || pe.estado === 'confirmado';
+  return `<button class="pedC ${pe.estado}" data-a="verPedido" data-id="${pe.id}"><div class="pt"><span class="av" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span><span class="grow"><b>${esc(c.nombre || 'Cliente')}</b><small>${esc(c.direccion || '')}</small></span><span class="num"><b>${peso(pe.total)}</b><span class="tag ${pe.estado}">${EST[pe.estado]}</span></span></div>` +
+    `<p class="pit">${(pe.items || []).map(i => esc(i.nombre) + ' ×' + i.n).join(' · ')}</p><div class="pinfo"><span>${origenTxt(pe)}</span><span>💳 ${PAGO[pe.pago] || '—'}</span>${abierto ? `<span class="${pe.lleva_id ? '' : 'falta'}">🚚 ${pe.lleva_id ? 'Lo lleva ' + (pe.lleva_id === S.me.id ? 'vos' : esc(nom(pe.lleva_id))) : 'Falta quién lo lleva'}</span>` : ''}${abierto && pe.entrega ? `<span>📅 ${new Date(pe.entrega + 'T12:00').toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'numeric' })}</span>` : ''}</div>` +
+    `${pe.coordinacion ? `<p class="pco">💬 ${esc(pe.coordinacion)}</p>` : pe.nota ? `<p class="pco">“${esc(pe.nota)}”</p>` : ''}<small class="pf">${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></button>`;
+}
+function renderPed() {
+  const f = S.pf || 'pend', l = misPed(), nu = l.filter(x => x.estado === 'nuevo'), co = l.filter(x => x.estado === 'confirmado'), hoy = ymd(new Date());
+  const head = `<div class="stats pst"><div><small>Sin confirmar</small><b>${nu.length}</b></div><div><small>Por entregar</small><b>${co.length}</b></div><div><small>Para hoy</small><b>${co.filter(x => x.entrega && x.entrega <= hoy).length}</b></div><div><small>A cobrar</small><b>${peso([...nu, ...co].reduce((a, x) => a + (+x.total || 0), 0))}</b></div></div>` +
+    `<div class="chips pchips">${[['pend', 'Pendientes'], ['entregado', 'Entregados'], ['cancelado', 'Cancelados']].map(([k, t]) => `<button class="chip ${f === k ? 'on' : ''}" data-a="pedFiltro" data-id="${k}">${t}</button>`).join('')}</div>`;
+  let body = '';
+  if (f === 'pend') {
+    if (nu.length) body += `<h3>🆕 Sin confirmar · ${nu.length}</h3>` + nu.map(pedCard).join('');
+    const g = {}; co.forEach(x => { (g[x.entrega || '~'] = g[x.entrega || '~'] || []).push(x); });
+    Object.keys(g).sort().forEach(k => { body += `<h3>${diaTxt(k === '~' ? null : k)} · ${g[k].length}</h3>` + g[k].map(pedCard).join(''); });
+    if (!body) body = '<p class="note">No hay pedidos pendientes. Los que hagan los clientes desde su app aparecen acá solos, y con “+ Pedido” cargás uno vos.</p>';
+  } else {
+    const h = l.filter(x => x.estado === f).slice(0, 40);
+    body = h.length ? h.map(pedCard).join('') : `<p class="note">Todavía no hay pedidos ${f === 'entregado' ? 'entregados' : 'cancelados'}.</p>`;
+  }
+  $('#listPe').innerHTML = head + body;
+}
+const precioEf = x => promoVig(x) && x.promo_precio ? +x.promo_precio : +x.precio || 0;
+function nuevoPedido(cid) {
+  S.carro = [];
+  const cs = isGestor() ? S.c : misCs(), sel = cid || (cs.length === 1 ? cs[0].id : '');
+  if (!cs.length) return toast('Todavía no tenés clientes asignados');
+  const items = [...S.k.map(k => ({ v: 'k:' + k.id, n: '🧰 ' + k.nombre, p: precioEf(k) })), ...S.pr.map(x => ({ v: 'p:' + x.id, n: x.nombre, p: precioEf(x) }))];
+  sheet(`<h2>🧾 Nuevo pedido</h2><p class="sub">Queda registrado en Pedidos y les avisa a los coordinadores. El stock se descuenta cuando se entrega.</p><label>Cliente<select id="npC"><option value="">Elegí el cliente…</option>${optsCli(isGestor(), sel)}</select></label>${isGestor() ? todosCli('npC') : ''}` +
+    `<h3>Productos</h3><div class="addrow"><select id="npI">${items.map(i => `<option value="${i.v}">${esc(i.n)} · ${peso(i.p)}</option>`).join('')}</select><input id="npN" type="number" inputmode="numeric" min="1" max="200" value="1" aria-label="Cantidad"><button class="btn sm" data-a="npAdd">Agregar</button></div><div id="npL"><p class="note">Agregá los productos o kits del pedido.</p></div>` +
+    `<h3>Entrega y pago</h3><label>¿Cuándo se lo lleva?<input id="npF" type="date" min="${ymd(new Date())}"></label><label>¿Quién lo lleva?<select id="npQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === S.me.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>¿Cómo paga?<select id="npP">${Object.entries(PAGO).map(([k, t]) => `<option value="${k}">${t}</option>`).join('')}</select></label><label>¿Cómo se coordinó? (lo ve el equipo)<textarea id="npK" rows="2" maxlength="1000" placeholder="Ej: lo pidió por WhatsApp, dejarlo con el portero, llamar antes"></textarea></label><button class="btn" data-a="npGuardar">Registrar pedido</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
+function carroHTML() {
+  const l = S.carro || [], tot = l.reduce((a, i) => a + i.p * i.n, 0);
+  $('#npL').innerHTML = l.length ? l.map((i, j) => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.p)} c/u</small></div><div class="num"><b>${peso(i.p * i.n)}</b></div><button class="btn sm sec" data-a="npQuitar" data-id="${j}" aria-label="Quitar">✕</button></div>`).join('') + `<div class="row tot"><div class="grow"><b>Total</b><small>Si corresponde, el descuento por pack se aplica al registrar</small></div><div class="num"><b>${peso(tot)}</b></div></div>` : '<p class="note">Agregá los productos o kits del pedido.</p>';
+}
 function listaPedidos() {
   const pa = pedAbiertos().filter(p => misCli(p.cliente_id)), hechos = S.ped.filter(p => !pa.includes(p) && misCli(p.cliente_id)).slice(0, 10);
   sheet(`<h2>Pedidos de clientes</h2><p class="sub">Los clientes los hacen desde su app. Al entregar, se registra la venta en su ficha y se descuenta el stock.</p>${pa.length ? pa.map(p => pedidoHTML(p, true)).join('') : '<p class="note">No hay pedidos pendientes.</p>'}${hechos.length ? '<h3>Últimos atendidos</h3>' + hechos.map(p => pedidoHTML(p, true)).join('') : ''}`);
 }
 function verPedido(id) {
   const pe = S.ped.find(x => x.id === id), c = S.c.find(x => x.id === pe.cliente_id) || {};
-  sheet(`<h2>Pedido de ${esc(c.nombre || 'cliente')}</h2><p class="sub">${esc(c.direccion || '')} · ${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>${(pe.items || []).map(i => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.precio)} c/u</small></div><div class="num"><b>${peso(i.precio * i.n)}</b></div></div>`).join('')}<div class="stats"><div><small>Total</small><b>${peso(pe.total)}</b></div><div><small>Forma de pago</small><b style="font-size:16px">${PAGO[pe.pago]}</b></div></div>${pe.nota ? `<p class="note">“${esc(pe.nota)}”</p>` : ''}${pe.estado === 'nuevo' ? `<button class="btn" data-a="pedConfirmar" data-id="${pe.id}">Confirmar pedido (el cliente lo ve)</button>` : ''}<label>Al entregarlo, ¿se cobró?<select id="pco"><option value="no">No, queda pendiente en su cuenta</option><option value="si">Sí, ya está cobrado</option></select></label><button class="btn" data-a="pedEntregar" data-id="${pe.id}">Entregado: registrar la venta</button><button class="btn sec" data-a="chat" data-id="${c.id}">Escribirle al cliente</button><button class="btn sec" data-a="pedCancelar" data-id="${pe.id}">Cancelar pedido</button>`);
+  sheet(`<h2>Pedido de ${esc(c.nombre || 'cliente')}</h2><p class="sub">${esc(c.direccion || '')} · ${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>${(pe.items || []).map(i => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.precio)} c/u</small></div><div class="num"><b>${peso(i.precio * i.n)}</b></div></div>`).join('')}<div class="stats"><div><small>Total</small><b>${peso(pe.total)}</b></div><div><small>Forma de pago</small><b style="font-size:16px">${PAGO[pe.pago]}</b></div></div><p class="who">${origenTxt(pe)} · <span class="tag ${pe.estado}">${EST[pe.estado]}</span></p>${pe.nota ? `<p class="note">“${esc(pe.nota)}”</p>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<h3>Coordinación</h3><div class="cobro"><label>¿Cuándo se lo lleva?<input id="pcF" type="date" value="${pe.entrega || ''}"></label><label>¿Quién lo lleva?<select id="pcQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === pe.lleva_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>¿Cómo paga?<select id="pcP">${Object.entries(PAGO).map(([k, t]) => `<option value="${k}" ${k === pe.pago ? 'selected' : ''}>${t}</option>`).join('')}</select></label><label>¿Cómo se coordinó? (lo ve el equipo)<textarea id="pcK" rows="2" maxlength="1000" placeholder="Ej: lo llevo el jueves con la visita, paga en efectivo">${esc(pe.coordinacion || '')}</textarea></label><button class="btn" data-a="pedCoord" data-id="${pe.id}" style="margin-top:0">Guardar coordinación</button></div>` : `${pe.entrega || pe.lleva_id || pe.coordinacion ? `<p class="sub">${pe.lleva_id ? '🚚 ' + esc(nom(pe.lleva_id)) : ''}${pe.entrega ? ' · 📅 ' + new Date(pe.entrega + 'T12:00').toLocaleDateString('es-AR') : ''}</p>${pe.coordinacion ? `<p class="note">💬 ${esc(pe.coordinacion)}</p>` : ''}` : ''}`}${pe.estado === 'nuevo' ? `<button class="btn" data-a="pedConfirmar" data-id="${pe.id}">Confirmar pedido${pe.origen === 'equipo' ? '' : ' (el cliente lo ve)'}</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<label>Al entregarlo, ¿se cobró?<select id="pco"><option value="no">No, queda pendiente en su cuenta</option><option value="si">Sí, ya está cobrado</option></select></label><button class="btn" data-a="pedEntregar" data-id="${pe.id}">Entregado: registrar la venta</button>` : ''}${misCli(c.id) ? `<button class="btn sec" data-a="chat" data-id="${c.id}">Escribirle al cliente</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<button class="btn sec" data-a="pedCancelar" data-id="${pe.id}">Cancelar pedido</button>` : ''}`);
 }
 // Mensajes con el cliente
 function bubbles(ms, c) {
@@ -1936,7 +1994,37 @@ async function act(e) {
       if (!isGestor() || !confirm('¿Rechazar esta cuenta? No va a poder usar la app del equipo.')) return;
       await del('p', 'perfiles', d.id); renderAll(); return toast('Cuenta rechazada');
     }
-    case 'pedidos': return listaPedidos();
+    case 'pedidos': S.inv = 'ped'; S.pf = 'pend'; closeSheet(); go('inv'); return renderInv();
+    case 'pedFiltro': S.pf = d.id; return renderPed();
+    case 'nuevoPed': return nuevoPedido();
+    case 'npAdd': {
+      const [tp, id] = $('#npI').value.split(':'), x = (tp === 'k' ? S.k : S.pr).find(y => y.id === id), n = Math.round(+$('#npN').value || 0);
+      if (!x || n < 1 || n > 200) return toast('Poné una cantidad entre 1 y 200');
+      const ya = S.carro.find(i => i.t === tp && i.id === id); if (ya) ya.n += n; else S.carro.push({ t: tp, id, nombre: x.nombre, p: precioEf(x), n });
+      $('#npN').value = 1; return carroHTML();
+    }
+    case 'npQuitar': S.carro.splice(+d.id, 1); return carroHTML();
+    case 'npGuardar': {
+      const cid = $('#npC').value;
+      if (!cid) return toast('Elegí el cliente');
+      if (!S.carro.length) return toast('Agregá al menos un producto');
+      const a = { p_cliente: cid, p_items: S.carro.map(i => ({ t: i.t, id: i.id, n: i.n })), p_pago: $('#npP').value, p_nota: null, p_entrega: $('#npF').value || null, p_lleva: $('#npQ').value || null, p_coord: $('#npK').value.trim() || null };
+      t.disabled = true;
+      try {
+        if (sb) await rpc('pedido_equipo', a);
+        else S.ped.unshift({ id: crypto.randomUUID(), cliente_id: cid, items: S.carro.map(i => ({ t: i.t, id: i.id, nombre: i.nombre, precio: i.p, n: i.n })), total: S.carro.reduce((x, i) => x + i.p * i.n, 0), pago: a.p_pago, estado: 'nuevo', origen: 'equipo', creado_por: S.me.id, entrega: a.p_entrega, lleva_id: a.p_lleva, coordinacion: a.p_coord, creado: new Date().toISOString() });
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      S.inv = 'ped'; S.pf = 'pend'; son('ok'); closeSheet(); go('inv'); renderAll(); return toast('Pedido registrado. Les llegó un aviso a los coordinadores 🧾');
+    }
+    case 'pedCoord': {
+      const pe = S.ped.find(x => x.id === d.id), f = { entrega: $('#pcF').value || null, lleva_id: $('#pcQ').value || null, pago: $('#pcP').value, coordinacion: $('#pcK').value.trim() || null };
+      t.disabled = true;
+      try {
+        if (sb) { await rpc('coordinar_pedido', { p_id: pe.id, p_entrega: f.entrega, p_lleva: f.lleva_id, p_pago: f.pago, p_coord: f.coordinacion }); if (sb) await cargarPortal(true); }
+        else Object.assign(pe, f);
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); renderAll(); verPedido(pe.id); return toast(f.lleva_id && f.lleva_id !== S.me.id ? `Guardado. Le avisamos a ${nom(f.lleva_id)} 🚚` : 'Coordinación guardada');
+    }
     case 'verPedido': return verPedido(d.id);
     case 'pedConfirmar': {
       await upd('ped', 'pedidos', d.id, { estado: 'confirmado', atendido_por: S.me.id, actualizado: new Date().toISOString() });
