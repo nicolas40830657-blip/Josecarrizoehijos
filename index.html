@@ -43,8 +43,21 @@ main{flex:1;position:relative;overflow:hidden}
 #pushAviso{margin:8px 0 0 auto;width:min(360px,100%)}#pushAviso .jp-av{margin:0}
 #avisosMap{display:flex;flex-direction:column;gap:8px;margin-left:auto;width:min(360px,100%)}
 #avisosMap:empty{display:none}
-.chatc{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#fff;border-radius:20px;padding:12px 14px;box-shadow:var(--sh);margin:0 0 10px;border:0;font:inherit;color:inherit;cursor:pointer}
-.chatc .av{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px}
+#perfil{position:relative}
+.likesW{position:absolute;top:2px;right:0;display:flex;align-items:center;gap:6px;border:0;background:#fff;border-radius:999px;padding:4px 10px 4px 4px;box-shadow:0 4px 14px rgba(224,49,49,.18);cursor:pointer;font:inherit;z-index:2}
+.likesW.cero{box-shadow:var(--sh);opacity:.85}
+.lwAv{width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#FFF0F3;border:2px solid #ff3040}
+.likesW.cero .lwAv{border-color:#e3e8ef}
+.lwC{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+.lwH{color:#c4ccd6;font-size:18px}
+.lwAv.gira .lwC{animation:lwGira .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes lwGira{from{transform:translateY(100%) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.lwN{font-weight:800;font-size:14px;color:#e0245e}.likesW.cero .lwN{color:#8a97a8}
+.chk2{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--g600,#5b6b80);margin:-4px 0 12px}.chk2 input{width:20px;height:20px;margin:0;flex:none;-webkit-appearance:checkbox;appearance:auto;min-height:0;padding:0;border:0;box-shadow:none}
+.chatc{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:#fff;border-radius:16px;padding:9px 12px;box-shadow:0 1px 3px rgba(11,37,69,.08);margin:0 0 6px;border:0;font:inherit;color:inherit;cursor:pointer}
+.chatc .av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px}
+.chatc b{font-size:15.5px}.chatc small{font-size:13px}.crow .msgN{display:inline-block;margin:3px 6px 0 0;font-size:12px}
+.chatc .der small{display:block;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chatc .grow{min-width:0}.chatc b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chatc small{display:block;color:var(--g500,#5b6b80);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .chatc.nl small{color:var(--ink,#0b2545);font-weight:600}
@@ -237,6 +250,19 @@ nav button{position:relative}
 .recs .chip{background:#fff}
 .recs .chip.on{background:var(--navy);color:#fff}
 .msgs{display:flex;flex-direction:column;gap:8px;margin:10px 0 12px;max-height:46vh;overflow:auto;padding:2px}
+#chatV{position:fixed;inset:0;z-index:950;display:flex;flex-direction:column;background:#EFEAE2 radial-gradient(circle at 20% 20%,#ffffff55 0 1.5px,transparent 2px) 0 0/22px 22px}
+#chatV[hidden]{display:none}body.enChat{overflow:hidden}
+.cvh{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 10px 10px;background:var(--navy,#0B2545);color:#fff;box-shadow:0 2px 8px #0003}
+.cvh .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.cvh .grow{min-width:0;cursor:pointer}.cvh b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cvh small{display:block;font-size:12.5px;opacity:.75}
+.cvb{border:0;background:none;color:#fff;font-size:24px;width:40px;height:40px;border-radius:50%;cursor:pointer;flex:none}.cvb:active{background:#ffffff22}
+#chatV .msgs{flex:1;max-height:none;margin:0;padding:14px 12px;gap:6px}
+#chatV .bub{background:#fff;box-shadow:0 1px 1px #0000001a;border-radius:4px 14px 14px 14px;color:#111}
+#chatV .bub.me{background:#D9FDD3;color:#111;border-radius:14px 4px 14px 14px}
+#chatV .bub small{text-align:right}
+.cvf{padding:6px 8px calc(8px + env(safe-area-inset-bottom));background:#F0F2F5}
+.cvf .qr{margin:2px 0 6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.cvf .qr .chip{flex:none;background:#fff}
+.cvf .cbar textarea{border-radius:22px;background:#fff}
 .bub{max-width:82%;padding:10px 12px;border-radius:18px 18px 18px 6px;background:var(--g50);align-self:flex-start;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px}
 .bub.me{align-self:flex-end;background:var(--navy);color:#fff;border-radius:18px 18px 6px 18px}
 .bub small{display:block;font-size:11px;opacity:.65;margin-top:4px}
@@ -308,6 +334,7 @@ nav button{position:relative}
   <div id="heard" hidden></div>
 </div>
 
+<div id="chatV" hidden><header class="cvh"><button class="cvb" data-a="cerrarChat" aria-label="Volver">←</button><span class="av" id="cvAv"></span><div class="grow" data-a="chatFicha"><b id="cvN"></b><small id="cvS"></small></div><button class="cvb" data-a="chatFicha" aria-label="Ver ficha del cliente">ⓘ</button></header><div class="msgs" id="chatMsgs"></div><div class="cvf"><div id="chatPrev"></div><div class="chips qr" id="cvQr"></div><div class="cbar"><label class="ib" aria-label="Adjuntar foto">📷<input type="file" id="chatFile" accept="image/*"></label><textarea id="chatTxt" rows="1" placeholder="Escribí un mensaje"></textarea><button class="ib send" data-a="chatEnviar" id="cvSend" aria-label="Enviar">➤</button></div></div></div>
 <div id="sh"><div class="scrim" data-a="cerrar"></div><div class="panel"><i class="grab"></i><div id="sheetBody"></div></div></div>
 <div id="toast" role="status"></div>
 
@@ -324,7 +351,7 @@ const CFG = { url: 'https://gqromisweyqvdeeahxnl.supabase.co', key: 'sb_publisha
 
 const sb = CFG.url ? supabase.createClient(CFG.url, CFG.key) : null;
 const COLORS = ['#2563EB', '#0E9F6E', '#F59E0B', '#DB2777', '#7C3AED', '#0891B2'];
-const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
+const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 const P = id => S.p.find(x => x.id === id);
@@ -379,7 +406,7 @@ const vcard = v => {
   const c = S.c.find(x => x.id === v.cliente_id), k = col(c.piletero_id), ok = S.r.some(r => r.visita_id === v.id && r.fecha === S.sel);
   return `<div class="card vis ${ok ? 'ok' : ''}" style="--c:${k};--ink:${ink(k)}" data-a="visita" data-id="${v.id}"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small><small>${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}${c.valor_visita ? ' · ' + peso(c.valor_visita) : ''} · ${esc(nom(c.piletero_id))}</small>${avisoVisita(c.id, S.sel)}${avisoCliente(c)}</div><button class="chk" data-a="chk" data-id="${v.id}" aria-label="${ok ? 'Desmarcar visita' : 'Confirmar visita'}">✓</button></div>`;
 };
-const card = c => `<button class="card" style="--c:${col(c.piletero_id)};--ink:${ink(col(c.piletero_id))}" data-a="abrir" data-id="${c.id}"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small><small>${esc(info(c))}</small>${avisoCliente(c)}</div><small>${esc(nom(c.piletero_id))}</small></button>`;
+const card = c => { const n = nuevos(c.id); return `<button class="chatc crow" data-a="abrir" data-id="${c.id}"><span class="av" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span><span class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)} · ${esc(info(c))}</small>${avisoCliente(c)}</span><span class="der">${isGestor() ? `<small>${esc(nom(c.piletero_id))}</small>` : ''}${c.usuario_id ? '<small title="Usa la app">📱</small>' : ''}${n ? `<i class="nb">${n}</i>` : ''}</span></button>`; };
 const info = c => (c.frecuencia || 'Semanal') + (c.dia && c.dia !== 'Sin día fijo' ? ' · ' + c.dia : '');
 const ink = h => { const n = parseInt(h.slice(1), 16); return (.299 * (n >> 16) + .587 * (n >> 8 & 255) + .114 * (n & 255)) > 150 ? '#0B2545' : '#fff'; };
 const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); setTimeout(() => e.classList.remove('on'), 2800); };
@@ -451,6 +478,7 @@ function demo() {
     { id: 'm5', cliente_id: 'c3', de_cliente: false, texto: 'Sí, el jueves te lo llevo 👍', creado: ago(60 * 4), leido_equipo: true }
   ];
   S.c[2].usuario_id = 'u-demo3'; S.c[1].usuario_id = 'u-demo2';
+  S.mgl = [['c1', 30], ['c3', 60 * 26], ['c2', 60 * 50], ['c1', 60 * 24 * 9]].map(([c, m], i) => ({ id: 'g' + i, foto_id: 'f' + i, cliente_id: c, piletero_id: 'p1', creado: new Date(Date.now() - m * 60000).toISOString() })); S.mgCargado = true;
   S.av = [{ id: 'av1', cliente_id: 'c1', aviso: 'llave', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }, { id: 'av2', cliente_id: 'c2', aviso: 'saltear', aviso_desde: ymd(new Date()), aviso_hasta: ymd(new Date()) }];
   S.msg = S.ms.filter(m => m.de_cliente && !m.leido_equipo);
   S.ped = [{ id: 'pe1', cliente_id: 'c1', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 2 }, { t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 23000, pago: 'cuenta', nota: 'Si pueden traerlo el lunes con la visita', estado: 'nuevo', creado: ago(45) }];
@@ -470,11 +498,11 @@ async function cargarPortal(silencio) {
     sb.from('pedidos').select().order('creado', { ascending: false }).limit(150),
     sb.from('recomendaciones').select().eq('estado', 'activa'),
     sb.rpc('resumen_chats'),
-    sb.from('me_gusta').select('foto_id'),
+    sb.from('me_gusta').select('id,foto_id,cliente_id,creado,piletero_id').order('creado', { ascending: false }).limit(500),
     sb.from('mensajes').select('id,cliente_id,aviso,aviso_desde,aviso_hasta,creado').not('aviso', 'is', null).gte('aviso_hasta', ymd(new Date(Date.now() - 864e5)))
   ]);
   const antes = { m: S.msg.length, p: S.ped.filter(x => x.estado === 'nuevo').length };
-  if (!m.error) S.msg = m.data; if (!pe.error) S.ped = pe.data; if (!re.error) S.rec = re.data; if (!rc.error) S.rc = rc.data || []; if (!mg.error) S.mg = new Set((mg.data || []).map(x => x.foto_id)); if (!av.error) S.av = av.data || [];
+  if (!m.error) S.msg = m.data; if (!pe.error) S.ped = pe.data; if (!re.error) S.rec = re.data; if (!rc.error) S.rc = rc.data || []; if (!mg.error) { const antes = new Set(S.mgl.map(x => x.id)), nuevos = silencio || !S.mgl.length && !S.mgCargado ? [] : (mg.data || []).filter(x => !antes.has(x.id) && x.piletero_id === S.me?.id); S.mgl = mg.data || []; S.mgCargado = true; S.mg = new Set(S.mgl.map(x => x.foto_id)); if (nuevos.length) { son('plin'); const c = S.c.find(x => x.id === nuevos[0].cliente_id); toast(`❤️ A ${c ? c.nombre : 'un cliente'} le gustó cómo quedó la pileta`); } } if (!av.error) S.av = av.data || [];
   if (silencio || !S.me) return;
   const nm = S.msg.length > antes.m, np = S.ped.filter(x => x.estado === 'nuevo').length > antes.p;
   if (nm || np) { son(np ? 'pedido' : 'plin'); toast(np ? '🛒 Llegó un pedido nuevo de un cliente' : '💬 Tenés un mensaje nuevo de un cliente'); renderAll(); }
@@ -730,10 +758,31 @@ function renderHerr() {
     return `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small class="${own ? '' : u ? 'u' : 'a'}">${st}</small></div><div class="acts">${b}</div></div>`;
   }).join('');
 }
+// "Me gusta" de esta semana (desde el lunes) en las visitas de cada piletero
+const lunesISO = () => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x.toISOString(); };
+const misLikes = (desde) => S.mgl.filter(g => g.piletero_id === S.me.id && (!desde || g.creado >= desde));
+function likesWidget() {
+  const l = misLikes(lunesISO()), cli = [...new Set(l.map(g => g.cliente_id))].map(id => S.c.find(c => c.id === id)).filter(Boolean);
+  return `<button class="likesW ${l.length ? '' : 'cero'}" data-a="verLikes" aria-label="${l.length} me gusta esta semana"><span class="lwAv" id="lwAv" data-i="0">${cli.length ? avCli(cli[0]) : '<span class="lwH">♡</span>'}</span><span class="lwN">❤️ ${l.length}</span></button>`;
+}
+const avCli = c => `<span class="lwC" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span>`;
+// bucle: va mostrando a cada cliente que dio me gusta esta semana
+setInterval(() => {
+  const el = document.getElementById('lwAv'); if (!el || !S.me) return;
+  const cli = [...new Set(misLikes(lunesISO()).map(g => g.cliente_id))].map(id => S.c.find(c => c.id === id)).filter(Boolean);
+  if (cli.length < 2) return;
+  const i = (+el.dataset.i + 1) % cli.length; el.dataset.i = i;
+  el.classList.remove('gira'); void el.offsetWidth; el.innerHTML = avCli(cli[i]); el.classList.add('gira');
+}, 2200);
+function verLikes() {
+  const semana = misLikes(lunesISO()), antes = misLikes().filter(g => g.creado < lunesISO()).slice(0, 30);
+  const fila = g => { const c = S.c.find(x => x.id === g.cliente_id) || { nombre: 'Cliente' }; return `<button class="chatc" data-a="likeHist" data-id="${g.cliente_id}">${avCli(c).replace('lwC', 'av')}<span class="grow"><b>${esc(c.nombre)}</b><small>Le gustó cómo quedó la pileta</small></span><span class="der">${haceMin(g.creado)}</span></button>`; };
+  sheet(`<h2>❤️ Me gusta de tus clientes</h2><p class="sub">Cuando a un cliente le gusta la foto de tu visita, aparece acá y te llega una notificación.</p><h3>Esta semana · ${semana.length}</h3>${semana.length ? semana.map(fila).join('') : '<p class="note">Todavía nadie esta semana. ¡Subí linda la foto de la próxima visita! 📸</p>'}${antes.length ? '<h3>Antes</h3>' + antes.map(fila).join('') : ''}<button class="btn sec" data-a="cerrar">Cerrar</button>`);
+}
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn sec" data-a="tourEq" style="margin-top:14px">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn sec" data-a="tourEq" style="margin-top:14px">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush();
 }
 function renderCal() {
@@ -945,8 +994,8 @@ function formKit(k) {
 }
 function venta(tipo, id) {
   const pre = S.vcl; S.vcl = null;
-  const it = (tipo === 'p' ? S.pr : S.k).find(x => x.id === id), cs = isGestor() ? S.c : S.c.filter(c => c.piletero_id === S.me.id);
-  sheet(`<h2>Vender: ${esc(it.nombre)}</h2><p class="sub">${peso(it.precio)} cada uno</p>${tipo === 'p' && it.pack_cant ? `<p class="note">📦 Llevando ${it.pack_cant}: ${+it.pack_desc || 10}% de descuento en esas ${it.pack_cant} (se aplica solo).</p>` : ''}${tipo === 'k' ? `<p class="note">Al vender el kit se descuenta del stock: ${esc((it.items || []).map(i => ((S.pr.find(x => x.id === i.p) || {}).nombre || '?') + ' ×' + i.n).join(', '))} (por cada kit).</p>` : ''}<label>Cantidad<input id="vq" type="number" inputmode="numeric" min="1" value="1"></label><label>¿A qué cliente se lo vendés? (queda en su ficha)<select id="vcl"><option value="">Sin cliente</option>${cs.map(c => `<option value="${c.id}" ${c.id === pre ? 'selected' : ''}>${esc(c.nombre)} — ${esc(c.direccion)}</option>`).join('')}</select></label><label>¿Se cobró?<select id="vco"><option value="si">Sí, cobrada</option><option value="no">No, queda pendiente</option></select></label><button class="btn" data-a="okVenta" data-id="${id}" data-tipo="${tipo}">Registrar venta</button>`);
+  const it = (tipo === 'p' ? S.pr : S.k).find(x => x.id === id), cs = misCs(), preAj = pre && !cs.some(c => c.id === pre);
+  sheet(`<h2>Vender: ${esc(it.nombre)}</h2><p class="sub">${peso(it.precio)} cada uno</p>${tipo === 'p' && it.pack_cant ? `<p class="note">📦 Llevando ${it.pack_cant}: ${+it.pack_desc || 10}% de descuento en esas ${it.pack_cant} (se aplica solo).</p>` : ''}${tipo === 'k' ? `<p class="note">Al vender el kit se descuenta del stock: ${esc((it.items || []).map(i => ((S.pr.find(x => x.id === i.p) || {}).nombre || '?') + ' ×' + i.n).join(', '))} (por cada kit).</p>` : ''}<label>Cantidad<input id="vq" type="number" inputmode="numeric" min="1" value="1"></label><label>¿A qué cliente se lo vendés? (queda en su ficha)<select id="vcl">${optsCli(preAj, pre, 'Sin cliente')}</select></label>${todosCli('vcl', 'Sin cliente')}<label>¿Se cobró?<select id="vco"><option value="si">Sí, cobrada</option><option value="no">No, queda pendiente</option></select></label><button class="btn" data-a="okVenta" data-id="${id}" data-tipo="${tipo}">Registrar venta</button>`);
 }
 function renderAll() {
   $('#chipsMap').innerHTML = chips(); $('#chipsList').innerHTML = chips();
@@ -998,10 +1047,26 @@ async function openChat(id, refresco) {
   if (ms.length) { const u = ms[ms.length - 1], r = { cliente_id: id, creado: u.creado, texto: u.texto, foto: !!u.foto, de_cliente: u.de_cliente, sin_leer: 0 }; S.rc = [...S.rc.filter(x => x.cliente_id !== id), r]; }
   if (refresco && $('#chatMsgs')) { const el = $('#chatMsgs'), abajo = el.scrollHeight - el.scrollTop - el.clientHeight < 80; el.innerHTML = bubbles(ms, c); if (abajo) el.scrollTop = el.scrollHeight; return renderAll(); }
   S.chatFoto = null;
-  sheet(`<h2>Mensajes · ${esc(c.nombre)}</h2><p class="sub">${c.usuario_id ? 'El cliente ve estos mensajes en su app.' : 'Este cliente todavía no se registró en la app. Pasale su código desde la ficha.'}</p><div class="msgs" id="chatMsgs">${bubbles(ms, c)}</div><div id="chatPrev"></div><div class="chips qr">${RESP.map(r => `<button class="chip" data-a="resp" data-id="${esc(r)}">${esc(r)}</button>`).join('')}</div><div class="cbar"><label class="ib" aria-label="Adjuntar foto">📷<input type="file" id="chatFile" accept="image/*"></label><textarea id="chatTxt" rows="1" placeholder="Responder…"></textarea><button class="ib send" data-a="chatEnviar" data-id="${c.id}" aria-label="Enviar">➤</button></div><button class="btn sec" data-a="abrir" data-id="${c.id}">Volver a la ficha</button>`);
+  closeSheet();
+  $('#cvAv').textContent = (c.nombre || '?').trim()[0].toUpperCase(); $('#cvAv').style.background = col(c.piletero_id);
+  $('#cvN').textContent = c.nombre;
+  $('#cvS').textContent = c.usuario_id ? 'Usa la app · ve estos mensajes' : 'Todavía no usa la app · pasale su código';
+  $('#cvQr').innerHTML = RESP.map(r => `<button class="chip" data-a="resp" data-id="${esc(r)}">${esc(r)}</button>`).join('');
+  $('#cvSend').dataset.id = c.id; $('#chatPrev').innerHTML = ''; $('#chatTxt').value = '';
+  $('#chatMsgs').innerHTML = bubbles(ms, c);
+  const v = $('#chatV'), abierto = !v.hidden;
+  v.hidden = false; document.body.classList.add('enChat');
+  if (!abierto) history.pushState({ chat: id }, '');
   const el = $('#chatMsgs'); el.scrollTop = el.scrollHeight;
   renderAll();
 }
+function cerrarChat(desdeAtras) {
+  const v = $('#chatV'); if (v.hidden) return;
+  v.hidden = true; document.body.classList.remove('enChat'); S.chat = null;
+  if (!desdeAtras && history.state && history.state.chat) history.back();
+  renderAll();
+}
+window.addEventListener('popstate', () => { if (!$('#chatV').hidden) cerrarChat(true); });
 // Código de acceso a la app de clientes
 const codNuevo = () => [...crypto.getRandomValues(new Uint8Array(3))].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 const linkClientes = () => new URL('cliente.html', location.href).href.split('#')[0].split('?')[0];
@@ -1053,11 +1118,15 @@ function openVisita(id) {
   const reg = S.r.find(r => r.visita_id === v.id && r.fecha === S.sel), hecha = !!reg;
   sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}</p><p class="sub">${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}, desde el ${new Date(v.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p>${hecha ? '<p class="note">Esta visita ya está confirmada, por eso no se puede mover. Desmarcala primero si querés cambiarla.</p>' + (puedeReg(reg) ? '<button class="btn" data-a="editarReg" data-id="' + reg.id + '">Registro de la visita (notas y fotos)</button>' : '') : `<button class="btn" data-a="mover" data-id="${v.id}">Cambiar fecha u hora</button>`}<button class="btn sec" data-a="abrir" data-id="${c.id}">Ver cliente</button><button class="btn sec" data-a="borrarV" data-id="${v.id}">Eliminar visita${v.repetir === 'no' ? '' : ' y sus repeticiones'}</button>`);
 }
+// Opciones de clientes para los formularios: siempre los míos; el coordinador puede tildar "todo el equipo"
+const misCs = () => S.c.filter(c => c.piletero_id === S.me.id);
+const optsCli = (todos, sel, vacio) => (vacio ? `<option value="">${vacio}</option>` : '') + (todos ? S.c : misCs()).slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.nombre)} — ${esc(c.direccion)}${todos && c.piletero_id !== S.me.id ? ' · ' + esc(nom(c.piletero_id)) : ''}</option>`).join('');
+const todosCli = (selId, vacio) => isGestor() ? `<label class="chk2"><input type="checkbox" ${misCs().length ? '' : 'checked'} onchange="const s=document.getElementById('${selId}');s.innerHTML=optsCli(this.checked,s.value,${vacio ? `'${vacio}'` : 'null'})"> Mostrar los clientes de todo el equipo</label>` : '';
 function programar(k) {
-  const cs = isGestor() ? S.c : S.c.filter(c => c.piletero_id === S.me.id);
-  if (!cs.length) return toast('Todavía no tenés clientes asignados');
+  const cs = misCs();
+  if (!cs.length && !isGestor()) return toast('Todavía no tenés clientes asignados');
   const hoy = ymd(new Date());
-  sheet(`<h2>Programar visita</h2><label>Fecha<input id="vf" type="date" value="${k}"></label><label>Cliente<select id="vc">${cs.map(c => `<option value="${c.id}">${esc(c.nombre)} — ${esc(c.direccion)}</option>`).join('')}</select></label><label>Hora (opcional)<input id="vh" type="time"></label><label>Repetir<select id="vr"><option value="no">Solo ese día</option><option value="semanal">Todas las semanas</option><option value="quincenal">Cada 15 días</option></select></label><label>¿Ya hiciste esta visita?<select id="vd"><option value="no">No, todavía no</option><option value="si" ${k <= hoy && k < hoy ? 'selected' : ''}>Sí, registrarla como hecha</option></select></label><p class="sub">Si la visita ya pasó, elegí la fecha y marcá “Sí” para que cuente en tus ganancias.</p><button class="btn" data-a="guardarV">Programar visita</button>`);
+  sheet(`<h2>Programar visita</h2><label>Fecha<input id="vf" type="date" value="${k}"></label><label>Cliente<select id="vc">${optsCli(!cs.length)}</select></label>${todosCli('vc')}<label>Hora (opcional)<input id="vh" type="time"></label><label>Repetir<select id="vr"><option value="no">Solo ese día</option><option value="semanal">Todas las semanas</option><option value="quincenal">Cada 15 días</option></select></label><label>¿Ya hiciste esta visita?<select id="vd"><option value="no">No, todavía no</option><option value="si" ${k <= hoy && k < hoy ? 'selected' : ''}>Sí, registrarla como hecha</option></select></label><p class="sub">Si la visita ya pasó, elegí la fecha y marcá “Sí” para que cuente en tus ganancias.</p><button class="btn" data-a="guardarV">Programar visita</button>`);
 }
 
 // ── Ruta desde donde estoy (auto, moto, bici o a pie)
@@ -1197,6 +1266,10 @@ async function act(e) {
   if (d.t) { if (t.closest('nav')) son('tap'); return go(d.t); }
   switch (d.a) {
     case 'cerrarSh': return closeSheet();
+    case 'verLikes': return verLikes();
+    case 'cerrarChat': return cerrarChat();
+    case 'chatFicha': { const id = S.chat; cerrarChat(); return openCliente(id); }
+    case 'likeHist': return verHist(d.id);
     case 'tourEq': return tourEquipo();
     case 'resp': { const x = $('#chatTxt'); x.value = d.id; x.focus(); return; }
     case 'ctab': S.ctab = d.id; son('tap'); return renderClients();
@@ -1521,7 +1594,7 @@ async function act(e) {
       closeSheet(); renderAll(); return toast('Cliente eliminado');
     }
     case 'usar':
-      return sheet(`<h2>${esc(h.nombre)}</h2><p class="sub">¿En qué cliente la vas a usar?</p><select id="hc"><option value="">Sin cliente (la llevo yo)</option>${S.c.map(c => `<option value="${c.id}">${esc(c.nombre)} — ${esc(c.direccion)}</option>`).join('')}</select><button class="btn" data-a="okUsar" data-id="${h.id}">Marcar en uso</button>`);
+      return sheet(`<h2>${esc(h.nombre)}</h2><p class="sub">¿En qué cliente la vas a usar?</p><select id="hc">${optsCli(false, null, 'Sin cliente (la llevo yo)')}</select>${todosCli('hc', 'Sin cliente (la llevo yo)')}<button class="btn" data-a="okUsar" data-id="${h.id}">Marcar en uso</button>`);
     case 'okUsar':
       await put('h', 'herramientas', { ...h, estado: 'en_uso', cliente_id: $('#hc').value || null, usuario_id: S.me.id });
       closeSheet(); renderAll(); return toast('Marcada en uso');
@@ -1551,7 +1624,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1 && !e.tar
 setInterval(() => {
   if (document.hidden || !S.me) return;
   pollU(); cargarPortal().catch(() => {});
-  if (S.chat && $('#sh').classList.contains('on') && $('#chatMsgs')) openChat(S.chat, true).catch(() => {});
+  if (S.chat && !$('#chatV').hidden) openChat(S.chat, true).catch(() => {});
 }, 20000);
 document.addEventListener('change', async e => {
   if (e.target.id !== 'chatFile' || !e.target.files[0]) return;
