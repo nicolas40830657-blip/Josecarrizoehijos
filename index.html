@@ -292,6 +292,7 @@ body.enEq #eqBtn .nb{display:none}
 #eqV .bub small{text-align:right}
 .eqAut{display:block;font-size:12.5px;margin-bottom:2px}
 .men{color:#1F63E8;font-weight:700}
+.eqInfo{text-transform:none!important;font-weight:500!important;opacity:.85}
 .eqDia{align-self:center;background:#ffffffd9;color:#5b6b80;font-size:12px;font-weight:600;border-radius:8px;padding:4px 10px;margin:8px 0 4px;text-transform:capitalize}
 #eqSug{margin:2px 0 6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#eqSug:empty{display:none}
 .chip.men{flex:none;background:#fff;color:#1F63E8;font-weight:700}.chip.men i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
@@ -904,12 +905,12 @@ function textoEq(t) {
 function renderEq() {
   const el = $('#eqMsgs'), abajo = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   let dia = '';
-  el.innerHTML = S.eq.length ? S.eq.map(m => {
+  el.innerHTML = '<div class="eqDia eqInfo">🧹 Los mensajes y fotos se borran solos a los 30 días</div>' + (S.eq.length ? S.eq.map(m => {
     const d = new Date(m.creado), dd = d.toDateString(), yo = m.autor_id === S.me?.id, p = P(m.autor_id) || { nombre: '?' };
     const sep = dd !== dia ? (dia = dd, `<div class="eqDia">${dd === new Date().toDateString() ? 'Hoy' : dd === new Date(Date.now() - 864e5).toDateString() ? 'Ayer' : d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>`) : '';
     const meMenc = (m.menciones || []).includes(S.me?.id);
     return sep + `<div class="eqFila ${yo ? 'yo' : ''}">${yo ? '' : `<span class="eqAvt" style="background:${col(m.autor_id)}">${esc(alias(p)[0].toUpperCase())}</span>`}<div class="bub ${yo ? 'me' : ''} ${meMenc ? 'mencion' : ''}">${yo ? '' : `<b class="eqAut" style="color:${col(m.autor_id)}">${esc(alias(p))}</b>`}${m.foto ? `<img src="${esc(m.foto)}" alt="Foto" data-a="verFotoEq" data-src="${esc(m.foto)}">` : ''}${textoEq(m.texto)}<small>${d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</small></div></div>`;
-  }).join('') : '<p class="note" style="margin:auto">Todavía no hay mensajes. ¡Escribí el primero! Usá @ para avisarle a alguien (le llega una notificación).</p>';
+  }).join('') : '<p class="note" style="margin:auto">Todavía no hay mensajes. ¡Escribí el primero! Usá @ para avisarle a alguien (le llega una notificación).</p>');
   if (abajo || !el.dataset.listo) { el.scrollTop = el.scrollHeight; el.dataset.listo = 1; }
 }
 function abrirEq() {
