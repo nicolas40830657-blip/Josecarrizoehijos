@@ -91,6 +91,16 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .tipos label span{font-size:22px}.tipos input{display:none}
 .tipos label:has(input:checked){border-color:var(--navy);background:#eaf1fd}
 .dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg3{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 8px}
+.seg3 label{margin:0;cursor:pointer}.seg3 input{display:none}
+.seg3 span{display:block;text-align:center;padding:10px;border-radius:12px;background:var(--g50);font-size:14px;font-weight:600;border:2px solid transparent}
+.seg3 input:checked+span{border-color:var(--navy);background:#eaf1fd;color:var(--navy)}
+.rpU{color:var(--g400);font-weight:400}
+.repBox{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin:4px 0 10px}
+.repBox div{background:#eaf1fd;border-radius:12px;padding:8px 10px}.repBox span{display:block;font-size:12px;color:var(--g600)}
+.repBox b{display:block;font-size:16px}.repBox small{color:var(--g600);font-size:12px}
+.repBox p{grid-column:1/-1;margin:0;color:#c92a2a;font-weight:600;font-size:13px}
+.repBox.mal div{background:#fff0f0}
 .trSem .row{cursor:pointer;align-items:center}
 .trSem .row .grow{min-width:0;flex:1}
 .trSem .row .te{flex:none;width:30px;text-align:center}
@@ -494,7 +504,7 @@ const pileteros = () => S.p.filter(p => p.rol !== 'administrador' && p.activo !=
 const mesStats = k => {
   const rs = S.r.filter(r => (r.fecha || '').startsWith(k)), vs = S.vt.filter(v => (v.fecha || '').startsWith(k)), ps = S.pg.filter(x => (x.fecha || '').startsWith(k));
   const sv = sumar(rs), tp = vs.reduce((a, v) => a + (+v.total || 0), 0), ts = trMes(k), tt = ts.reduce((a, t) => a + (+t.presupuesto || 0), 0);
-  return { n: sv.n, piletas: new Set(rs.map(r => r.cliente_id).filter(Boolean)).size, visitas: sv.t, prod: tp, trN: ts.length, trab: tt, trEmp: tt * (1 - PORC), total: sv.t + tp + tt, emp: sv.emp, pagado: ps.reduce((a, x) => a + (+x.monto || 0), 0) };
+  return { n: sv.n, piletas: new Set(rs.map(r => r.cliente_id).filter(Boolean)).size, visitas: sv.t, prod: tp, trN: ts.length, trab: tt, trEmp: ts.reduce((a, t) => a + empTr(t), 0), total: sv.t + tp + tt, emp: sv.emp, pagado: ps.reduce((a, x) => a + (+x.monto || 0), 0) };
 };
 const PORC = 0.7, PP = Math.round(PORC * 100); // 70% para el piletero, el resto para la empresa (visitas y trabajos)
 // Trabajos que cuentan en un mes: los no cancelados que empiezan ese mes
@@ -627,7 +637,7 @@ function demo() {
     { id: 'pe3', cliente_id: 'c2', items: [{ t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 2 }], total: 10000, pago: 'efectivo', estado: 'confirmado', origen: 'app', entrega: null, lleva_id: null, creado: ago(60 * 5) }];
   { const h = ymd(new Date()); S.tr = [
     { id: 't1', tipo: 'limpieza', titulo: 'Limpieza a fondo y vaciado', cliente_id: null, nombre: 'Club Náutico', direccion: 'Av. Martínez de Hoz 900', lat: -38.02, lng: -57.53, fecha: h, hora: '08:30:00', dias: 2, presupuesto: 180000, pago: 90000, piletero_id: 'p2', estado: 'programado', cobrado: false },
-    { id: 't2', tipo: 'pintura', titulo: 'Pintura con epoxi', cliente_id: 'c5', fecha: masDias(h, 2), dias: 3, presupuesto: 450000, pago: 200000, piletero_id: 'p1', estado: 'programado', cobrado: false, notas: 'Llevar 2 latas de epoxi celeste y rodillos' },
+    { id: 't2', tipo: 'pintura', titulo: 'Pintura con epoxi', cliente_id: 'c5', fecha: masDias(h, 2), dias: 3, presupuesto: 450000, pago: 200000, empresa: 135000, reparto: 'monto', piletero_id: 'p1', estado: 'programado', cobrado: false, notas: 'Llevar 2 latas de epoxi celeste y rodillos' },
     { id: 't3', tipo: 'reparacion', titulo: 'Cambio de bomba', cliente_id: 'c4', fecha: masDias(h, -3), dias: 1, presupuesto: 60000, pago: 30000, piletero_id: 'p3', estado: 'terminado', cobrado: true, terminado: new Date().toISOString() }]; }
   S.rec = [{ id: 're1', cliente_id: 'c3', tipo: 'p', item_id: 'pr3', cantidad: 1, estado: 'activa', creado: ago(60 * 30) }];
 }
@@ -1159,7 +1169,33 @@ function renderPerfil() {
   $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${trabajosSemanaHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}${plg('cobro', '💳', 'Mis datos para cobrar', m.pago_alias ? 'Alias: ' + esc(m.pago_alias) : m.pago_cbu ? 'CBU cargado' : 'Todavía sin cargar', `<div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div>`)}<button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button>${plg('push', '🔔', 'Notificaciones', 'Qué avisos te llegan a este celular', '<div class="cobro" id="pushBox"></div>')}${plg('color', '🎨', 'Tu color en el mapa', `<i class="dot" style="background:${m.color};display:inline-block;vertical-align:middle;margin-right:6px"></i>Tocá para cambiarlo`, `<div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div>`)}${plg('herr', '🧰', `Mis herramientas (${tl.length})`, tl.length ? tl.slice(0, 3).map(h => esc(h.nombre)).join(', ') + (tl.length > 3 ? '…' : '') : 'Todavía no tenés herramientas', `${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>`)}${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush(); montarObj();
 }
-const repTrab = v => `Suma a la facturación del mes como <b>Otros trabajos</b>. Para la empresa (${100 - PP}%): <b>${peso(v * (1 - PORC))}</b>.`;
+// Reparto de cada trabajo: se fija a mano en % o en $ (piletero / empresa; lo que sobra queda para materiales u otros gastos)
+const empTr = t => t.empresa != null ? +t.empresa : (+t.presupuesto || 0) * (1 - PORC);
+const pctTxt = n => (Math.round(n * 10) / 10).toLocaleString('es-AR') + '%';
+const modoRep = () => (document.querySelector('input[name=rpM]:checked') || {}).value || 'pct';
+function repCampos(t) {
+  const P = +t.presupuesto || 0, m = t.reparto === 'monto' ? 'monto' : 'pct';
+  const a = m === 'monto' ? (t.pago ?? '') : P && t.pago != null ? +(t.pago / P * 100).toFixed(1) : PP, b = m === 'monto' ? (t.empresa ?? '') : P && t.empresa != null ? +(t.empresa / P * 100).toFixed(1) : 100 - PP;
+  const u = m === 'pct' ? '(%)' : '($)';
+  return `<h3>Reparto de la plata</h3><div class="seg3"><label><input type="radio" name="rpM" value="pct" ${m === 'pct' ? 'checked' : ''} onchange="cambiarRep('pct')"><span>En porcentaje</span></label><label><input type="radio" name="rpM" value="monto" ${m === 'monto' ? 'checked' : ''} onchange="cambiarRep('monto')"><span>En plata</span></label></div><div class="dos"><label>Piletero <span class="rpU">${u}</span><input id="rpP" type="number" inputmode="decimal" min="0" step="any" value="${a}" oninput="calcRep()"></label><label>Empresa <span class="rpU">${u}</span><input id="rpE" type="number" inputmode="decimal" min="0" step="any" value="${b}" oninput="calcRep()"></label></div><div class="repBox" id="ttRep"></div>`;
+}
+function repVals() {
+  const P = Math.max(+$('#ttP').value || 0, 0), a = Math.max(+$('#rpP').value || 0, 0), b = Math.max(+$('#rpE').value || 0, 0);
+  return modoRep() === 'pct' ? { P, pago: Math.round(P * a / 100), emp: Math.round(P * b / 100), pa: a, pb: b } : { P, pago: a, emp: b, pa: P ? a / P * 100 : 0, pb: P ? b / P * 100 : 0 };
+}
+function calcRep() {
+  const el = document.getElementById('ttRep'); if (!el) return;
+  const v = repVals(), resto = v.P - v.pago - v.emp;
+  el.classList.toggle('mal', resto < 0);
+  el.innerHTML = `<div><span>👷 Piletero</span><b>${peso(v.pago)}</b><small>${pctTxt(v.pa)}</small></div><div><span>🏢 Empresa</span><b>${peso(v.emp)}</b><small>${pctTxt(v.pb)}</small></div>` +
+    (resto > 0 ? `<div><span>🧰 Materiales u otros</span><b>${peso(resto)}</b><small>${pctTxt(v.P ? resto / v.P * 100 : 0)}</small></div>` : '') + (resto < 0 ? `<p>⚠ El reparto se pasa del presupuesto por ${peso(-resto)}</p>` : '');
+}
+function cambiarRep(m) {
+  const P = +$('#ttP').value || 0, a = +$('#rpP').value || 0, b = +$('#rpE').value || 0;
+  if (m === 'monto') { $('#rpP').value = P ? Math.round(P * a / 100) : ''; $('#rpE').value = P ? Math.round(P * b / 100) : ''; }
+  else { $('#rpP').value = P ? +(a / P * 100).toFixed(1) : PP; $('#rpE').value = P ? +(b / P * 100).toFixed(1) : 100 - PP; }
+  document.querySelectorAll('.rpU').forEach(x => { x.textContent = m === 'pct' ? '(%)' : '($)'; }); calcRep();
+}
 // Tarjetas plegables del perfil (se acuerdan cuáles abriste)
 S.abiertos = S.abiertos || new Set();
 const plg = (k, ic, t, res, cont) => `<details class="plg" data-k="${k}" ${S.abiertos.has(k) ? 'open' : ''}><summary><span class="pi">${ic}</span><span class="grow"><b>${t}</b><small>${res}</small></span><i class="chev">⌄</i></summary><div class="plgB">${cont}</div></details>`;
@@ -1196,10 +1232,11 @@ function formTrabajo(t) {
     `<div id="ttOtro" ${otro ? '' : 'hidden'}><label>Nombre o lugar<input id="ttN" maxlength="120" value="${esc(t.nombre || '')}" placeholder="Ej: Club Náutico, Familia López"></label><label>Dirección<input id="ttD" maxlength="200" value="${esc(t.direccion || '')}" placeholder="Ej: Av. Colón 3500"></label></div>` +
     `<div class="dos"><label>Empieza<input id="ttF" type="date" value="${t.fecha}"></label><label>Hora (opcional)<input id="ttH" type="time" value="${t.hora ? t.hora.slice(0, 5) : ''}"></label></div>` +
     `<label>¿Cuántos días dura, aprox.?<input id="ttDi" type="number" inputmode="numeric" min="1" max="60" value="${t.dias || 1}"></label>` +
-    `<div class="dos"><label>Presupuesto mano de obra ($)<input id="ttP" type="number" inputmode="decimal" min="0" value="${t.presupuesto || ''}" placeholder="Lo que se le cobra al cliente" oninput="document.getElementById('ttRep').innerHTML=repTrab(+this.value||0)"></label><label>Le pagamos al piletero ($)<input id="ttG" type="number" inputmode="decimal" min="0" value="${t.pago || ''}" placeholder="Lo que cobra él"></label></div><div class="note" id="ttRep">${repTrab(+t.presupuesto || 0)}</div>` +
+    `<label>Presupuesto mano de obra ($)<input id="ttP" type="number" inputmode="decimal" min="0" value="${t.presupuesto || ''}" placeholder="Lo que se le cobra al cliente" oninput="calcRep()"></label>${repCampos(t)}` +
     `<label>¿Quién lo hace?<select id="ttQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === t.piletero_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>` +
     `<label>Notas (opcional)<textarea id="ttK" rows="2" maxlength="1000" placeholder="Materiales, qué llevar, cómo entrar…">${esc(t.notas || '')}</textarea></label>` +
     `<button class="btn" data-a="guardarTrab" data-id="${t.id || ''}">${t.id ? 'Guardar cambios' : 'Programar trabajo'}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+  calcRep();
 }
 function verTrabajo(id) {
   const t = S.tr.find(x => x.id === id); if (!t) return toast('No encontré ese trabajo');
@@ -1207,7 +1244,7 @@ function verTrabajo(id) {
   const fechas = t.dias > 1 ? `Del ${fCorta(t.fecha)} al ${fCorta(finTr(t))} (${t.dias} días)` : fCorta(t.fecha);
   const mapa = l.lat && l.lng ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : l.d ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.d + ', Mar del Plata')}` : '';
   sheet(`<h2>${e} ${esc(t.titulo || n)}</h2><p class="sub">${esc(n)} · ${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</p><p class="who"><i class="dot" style="background:${col(t.piletero_id)}"></i>${t.piletero_id ? 'Lo hace ' + (mio ? 'vos' : esc(nom(t.piletero_id))) : 'Sin asignar'} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></p><p class="sub">📅 ${fechas}${t.hora ? ' · ' + t.hora.slice(0, 5) : ''}</p>` +
-    `<div class="stats">${g ? `<div><small>Presupuesto mano de obra</small><b>${peso(t.presupuesto)}</b></div>` : ''}<div><small>${g ? 'Le pagamos al piletero' : 'Cobrás vos'}</small><b>${peso(t.pago)}</b></div>${g ? `<div><small>Para la empresa (${100 - PP}%)</small><b>${peso((+t.presupuesto || 0) * (1 - PORC))}</b></div><div><small>Cobrado al cliente</small><b>${t.cobrado ? 'Sí ✓' : 'Todavía no'}</b></div>` : ''}</div>` +
+    `<div class="stats">${g ? `<div><small>Presupuesto mano de obra</small><b>${peso(t.presupuesto)}</b></div>` : ''}<div><small>${g ? 'Le pagamos al piletero' : 'Cobrás vos'}${g && +t.presupuesto ? ' (' + pctTxt(t.pago / t.presupuesto * 100) + ')' : ''}</small><b>${peso(t.pago)}</b></div>${g ? `<div><small>Para la empresa${+t.presupuesto ? ' (' + pctTxt(empTr(t) / t.presupuesto * 100) + ')' : ''}</small><b>${peso(empTr(t))}</b></div>${(+t.presupuesto || 0) - (+t.pago || 0) - empTr(t) > 0 ? `<div><small>Materiales u otros</small><b>${peso((+t.presupuesto || 0) - (+t.pago || 0) - empTr(t))}</b></div>` : ''}<div><small>Cobrado al cliente</small><b>${t.cobrado ? 'Sí ✓' : 'Todavía no'}</b></div>` : ''}</div>` +
     `${t.notas ? `<p class="note">${esc(t.notas)}</p>` : ''}${t.pagado ? `<p class="sub">💸 Pagado el ${new Date(t.pagado).toLocaleDateString('es-AR')}</p>` : t.terminado ? `<p class="sub">✅ Terminado el ${new Date(t.terminado).toLocaleDateString('es-AR')}</p>` : ''}` +
     `${t.estado === 'programado' && (g || mio) ? `<button class="btn" data-a="terminarTrab" data-id="${t.id}">✅ Marcar terminado</button>` : ''}` +
     `${g && t.estado === 'terminado' ? `<button class="btn pagar" data-a="pagarTrab" data-id="${t.id}">💸 Pagar ${peso(t.pago)}${t.piletero_id ? ' a ' + esc(nom(t.piletero_id)) : ''}</button>` : ''}` +
@@ -1306,7 +1343,7 @@ function pendientesHTML() {
 function equipoHTML() {
   const m = mesStats(S.mes), rs = delMes(S.r);
   const meses = [...new Set([...S.r, ...S.vt, ...S.pg, ...S.tr.filter(t => t.estado !== 'cancelado')].map(x => (x.fecha || '').slice(0, 7)).filter(Boolean))].sort().reverse().slice(0, 12);
-  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (${100 - PP}% de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(sumar(S.r.filter(r => !r.pago_id)).emp)}</b></div></div>` +
+  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(sumar(S.r.filter(r => !r.pago_id)).emp)}</b></div></div>` +
     pileteros().map(p => { const w = sumar(rs.filter(r => r.piletero_id === p.id)), d = sumar(S.r.filter(r => r.piletero_id === p.id && !r.pago_id)).emp; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)} · ${S.c.filter(c => c.piletero_id === p.id).length} clientes</small></div><div class="num"><b>${d > 0 ? peso(d) : 'Al día'}</b><small>${d > 0 ? 'debe' : ''}</small></div></div>`; }).join('') +
     '<h3>Historial mensual</h3>' + (meses.map(k => { const h = mesStats(k); return `<div class="row"><div class="grow"><b>${mesTxt(k)}</b><small>${h.n} ${h.n === 1 ? 'visita' : 'visitas'} · ${h.piletas} piletas${h.trN ? ` · ${h.trN} ${h.trN === 1 ? 'trabajo' : 'trabajos'} ${peso(h.trab)}` : ''} · pagado ${peso(h.pagado)}</small></div><div class="num"><b>${peso(h.total)}</b><small>facturado</small></div></div>`; }).join('') || '<p class="note">Todavía no hay datos.</p>');
 }
@@ -1855,8 +1892,9 @@ async function act(e) {
     case 'guardarTrab': {
       const cid = $('#ttC').value || null, f = { tipo: (document.querySelector('input[name=tt]:checked') || {}).value || 'otro', titulo: $('#ttT').value.trim() || null, cliente_id: cid,
         nombre: cid ? null : $('#ttN').value.trim() || null, direccion: cid ? null : $('#ttD').value.trim() || null, fecha: $('#ttF').value, hora: $('#ttH').value || null,
-        dias: Math.round(+$('#ttDi').value || 1), presupuesto: Math.max(+$('#ttP').value || 0, 0), pago: Math.max(+$('#ttG').value || 0, 0), piletero_id: $('#ttQ').value || null, notas: $('#ttK').value.trim() || null };
+        dias: Math.round(+$('#ttDi').value || 1), presupuesto: Math.max(+$('#ttP').value || 0, 0), pago: repVals().pago, empresa: repVals().emp, reparto: modoRep(), piletero_id: $('#ttQ').value || null, notas: $('#ttK').value.trim() || null };
       if (!f.fecha) return toast('Poné la fecha en que empieza');
+      if (f.pago + f.empresa > f.presupuesto) return toast('El reparto se pasa del presupuesto. Revisá los números.');
       if (!cid && !f.nombre && !f.direccion) return toast('Elegí el cliente o escribí dónde es');
       if (f.dias < 1 || f.dias > 60) return toast('La duración tiene que ser de 1 a 60 días');
       t.disabled = true;
