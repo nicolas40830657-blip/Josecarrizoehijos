@@ -46,6 +46,23 @@ main{flex:1;position:relative;overflow:hidden}
 #perfil{position:relative}
 .likesW{position:absolute;top:2px;right:0;display:flex;align-items:center;gap:6px;border:0;background:#fff;border-radius:999px;padding:4px 10px 4px 4px;box-shadow:0 4px 14px rgba(224,49,49,.18);cursor:pointer;font:inherit;z-index:2}
 .likesW.cero{box-shadow:var(--sh);opacity:.85}
+.objW{margin:12px -20px 0;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 20px 22px;scrollbar-width:none}
+.objW::-webkit-scrollbar{display:none}
+.objC{flex:0 0 82%;max-width:330px;scroll-snap-align:center;background:#fff;border-radius:24px;box-shadow:0 10px 30px #0b25451a,0 1px 3px #0b25450d;padding:16px 16px 14px;position:relative;text-align:left;--c:#7b5cff;--cl:#efeaff}
+.objC .oh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.objC .oh b{font-size:17px;color:var(--ink)}
+.objC .pill{border:1px solid #e6e8ee;background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;color:var(--g600);cursor:pointer;white-space:nowrap}
+.objC svg{display:block;width:100%;height:96px;margin:6px 0 2px;overflow:visible}
+.objC .ol{font-size:12px;color:var(--g600);margin:4px 0 0}
+.objC .op{font-size:34px;font-weight:800;letter-spacing:-.5px;color:var(--ink);display:flex;align-items:center;gap:6px;line-height:1.15}
+.objC .op i{font-style:normal;font-size:15px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--cl);color:var(--c)}
+.objC .oc{font-size:13px;color:var(--g600);margin:2px 52px 0 0;line-height:1.35}
+.objC .ob{position:absolute;right:14px;bottom:14px;width:42px;height:42px;border-radius:50%;border:0;background:var(--c);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 16px color-mix(in srgb,var(--c) 40%,transparent)}
+.objDots{display:flex;justify-content:center;gap:6px;margin:0 0 8px}
+.objDots i{width:6px;height:6px;border-radius:3px;background:#d5d9e2;transition:.25s}
+.objDots i.on{width:18px;background:var(--navy)}
+.objBar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;margin:6px 0 2px}
+.objBar i{display:block;height:100%;border-radius:4px}
 .lwAv{width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#FFF0F3;border:2px solid #ff3040}
 .likesW.cero .lwAv{border-color:#e3e8ef}
 .lwC{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
@@ -463,6 +480,7 @@ const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('
 function demo() {
   S.p = [{ id: 'p1', nombre: 'José', color: COLORS[0], rol: 'coordinador' }, { id: 'p2', nombre: 'Mariano', color: COLORS[1] }, { id: 'p3', nombre: 'Lucas', color: COLORS[2] }, { id: 'p4', nombre: 'Nico', color: COLORS[3] }, { id: 'p5', nombre: 'Viviana', color: COLORS[4], rol: 'administrador' }, { id: 'p5', nombre: 'Viviana', color: COLORS[4], rol: 'administrador' }];
   S.p.forEach(p => { p.porc_productos = p.rol === 'administrador' ? 0 : 10; });
+  const OBJ = { p1: [14, 230000], p2: [14, 260000], p3: [8, 200000] }; S.p.forEach(p => { if (OBJ[p.id]) { p.obj_visitas = OBJ[p.id][0]; p.obj_monto = OBJ[p.id][1]; } });
   S.c = [
     { id: 'c1', valor_visita: 15000, telefono: '223 155 123456', dia: 'Lunes', nombre: 'Familia Pérez', direccion: 'Güemes 2450', lat: -37.9996, lng: -57.5547, notas: 'Pileta 8x4, cloro granulado', piletero_id: 'p1' },
     { id: 'c2', valor_visita: 20000, telefono: '2234567890', dia: 'Martes', nombre: 'Casa Rossi', direccion: 'Los Troncos, Almafuerte 1200', lat: -38.0105, lng: -57.553, notas: 'Tiene perro, avisar antes', piletero_id: 'p2' },
@@ -500,6 +518,9 @@ function demo() {
     { id: 'r3', visita_id: 'v3', cliente_id: 'c2', piletero_id: 'p2', fecha: back(1), valor: 20000 },
     { id: 'r4', visita_id: 'v4', cliente_id: 'c4', piletero_id: 'p3', fecha: back(3), valor: 25000 }
   ];
+  // visitas de ejemplo repartidas en el mes, para ver subir las líneas de objetivos
+  { const hoy = new Date(), CL = { p1: ['c1', 'c3'], p2: ['c2', 'c6'], p3: ['c4'], p4: ['c5'] }; let n = 0;
+    for (let d = 1; d < hoy.getDate() - 3; d++) Object.keys(CL).forEach((pid, j) => { if ((d * 7 + j * 3) % 5 > 1) return; const cid = CL[pid][d % CL[pid].length], c = S.c.find(x => x.id === cid); S.r.push({ id: 'rx' + (n++), cliente_id: cid, piletero_id: pid, fecha: ymd(new Date(hoy.getFullYear(), hoy.getMonth(), d)), valor: c.valor_visita, pago_id: 'x' }); }); }
   S.pr = [
     { id: 'pr1', nombre: 'Cloro granulado 90%', detalle: 'Granulado, 90% de cloro', stock: 12, precio: 9000 },
     { id: 'pr2', nombre: 'Cloro granulado 70%', detalle: 'Granulado, 70% de cloro', stock: 8, precio: 7500 },
@@ -986,11 +1007,82 @@ function verLikes() {
   const fila = g => { const c = S.c.find(x => x.id === g.cliente_id) || { nombre: 'Cliente' }; return `<button class="chatc" data-a="likeHist" data-id="${g.cliente_id}">${avCli(c).replace('lwC', 'av')}<span class="grow"><b>${esc(c.nombre)}</b><small>Le gustó cómo quedó la pileta</small></span><span class="der">${haceMin(g.creado)}</span></button>`; };
   sheet(`<h2>❤️ Me gusta de tus clientes</h2><p class="sub">Cuando a un cliente le gusta la foto de tu visita, aparece acá y te llega una notificación.</p><h3>Esta semana · ${semana.length}</h3>${semana.length ? semana.map(fila).join('') : '<p class="note">Todavía nadie esta semana. ¡Subí linda la foto de la próxima visita! 📸</p>'}${antes.length ? '<h3>Antes</h3>' + antes.map(fila).join('') : ''}<button class="btn sec" data-a="cerrar">Cerrar</button>`);
 }
+// ── Objetivos del mes: cada piletero pone el suyo; el de la empresa es la suma de todos
+const diasMes = k => { const d = mesDe(k); return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); };
+const diaHoy = k => { const h = ymd(new Date()).slice(0, 7); return k < h ? diasMes(k) : k > h ? 0 : new Date().getDate(); };
+const PORMES = { 'Semanal': 4, 'Cada 15 días': 2, 'Mensual': 1 };
+function sugerido(pid) {
+  const cs = S.c.filter(c => c.piletero_id === pid);
+  const v = cs.reduce((a, c) => a + (PORMES[c.frecuencia] || 4), 0), m = cs.reduce((a, c) => a + (PORMES[c.frecuencia] || 4) * (+c.valor_visita || 0), 0);
+  return { v, m: Math.round(m / 1000) * 1000 };
+}
+const objDe = p => ({ v: p.obj_visitas ?? null, m: p.obj_monto ?? null });
+// acumulado día por día a partir de [{dia, n, monto}]
+function acum(dias, k, campo) {
+  const hasta = diaHoy(k), o = [0]; let t = 0;
+  for (let d = 1; d <= hasta; d++) { const x = dias.find(y => y.dia === d); t += x ? +(x[campo] || 0) : 0; o.push(t); }
+  return o;
+}
+const porDia = l => { const g = {}; l.forEach(r => { const d = +(r.fecha || '').slice(8, 10); g[d] = g[d] || { dia: d, n: 0, monto: 0 }; g[d].n++; g[d].monto += +r.valor || 0; }); return Object.values(g); };
+// datos de la empresa: el coordinador los calcula acá; el piletero los pide (solo totales)
+function empresaMes(k) {
+  if (isGestor() || !sb) {
+    const ps = pileteros();
+    return { obj_visitas: ps.reduce((a, p) => a + (+p.obj_visitas || 0), 0), obj_monto: ps.reduce((a, p) => a + (+p.obj_monto || 0), 0), dias: porDia(S.r.filter(r => (r.fecha || '').startsWith(k))),
+      pileteros: ps.map(p => { const l = S.r.filter(r => r.piletero_id === p.id && (r.fecha || '').startsWith(k)); return { ...p, n: l.length, monto: l.reduce((a, r) => a + (+r.valor || 0), 0) }; }) };
+  }
+  S.ob = S.ob || {};
+  if (S.ob[k] === undefined) { S.ob[k] = null; sb.rpc('progreso_empresa', { p_mes: k + '-01' }).then(x => { S.ob[k] = x.error ? false : x.data; if (S.mes === k) renderPerfil(); }); }
+  return S.ob[k] || null;
+}
+function curva(serie, meta, dim, c, id, estilo) {
+  const W = 300, H = 96, top = Math.max(meta || 0, serie[serie.length - 1] || 0, 1) * 1.12, X = d => d / dim * W, Y = v => H - v / top * (H - 6);
+  const pts = serie.map((v, d) => [X(d), Y(v)]);
+  let path = '';
+  pts.forEach((p, i) => { if (!i) { path = `M${p[0].toFixed(1)},${p[1].toFixed(1)}`; return; } const a = pts[i - 1], mx = (a[0] + p[0]) / 2; path += ` C${mx.toFixed(1)},${a[1].toFixed(1)} ${mx.toFixed(1)},${p[1].toFixed(1)} ${p[0].toFixed(1)},${p[1].toFixed(1)}`; });
+  const u = pts[pts.length - 1] || [0, H], ideal = meta ? `<line x1="0" y1="${H}" x2="${W}" y2="${Y(meta).toFixed(1)}" stroke="${c}" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="4 5"/><circle cx="${W}" cy="${Y(meta).toFixed(1)}" r="3" fill="#fff" stroke="${c}" stroke-opacity=".5" stroke-width="1.5"/>` : '';
+  const area = estilo === 'area' && pts.length > 1 ? `<path d="${path} L${u[0].toFixed(1)},${H} L0,${H}Z" fill="url(#g${id})"/>` : '';
+  const punto = estilo === 'brillo' ? `<circle cx="${u[0].toFixed(1)}" cy="${u[1].toFixed(1)}" r="11" fill="${c}" opacity=".18"/><circle cx="${u[0].toFixed(1)}" cy="${u[1].toFixed(1)}" r="5.5" fill="${c}" stroke="#fff" stroke-width="2.5"/>` : `<circle cx="${u[0].toFixed(1)}" cy="${u[1].toFixed(1)}" r="4.5" fill="#fff" stroke="${c}" stroke-width="2.5"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="g${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".35"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>${ideal}${area}<path d="${path}" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>${punto}</svg>`;
+}
+function tarjetaObj({ id, titulo, etiqueta, serie, meta, c, cl, estilo, fmt, sinMeta }) {
+  const k = S.mes, dim = diasMes(k), hecho = serie[serie.length - 1] || 0, pc = meta ? Math.round(hecho / meta * 100) : null;
+  const falta = meta ? Math.max(meta - hecho, 0) : 0, quedan = Math.max(dim - diaHoy(k), 0);
+  const cap = !meta ? sinMeta : falta === 0 ? `🎉 ¡Objetivo cumplido! ${fmt(hecho)} de ${fmt(meta)}` : quedan ? `${fmt(hecho)} de ${fmt(meta)} · faltan ${fmt(falta)} en ${quedan} ${quedan === 1 ? 'día' : 'días'}` : `${fmt(hecho)} de ${fmt(meta)} · quedaron ${fmt(falta)}`;
+  const ritmo = meta && diaHoy(k) ? hecho / (meta * diaHoy(k) / dim) : 1;
+  return `<div class="objC" style="--c:${c};--cl:${cl}"><div class="oh"><b>${titulo}</b><button class="pill" data-a="objMes">${MES[mesDe(k).getMonth()]} ⌄</button></div>${curva(serie, meta, dim, c, id, estilo)}<p class="ol">${etiqueta}</p><div class="op">${pc === null ? '—' : pc + '%'}<i>${ritmo >= 1 ? '↗' : '↘'}</i></div><p class="oc">${cap}</p><button class="ob" data-a="objetivo" data-id="${id}" aria-label="Configurar objetivo">→</button></div>`;
+}
+const cant = n => String(Math.round(n));
+function objetivosHTML() {
+  const k = S.mes, m = S.me, adm = m.rol === 'administrador', mias = porDia(S.r.filter(r => r.piletero_id === m.id && (r.fecha || '').startsWith(k))), o = objDe(m), cards = [];
+  if (!adm) {
+    cards.push(tarjetaObj({ id: 'mv', titulo: 'Mis visitas', etiqueta: 'Visitas hechas del objetivo', serie: acum(mias, k, 'n'), meta: +o.v || 0, c: '#7b5cff', cl: '#efeaff', estilo: 'area', fmt: cant, sinMeta: 'Tocá la flecha y poné tu objetivo de visitas del mes' }));
+    cards.push(tarjetaObj({ id: 'mm', titulo: 'Mis ingresos', etiqueta: 'Facturado por visitas', serie: acum(mias, k, 'monto'), meta: +o.m || 0, c: '#2f7bff', cl: '#e6f0ff', estilo: 'punto', fmt: peso, sinMeta: 'Tocá la flecha y poné cuánto querés facturar este mes' }));
+  }
+  const e = empresaMes(k);
+  if (e) {
+    cards.push(tarjetaObj({ id: 'ev', titulo: 'Empresa', etiqueta: 'Visitas de todo el equipo', serie: acum(e.dias || [], k, 'n'), meta: +e.obj_visitas || 0, c: '#ff8a1f', cl: '#fff1e3', estilo: 'brillo', fmt: cant, sinMeta: 'Se arma sumando el objetivo de cada piletero' }));
+    if (isGestor()) cards.push(tarjetaObj({ id: 'em', titulo: 'Empresa · $', etiqueta: 'Facturado por visitas del equipo', serie: acum(e.dias || [], k, 'monto'), meta: +e.obj_monto || 0, c: '#05A357', cl: '#e3f8ee', estilo: 'brillo', fmt: peso, sinMeta: 'Se arma sumando el objetivo de cada piletero' }));
+  }
+  if (!cards.length) return '';
+  return `<div class="objW" id="objW">${cards.join('')}</div>${cards.length > 1 ? `<div class="objDots" id="objDots">${cards.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}`;
+}
+function montarObj() {
+  const w = document.getElementById('objW'), dd = document.getElementById('objDots'); if (!w || !dd) return;
+  w.addEventListener('scroll', () => { const cs = [...w.children], x = w.scrollLeft + w.clientWidth / 2; let i = 0, best = 1e9; cs.forEach((c, j) => { const dx = Math.abs(c.offsetLeft + c.offsetWidth / 2 - x); if (dx < best) { best = dx; i = j; } }); [...dd.children].forEach((d, j) => d.classList.toggle('on', j === i)); }, { passive: true });
+}
+function hojaObjetivo(cual) {
+  const m = S.me, o = objDe(m), sg = sugerido(m.id), adm = m.rol === 'administrador', e = empresaMes(S.mes);
+  const fila = p => { const ov = +p.obj_visitas || 0, pc = ov ? Math.min(Math.round(p.n / ov * 100), 100) : 0; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${p.n} de ${ov || '—'} visitas · ${peso(p.monto)}${p.obj_monto ? ' de ' + peso(p.obj_monto) : ''}</small><div class="objBar"><i style="width:${pc}%;background:${p.color}"></i></div></div><div class="num"><b>${ov ? Math.round(p.n / ov * 100) + '%' : '—'}</b></div></div>`; };
+  const equipo = isGestor() && e && e.pileteros ? `<h3>Objetivo de cada piletero · ${mesTxt(S.mes)}</h3>${e.pileteros.map(fila).join('')}<p class="note">El objetivo de la empresa es la suma: ${e.obj_visitas} visitas · ${peso(e.obj_monto)}.</p>` : '';
+  const mio = adm ? '' : `<p class="sub">Tu objetivo vale para todos los meses hasta que lo cambies, y se suma al de la empresa. La línea sube sola con cada visita que confirmás.</p><label>Visitas por mes<input id="obV" type="number" inputmode="numeric" min="0" max="2000" value="${o.v ?? ''}" placeholder="Sugerido: ${sg.v}"></label><label>Facturar por visitas ($ por mes)<input id="obM" type="number" inputmode="decimal" min="0" value="${o.m ?? ''}" placeholder="Sugerido: ${sg.m}"></label>${sg.v ? `<button class="btn sec" data-a="objSug">Usar el sugerido (${sg.v} visitas · ${peso(sg.m)})</button>` : ''}<button class="btn" data-a="guardarObj">Guardar mi objetivo</button>`;
+  sheet(`<h2>${cual && cual[0] === 'e' ? '🏢 Objetivo de la empresa' : '🎯 Mi objetivo del mes'}</h2>${cual && cual[0] === 'e' && !isGestor() ? `<p class="sub">Es la suma del objetivo de todos los pileteros${e ? ': ' + e.obj_visitas + ' visitas este mes' : ''}. Tu parte la ponés acá abajo.</p>` : ''}${mio}${equipo}<button class="btn sec" data-a="cerrar">Cerrar</button>`);
+}
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
-  montarPush();
+  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  montarPush(); montarObj();
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
@@ -1298,6 +1390,7 @@ function go(t) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   if (t === 'mapa' && map) setTimeout(() => map.invalidateSize(), 50);
+  if (t === 'perfil' && sb && S.me && !isGestor()) { S.ob = {}; renderPerfil(); }
 }
 
 // ── Hoja inferior
@@ -1630,6 +1723,7 @@ async function act(e) {
       } finally { t.disabled = false; }
     }
     case 'chk': {
+      S.ob = {};
       const v = S.v.find(x => x.id === d.id), c = S.c.find(x => x.id === v.cliente_id);
       if (S.sel > ymd(new Date())) return toast('Todavía no llegó ese día');
       const ex = S.r.find(r => r.visita_id === v.id && r.fecha === S.sel);
@@ -1759,6 +1853,17 @@ async function act(e) {
     case 'ventaCli': S.vcl = d.id; S.inv = 'prod'; closeSheet(); go('inv'); renderInv(); return toast('Elegí el producto y tocá Vender');
     case 'cerrar': S.chat = null; return closeSheet();
     case 'reintentar': return location.reload();
+    case 'objetivo': return hojaObjetivo(d.id);
+    case 'objMes': { const h = ymd(new Date()).slice(0, 7), x = mesDe(S.mes); if (S.mes === h) x.setMonth(x.getMonth() - 1); else x.setTime(mesDe(h).getTime()); S.mes = ymd(x).slice(0, 7); return renderPerfil(); }
+    case 'objSug': { const sg = sugerido(S.me.id); $('#obV').value = sg.v; $('#obM').value = sg.m; return; }
+    case 'guardarObj': {
+      const v = $('#obV').value.trim(), mo = $('#obM').value.trim();
+      if (v && (+v < 0 || +v > 2000)) return toast('Poné entre 0 y 2000 visitas');
+      t.disabled = true;
+      try { S.me = await upd('p', 'perfiles', S.me.id, { obj_visitas: v === '' ? null : Math.round(+v), obj_monto: mo === '' ? null : Math.max(+mo, 0) }) || S.me; }
+      finally { t.disabled = false; }
+      if (S.ob) S.ob = {}; son('ok'); closeSheet(); renderAll(); return toast('¡Listo! Tu objetivo ya suma al de la empresa 🎯');
+    }
     case 'guardarCobro': {
       const cbu = $('#pgC').value.replace(/\D/g, '');
       if (cbu && cbu.length !== 22) return toast('El CBU o CVU tiene 22 números');
