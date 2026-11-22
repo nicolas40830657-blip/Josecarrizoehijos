@@ -101,6 +101,8 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .repBox b{display:block;font-size:16px}.repBox small{color:var(--g600);font-size:12px}
 .repBox p{grid-column:1/-1;margin:0;color:#c92a2a;font-weight:600;font-size:13px}
 .repBox.mal div{background:#fff0f0}
+.ventasSec{margin-top:26px;padding-top:6px;border-top:1px solid #dde3ee}
+.ventasSec h2{font-size:22px;margin:12px 0 8px}
 .trSem .row{cursor:pointer;align-items:center}
 .trSem .row .grow{min-width:0;flex:1}
 .trSem .row .te{flex:none;width:30px;text-align:center}
@@ -725,7 +727,8 @@ function localRpc(n, a) {
   }
   if (n === 'entregar_pedido') {
     const pe = S.ped.find(x => x.id === a.p_id);
-    for (const it of pe.items) localRpc('vender', { p_tipo: it.t, p_item: it.id, p_cant: it.n, p_cliente: pe.cliente_id, p_cobrado: a.p_cobrado });
+    pe.venta_ids = [];
+    for (const it of pe.items) { localRpc('vender', { p_tipo: it.t, p_item: it.id, p_cant: it.n, p_cliente: pe.cliente_id, p_cobrado: a.p_cobrado }); pe.venta_ids.push(S.vt[0].id); }
     pe.estado = 'entregado'; return;
   }
   if (n === 'cobrar_venta') { const v = S.vt.find(x => x.id === a.p_id); if (v) v.cobrado = a.p_cobrado; return; }
@@ -1384,6 +1387,23 @@ const histRows = (c, n, conFotos) => {
 };
 const fichaVentas = c => { const vs = ventasDe(c.id).slice(0, 5); return vs.length ? '<h3>Productos llevados</h3>' + vs.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${corto(new Date(v.fecha + 'T12:00'))} · ${esc(nom(v.vendedor_id))}</small><small class="${v.cobrado === false ? 'u' : 'a'}">${v.cobrado === false ? 'Pendiente de cobro' : 'Cobrada'}</small></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('') : ''; };
 const fichaHist = c => '<h3>Historial de visitas</h3>' + histRows(c, 3, false) + (S.r.some(r => r.cliente_id === c.id) ? `<button class="btn sec" data-a="hist" data-id="${c.id}">Ver historial completo y fotos</button>` : '');
+// Ventas agrupadas: las que salieron de un mismo pedido se muestran (y se cobran) como una sola venta
+function grupos(vs) {
+  const out = [], idx = {};
+  vs.forEach(v => {
+    const pe = S.ped.find(p => (p.venta_ids || []).includes(v.id)), k = pe ? 'pe:' + pe.id : 'v:' + v.id;
+    if (!idx[k]) { idx[k] = { k, pe, vs: [] }; out.push(idx[k]); }
+    idx[k].vs.push(v);
+  });
+  out.forEach(g => { g.total = g.vs.reduce((a, v) => a + (+v.total || 0), 0); g.pend = g.vs.some(v => v.cobrado === false); });
+  return out;
+}
+const grupoRow = g => !g.pe ? ventaRow(g.vs[0]) : `<button class="row" data-a="verCobroPed" data-id="${g.pe.id}"><div class="grow"><b>🧾 Pedido de ${esc(clN(g.pe.cliente_id) || 'cliente')}</b><small>${esc(g.vs.map(v => v.nombre + ' ×' + v.cantidad).join(' · '))}</small><small>${corto(new Date(g.vs[0].fecha + 'T12:00'))} · ${esc(nom(g.vs[0].vendedor_id))}</small><small class="${g.pend ? 'u' : 'a'}">${g.pend ? 'Pendiente de cobro' : 'Cobrada'}</small></div><div class="num"><b>${peso(g.total)}</b></div></button>`;
+function verCobroPed(id) {
+  const pe = S.ped.find(x => x.id === id); if (!pe) return;
+  const vs = S.vt.filter(v => (pe.venta_ids || []).includes(v.id)), tot = vs.reduce((a, v) => a + (+v.total || 0), 0), pend = vs.some(v => v.cobrado === false), ok = isGestor() || vs.every(v => v.vendedor_id === S.me.id);
+  sheet(`<h2>🧾 Pedido de ${esc(clN(pe.cliente_id) || 'cliente')}</h2><p class="sub">Entregado${vs[0] ? ' el ' + new Date(vs[0].fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) + ' · ' + esc(nom(vs[0].vendedor_id)) : ''} · ${PAGO[pe.pago] || ''}</p>${vs.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('')}<div class="stats"><div><small>Total de la venta</small><b>${peso(tot)}</b></div><div><small>Cobro</small><b>${pend ? 'Pendiente' : 'Cobrada ✓'}</b></div></div>${ok ? `<button class="btn ${pend ? 'pagar' : 'sec'}" data-a="cobroPed" data-id="${pe.id}">${pend ? `💵 Marcar cobrada la venta (${peso(tot)})` : 'Marcar como pendiente'}</button>` : ''}<button class="btn sec" data-a="cerrar">Cerrar</button>`);
+}
 const ventaRow = v => `<button class="row" data-a="verVenta" data-id="${v.id}"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${corto(new Date(v.fecha + 'T12:00'))} · ${esc(nom(v.vendedor_id))}${clN(v.cliente_id) ? ' · ' + esc(clN(v.cliente_id)) : ''}</small><small class="${v.cobrado === false ? 'u' : 'a'}">${v.cobrado === false ? 'Pendiente de cobro' : 'Cobrada'}</small></div><div class="num"><b>${peso(v.total)}</b></div></button>`;
 function metricasProd() {
   const hoy = ymd(new Date()), ini = ymd(lunes(hoy)), sem = S.vt.filter(v => v.fecha >= ini && v.fecha <= hoy), mm = S.vt.filter(v => (v.fecha || '').startsWith(hoy.slice(0, 7)));
@@ -1404,8 +1424,7 @@ function renderProd() {
     (S.pr.length ? '<div class="pgrid">' + S.pr.map(p => { const bajo = p.stock <= 0 || (+p.stock_min > 0 && +p.stock <= +p.stock_min); return `<div class="pcard ${bajo ? 'bajo' : ''}">${promoTag(p)}${imgCard(p.nombre)}<div class="pb"><b>${esc(p.nombre)}</b>${p.detalle ? `<small>${esc(p.detalle)}</small>` : ''}${promoPrecio(p)}${promoVig(p) && p.promo_regalo ? `<small class="a">🎁 ${esc(p.promo_regalo)}</small>` : ''}${packChip(p)}${margenHTML(p, 'p')}<small class="${bajo ? 'u' : 'a'}">Stock: ${p.stock}${+p.stock_min > 0 ? ' (mín. ' + p.stock_min + ')' : ''}${p.stock <= 0 ? ' · SIN STOCK' : bajo ? ' · STOCK BAJO' : ''}</small>${isGestor() && S.co[p.id] ? `<small>Costo ${peso(S.co[p.id])}</small>` : ''}${p.tienda === false ? '<small>No se muestra en la tienda</small>' : ''}<div class="acts"><button class="btn sm" data-a="venderP" data-id="${p.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="reponer" data-id="${p.id}">Reponer</button><button class="btn sm sec" data-a="editarP" data-id="${p.id}">Editar</button>` : ''}</div></div></div>`; }).join('') + '</div>' : '<p class="note">Todavía no hay productos.</p>') +
     `<div class="dh"><h3>Kits</h3>${isGestor() ? '<button class="btn sm" data-a="nuevoK">+ Kit</button>' : ''}</div>` +
     (S.k.length ? '<div class="pgrid">' + S.k.map(k => `<div class="pcard">${promoTag(k)}${imgCard(k.nombre, true)}<div class="pb"><b>${esc(k.nombre)}</b><small>${esc((k.items || []).map(i => ((S.pr.find(x => x.id === i.p) || {}).nombre || '?') + ' ×' + i.n).join(', '))}</small>${promoPrecio(k)}${promoVig(k) && k.promo_regalo ? `<small class="a">🎁 ${esc(k.promo_regalo)}</small>` : ''}${margenHTML(k, 'k')}<small class="${kd(k) > 0 ? 'a' : 'u'}">Disponibles: ${kd(k)}</small>${isGestor() && kcost(k) ? `<small>Costo ${peso(kcost(k))} · ganancia ${peso(k.precio - kcost(k))}</small>` : ''}<div class="acts"><button class="btn sm" data-a="venderK" data-id="${k.id}">Vender</button>${isGestor() ? `<button class="btn sm sec" data-a="editarK" data-id="${k.id}">Editar</button>` : ''}</div></div></div>`).join('') + '</div>' : '<p class="note">No hay kits armados.</p>') +
-    (pe.length ? `<h3>Cobros pendientes · ${peso(fa(pe))}</h3>` + pe.map(ventaRow).join('') : '') +
-    '<h3>Últimas ventas</h3>' + (ult.map(ventaRow).join('') || '<p class="note">Todavía no hay ventas.</p>') + (isGestor() ? gestionProd() : '');
+    (pe.length ? `<button class="pedbar" data-a="pedidos"><i>💵</i><div class="grow"><b>Cobros pendientes · ${peso(fa(pe))}</b><small>Ahora están en Pedidos, abajo de todo</small></div><span>›</span></button>` : '') + (isGestor() ? gestionProd() : '');
 }
 function verVenta(id) {
   const v = S.vt.find(x => x.id === id); if (!v) return;
@@ -1532,7 +1551,12 @@ function renderPed() {
     const h = l.filter(x => x.estado === f).slice(0, 40);
     body = h.length ? h.map(pedCard).join('') : `<p class="note">Todavía no hay pedidos ${f === 'entregado' ? 'entregados' : 'cancelados'}.</p>`;
   }
-  $('#listPe').innerHTML = head + body;
+  const pe = pend(), gp = grupos(pe), mes = S.vt.filter(v => (v.fecha || '').startsWith(ymd(new Date()).slice(0, 7)) && (isGestor() || v.vendedor_id === S.me.id));
+  const ult = grupos(S.vt.filter(v => isGestor() || v.vendedor_id === S.me.id).sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || '')))).slice(0, 15);
+  const ventas = `<div class="ventasSec"><h2>💵 Ventas y cobros</h2><div class="stats"><div><small>Vendido este mes</small><b>${peso(fa(mes))}</b></div><div><small>Pendiente de cobro</small><b>${peso(fa(pe))}</b></div></div>` +
+    (gp.length ? `<h3>Cobros pendientes · ${gp.length}</h3>` + gp.map(grupoRow).join('') : '<p class="note">No hay cobros pendientes. 🎉</p>') +
+    '<h3>Últimas ventas</h3>' + (ult.map(grupoRow).join('') || '<p class="note">Todavía no hay ventas.</p>') + '</div>';
+  $('#listPe').innerHTML = head + body + ventas;
 }
 const precioEf = x => promoVig(x) && x.promo_precio ? +x.promo_precio : +x.precio || 0;
 function nuevoPedido(cid) {
@@ -1554,7 +1578,7 @@ function listaPedidos() {
 }
 function verPedido(id) {
   const pe = S.ped.find(x => x.id === id), c = S.c.find(x => x.id === pe.cliente_id) || {};
-  sheet(`<h2>Pedido de ${esc(c.nombre || 'cliente')}</h2><p class="sub">${esc(c.direccion || '')} · ${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>${(pe.items || []).map(i => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.precio)} c/u</small></div><div class="num"><b>${peso(i.precio * i.n)}</b></div></div>`).join('')}<div class="stats"><div><small>Total</small><b>${peso(pe.total)}</b></div><div><small>Forma de pago</small><b style="font-size:16px">${PAGO[pe.pago]}</b></div></div><p class="who">${origenTxt(pe)} · <span class="tag ${pe.estado}">${EST[pe.estado]}</span></p>${pe.nota ? `<p class="note">“${esc(pe.nota)}”</p>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<h3>Coordinación</h3><div class="cobro"><label>¿Cuándo se lo lleva?<input id="pcF" type="date" value="${pe.entrega || ''}"></label><label>¿Quién lo lleva?<select id="pcQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === pe.lleva_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>¿Cómo paga?<select id="pcP">${Object.entries(PAGO).map(([k, t]) => `<option value="${k}" ${k === pe.pago ? 'selected' : ''}>${t}</option>`).join('')}</select></label><label>¿Cómo se coordinó? (lo ve el equipo)<textarea id="pcK" rows="2" maxlength="1000" placeholder="Ej: lo llevo el jueves con la visita, paga en efectivo">${esc(pe.coordinacion || '')}</textarea></label><button class="btn" data-a="pedCoord" data-id="${pe.id}" style="margin-top:0">Guardar coordinación</button></div>` : `${pe.entrega || pe.lleva_id || pe.coordinacion ? `<p class="sub">${pe.lleva_id ? '🚚 ' + esc(nom(pe.lleva_id)) : ''}${pe.entrega ? ' · 📅 ' + new Date(pe.entrega + 'T12:00').toLocaleDateString('es-AR') : ''}</p>${pe.coordinacion ? `<p class="note">💬 ${esc(pe.coordinacion)}</p>` : ''}` : ''}`}${pe.estado === 'nuevo' ? `<button class="btn" data-a="pedConfirmar" data-id="${pe.id}">Confirmar pedido${pe.origen === 'equipo' ? '' : ' (el cliente lo ve)'}</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<label>Al entregarlo, ¿se cobró?<select id="pco"><option value="no">No, queda pendiente en su cuenta</option><option value="si">Sí, ya está cobrado</option></select></label><button class="btn" data-a="pedEntregar" data-id="${pe.id}">Entregado: registrar la venta</button>` : ''}${misCli(c.id) ? `<button class="btn sec" data-a="chat" data-id="${c.id}">Escribirle al cliente</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<button class="btn sec" data-a="pedCancelar" data-id="${pe.id}">Cancelar pedido</button>` : ''}`);
+  sheet(`<h2>Pedido de ${esc(c.nombre || 'cliente')}</h2><p class="sub">${esc(c.direccion || '')} · ${new Date(pe.creado).toLocaleString('es-AR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>${(pe.items || []).map(i => `<div class="row"><div class="grow"><b>${esc(i.nombre)} ×${i.n}</b><small>${peso(i.precio)} c/u</small></div><div class="num"><b>${peso(i.precio * i.n)}</b></div></div>`).join('')}<div class="stats"><div><small>Total</small><b>${peso(pe.total)}</b></div><div><small>Forma de pago</small><b style="font-size:16px">${PAGO[pe.pago]}</b></div></div><p class="who">${origenTxt(pe)} · <span class="tag ${pe.estado}">${EST[pe.estado]}</span></p>${pe.nota ? `<p class="note">“${esc(pe.nota)}”</p>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<h3>Coordinación</h3><div class="cobro"><label>¿Cuándo se lo lleva?<input id="pcF" type="date" value="${pe.entrega || ''}"></label><label>¿Quién lo lleva?<select id="pcQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === pe.lleva_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>¿Cómo paga?<select id="pcP">${Object.entries(PAGO).map(([k, t]) => `<option value="${k}" ${k === pe.pago ? 'selected' : ''}>${t}</option>`).join('')}</select></label><label>¿Cómo se coordinó? (lo ve el equipo)<textarea id="pcK" rows="2" maxlength="1000" placeholder="Ej: lo llevo el jueves con la visita, paga en efectivo">${esc(pe.coordinacion || '')}</textarea></label><button class="btn" data-a="pedCoord" data-id="${pe.id}" style="margin-top:0">Guardar coordinación</button></div>` : `${pe.entrega || pe.lleva_id || pe.coordinacion ? `<p class="sub">${pe.lleva_id ? '🚚 ' + esc(nom(pe.lleva_id)) : ''}${pe.entrega ? ' · 📅 ' + new Date(pe.entrega + 'T12:00').toLocaleDateString('es-AR') : ''}</p>${pe.coordinacion ? `<p class="note">💬 ${esc(pe.coordinacion)}</p>` : ''}` : ''}`}${pe.estado === 'entregado' && (pe.venta_ids || []).length ? (() => { const vs = S.vt.filter(v => pe.venta_ids.includes(v.id)), pend = vs.some(v => v.cobrado === false); return `<div class="pend"><div><small>Cobro de la venta</small><b>${pend ? 'Pendiente' : 'Cobrada ✓'}</b></div><button class="btn ${pend ? '' : 'sec'}" data-a="cobroPed" data-id="${pe.id}">${pend ? '💵 Marcar cobrada' : 'Deshacer'}</button></div>`; })() : ''}${pe.estado === 'nuevo' ? `<button class="btn" data-a="pedConfirmar" data-id="${pe.id}">Confirmar pedido${pe.origen === 'equipo' ? '' : ' (el cliente lo ve)'}</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<label>Al entregarlo, ¿se cobró?<select id="pco"><option value="no">No, queda pendiente en su cuenta</option><option value="si">Sí, ya está cobrado</option></select></label><button class="btn" data-a="pedEntregar" data-id="${pe.id}">Entregado: registrar la venta</button>` : ''}${misCli(c.id) ? `<button class="btn sec" data-a="chat" data-id="${c.id}">Escribirle al cliente</button>` : ''}${pe.estado === 'nuevo' || pe.estado === 'confirmado' ? `<button class="btn sec" data-a="pedCancelar" data-id="${pe.id}">Cancelar pedido</button>` : ''}`);
 }
 // Mensajes con el cliente
 function bubbles(ms, c) {
@@ -2135,6 +2159,14 @@ async function act(e) {
       closeSheet(); renderAll(); return toast('Comisión guardada');
     }
     case 'verVenta': return verVenta(d.id);
+    case 'verCobroPed': return verCobroPed(d.id);
+    case 'cobroPed': {
+      const pe = S.ped.find(x => x.id === d.id), vs = S.vt.filter(v => (pe.venta_ids || []).includes(v.id)), nuevo = vs.some(v => v.cobrado === false);
+      t.disabled = true;
+      try { if (sb) await rpc('cobrar_pedido', { p_id: pe.id, p_cobrado: nuevo }); else vs.forEach(v => { v.cobrado = nuevo; }); }
+      catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); closeSheet(); renderAll(); return toast(nuevo ? 'Venta cobrada ✓' : 'Venta marcada como pendiente');
+    }
     case 'cobro': {
       const v = S.vt.find(x => x.id === d.id), nuevo = v.cobrado === false;
       await rpc('cobrar_venta', { p_id: d.id, p_cobrado: nuevo });
