@@ -63,6 +63,40 @@ main{flex:1;position:relative;overflow:hidden}
 .objDots i.on{width:18px;background:var(--navy)}
 .objBar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;margin:6px 0 2px}
 .objBar i{display:block;height:100%;border-radius:4px}
+.view{overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none}
+.chips{overscroll-behavior-x:contain}
+#segC{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));overflow:visible;gap:6px}
+#segC .chip{justify-content:center;padding-left:6px;padding-right:6px;font-size:14px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+details.plg{background:#fff;border-radius:18px;box-shadow:var(--sh);margin:10px 0;overflow:hidden}
+details.plg>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+details.plg>summary::-webkit-details-marker{display:none}
+details.plg>summary .pi{width:36px;height:36px;border-radius:12px;background:var(--g50);display:grid;place-items:center;font-size:18px;flex:none}
+details.plg>summary b{display:block;font-size:16px}
+details.plg>summary small{display:block;color:var(--g600);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+details.plg>summary .grow{min-width:0}
+details.plg>summary .chev{font-style:normal;color:var(--g400);transition:transform .2s;font-size:18px}
+details.plg[open]>summary .chev{transform:rotate(180deg)}
+details.plg .plgB{padding:0 16px 14px}
+details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
+.card.trab{background:#fff;color:var(--ink);border-left:5px solid var(--c);box-shadow:var(--sh);cursor:pointer}
+.card.trab .te{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--g50);flex:none}
+.card.trab small{color:var(--g600) !important;opacity:1 !important}
+.btn.pagar{background:linear-gradient(135deg,#05A357,#0b8a4c)}
+.tag.programado{background:#DBEAFE;color:#1E40AF}.tag.terminado{background:#FEF3C7;color:#92400E}.tag.pagado{background:#DCFCE7;color:#166534}
+.progOp{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;background:var(--g50);border:0;border-radius:18px;padding:16px;margin:8px 0;cursor:pointer}
+.progOp i{font-style:normal;font-size:28px;width:48px;height:48px;border-radius:14px;background:#fff;display:grid;place-items:center;flex:none}
+.progOp b{display:block;font-size:17px}.progOp small{color:var(--g600)}
+.tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}
+.tipos label{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:var(--g50);border:2px solid transparent;font-size:12px;text-align:center;cursor:pointer}
+.tipos label span{font-size:22px}.tipos input{display:none}
+.tipos label:has(input:checked){border-color:var(--navy);background:#eaf1fd}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trSem .row{cursor:pointer;align-items:center}
+.trSem .row .grow{min-width:0;flex:1}
+.trSem .row .te{flex:none;width:30px;text-align:center}
+.trSem .row .num{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.trSem .row .num b{white-space:nowrap}
+.dh .btn.sm{white-space:nowrap}
 .pedC{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;border:0;border-radius:18px;padding:14px;margin:0 0 10px;box-shadow:var(--sh);cursor:pointer;border-left:4px solid #c9d3e3}
 .pedC.nuevo{border-left-color:#E03131}.pedC.confirmado{border-left-color:#1b6fe0}.pedC.entregado{border-left-color:var(--ok);opacity:.85}.pedC.cancelado{opacity:.6}
 .pedC .pt{display:flex;align-items:center;gap:10px}
@@ -444,7 +478,7 @@ const CFG = { url: 'https://gqromisweyqvdeeahxnl.supabase.co', key: 'sb_publisha
 
 const sb = CFG.url ? supabase.createClient(CFG.url, CFG.key) : null;
 const COLORS = ['#2563EB', '#0E9F6E', '#F59E0B', '#DB2777', '#7C3AED', '#0891B2'];
-const S = { ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], sol: [], pz: [], aj: {}, eq: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
+const S = { tr: [], ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], sol: [], pz: [], aj: {}, eq: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 const P = id => S.p.find(x => x.id === id);
@@ -589,6 +623,10 @@ function demo() {
   S.ped = [{ id: 'pe1', cliente_id: 'c1', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 2 }, { t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 1 }], total: 23000, pago: 'cuenta', nota: 'Si pueden traerlo el lunes con la visita', estado: 'nuevo', creado: ago(45) },
     { id: 'pe2', cliente_id: 'c4', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 4 }], total: 36000, pago: 'transferencia', estado: 'confirmado', origen: 'equipo', creado_por: 'p3', entrega: ymd(new Date()), lleva_id: 'p3', coordinacion: 'Lo pidió el encargado por WhatsApp. Dejarlo en recepción.', creado: ago(60 * 20) },
     { id: 'pe3', cliente_id: 'c2', items: [{ t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 2 }], total: 10000, pago: 'efectivo', estado: 'confirmado', origen: 'app', entrega: null, lleva_id: null, creado: ago(60 * 5) }];
+  { const h = ymd(new Date()); S.tr = [
+    { id: 't1', tipo: 'limpieza', titulo: 'Limpieza a fondo y vaciado', cliente_id: null, nombre: 'Club Náutico', direccion: 'Av. Martínez de Hoz 900', lat: -38.02, lng: -57.53, fecha: h, hora: '08:30:00', dias: 2, presupuesto: 180000, pago: 90000, piletero_id: 'p2', estado: 'programado', cobrado: false },
+    { id: 't2', tipo: 'pintura', titulo: 'Pintura con epoxi', cliente_id: 'c5', fecha: masDias(h, 2), dias: 3, presupuesto: 450000, pago: 200000, piletero_id: 'p1', estado: 'programado', cobrado: false, notas: 'Llevar 2 latas de epoxi celeste y rodillos' },
+    { id: 't3', tipo: 'reparacion', titulo: 'Cambio de bomba', cliente_id: 'c4', fecha: masDias(h, -3), dias: 1, presupuesto: 60000, pago: 30000, piletero_id: 'p3', estado: 'terminado', cobrado: true, terminado: new Date().toISOString() }]; }
   S.rec = [{ id: 're1', cliente_id: 'c3', tipo: 'p', item_id: 'pr3', cantidad: 1, estado: 'activa', creado: ago(60 * 30) }];
 }
 
@@ -596,6 +634,7 @@ function demo() {
 async function load() {
   const [p, c, h, v, r, vt, pr, k, pg, mv, co, vcs] = await Promise.all([sb.from('perfiles').select(), sb.from('clientes').select(), sb.from('herramientas').select(), sb.from('visitas').select(), sb.from('realizadas').select(), sb.from('ventas').select(), sb.from('productos').select(), sb.from('kits').select(), sb.from('pagos').select(), sb.from('movimientos').select().order('creado', { ascending: false }).limit(200), sb.from('costos').select(), sb.from('ventas_costos').select()]);
   S.p = p.data || []; S.c = c.data || []; await cargarPortal(true); S.h = h.data || []; S.v = v.data || []; S.r = r.data || []; S.vt = (vt.data || []).filter(x => !x.anulada); S.pr = pr.data || []; S.k = k.data || []; S.pg = pg.data || []; S.mov = mv.data || []; S.co = {}; (co.data || []).forEach(x => { S.co[x.producto_id] = +x.costo; }); S.vc = {}; (vcs.data || []).forEach(x => { S.vc[x.venta_id] = +x.costo; });
+  await cargarTrabajos().catch(() => {});
 }
 // ── Portal de clientes: mensajes sin leer, pedidos y recomendaciones
 async function cargarPortal(silencio) {
@@ -799,6 +838,7 @@ async function abrirDestino(url) {
   if (k === 'fotos' && S.c.some(c => c.id === id)) return verHist(id);
   if (k === 'solicitud') { S.ctab = 'sol'; go('clientes'); return renderClients(); }
   if (k === 'equipo') { go('mapa'); await cargarEq(); return abrirEq(); }
+  if (k === 'trabajo') { if (sb) await cargarTrabajos().catch(() => {}); go('clientes'); renderAll(); return verTrabajo(id); }
 }
 if (window.JCPush) JCPush.onAbrir(u => abrirDestino(u).catch(e => toast(e.message)));
 
@@ -1114,18 +1154,91 @@ function hojaObjetivo(cual) {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}<h3>Mis datos para cobrar</h3><div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div><button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button><h3>Notificaciones</h3><div class="cobro" id="pushBox"></div><h3>Tu color en el mapa</h3><div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div><h3>Mis herramientas (${tl.length})</h3>${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${trabajosSemanaHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}${plg('cobro', '💳', 'Mis datos para cobrar', m.pago_alias ? 'Alias: ' + esc(m.pago_alias) : m.pago_cbu ? 'CBU cargado' : 'Todavía sin cargar', `<div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div>`)}<button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button>${plg('push', '🔔', 'Notificaciones', 'Qué avisos te llegan a este celular', '<div class="cobro" id="pushBox"></div>')}${plg('color', '🎨', 'Tu color en el mapa', `<i class="dot" style="background:${m.color};display:inline-block;vertical-align:middle;margin-right:6px"></i>Tocá para cambiarlo`, `<div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div>`)}${plg('herr', '🧰', `Mis herramientas (${tl.length})`, tl.length ? tl.slice(0, 3).map(h => esc(h.nombre)).join(', ') + (tl.length > 3 ? '…' : '') : 'Todavía no tenés herramientas', `${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>`)}${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush(); montarObj();
+}
+// Tarjetas plegables del perfil (se acuerdan cuáles abriste)
+S.abiertos = S.abiertos || new Set();
+const plg = (k, ic, t, res, cont) => `<details class="plg" data-k="${k}" ${S.abiertos.has(k) ? 'open' : ''}><summary><span class="pi">${ic}</span><span class="grow"><b>${t}</b><small>${res}</small></span><i class="chev">⌄</i></summary><div class="plgB">${cont}</div></details>`;
+document.addEventListener('toggle', e => { const d = e.target; if (d.classList && d.classList.contains('plg')) d.open ? S.abiertos.add(d.dataset.k) : S.abiertos.delete(d.dataset.k); }, true);
+
+// ── Trabajos fuera del mantenimiento (limpieza, pintura, reparación…)
+const TIPOS = { limpieza: ['🧽', 'Limpieza de pileta'], pintura: ['🎨', 'Pintura'], reparacion: ['🔧', 'Reparación'], instalacion: ['⚙️', 'Instalación'], otro: ['🛠️', 'Otro trabajo'] };
+const EST_T = { programado: 'Programado', terminado: 'Terminado', pagado: 'Pagado', cancelado: 'Cancelado' };
+const masDias = (k, n) => { const d = new Date(k + 'T12:00'); d.setDate(d.getDate() + n); return ymd(d); };
+const finTr = t => masDias(t.fecha, (+t.dias || 1) - 1);
+const lugarTr = t => { const c = t.cliente_id && S.c.find(x => x.id === t.cliente_id); return { n: t.nombre || c?.nombre || 'Sin nombre', d: t.direccion || c?.direccion || '', lat: t.lat ?? c?.lat, lng: t.lng ?? c?.lng }; };
+const misTr = () => S.tr.filter(t => t.estado !== 'cancelado' && (isGestor() ? !S.F || t.piletero_id === S.F : t.piletero_id === S.me.id));
+const trOn = k => misTr().filter(t => t.fecha <= k && k <= finTr(t));
+const fCorta = k => new Date(k + 'T12:00').toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'numeric' });
+async function cargarTrabajos() {
+  if (!sb) return;
+  const [t, m] = await Promise.all([sb.from('trabajos').select().order('fecha'), sb.rpc('mis_trabajos')]);
+  S.tr = !t.error && t.data && t.data.length ? t.data : (!m.error && m.data ? m.data : []);
+}
+function tcard(t, k) {
+  const [e, n] = TIPOS[t.tipo] || TIPOS.otro, l = lugarTr(t), dia = Math.round((new Date(k + 'T12:00') - new Date(t.fecha + 'T12:00')) / 864e5) + 1;
+  return `<div class="card trab" style="--c:${col(t.piletero_id)}" data-a="verTrab" data-id="${t.id}"><span class="te">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</small><small>${t.hora ? t.hora.slice(0, 5) + ' · ' : ''}${t.dias > 1 ? `Día ${dia} de ${t.dias} · ` : ''}${t.piletero_id ? esc(t.piletero_id === S.me.id ? 'Vos' : nom(t.piletero_id)) : 'Sin asignar'} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></small></div></div>`;
+}
+function elegirProg(k) {
+  if (!isGestor()) return programar(k);
+  sheet(`<h2>¿Qué querés programar?</h2><p class="sub">${new Date(k + 'T12:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p><button class="progOp" data-a="progVis" data-id="${k}"><i>🧽</i><span><b>Visita de mantenimiento</b><small>La visita de siempre a un cliente</small></span></button><button class="progOp" data-a="nuevoTrab" data-id="${k}"><i>🛠️</i><span><b>Trabajo</b><small>Limpieza de pileta, pintura, reparación… con presupuesto y quién lo hace</small></span></button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
+function formTrabajo(t) {
+  t = t || { tipo: 'limpieza', fecha: S.sel, dias: 1, piletero_id: '' };
+  const otro = !t.cliente_id;
+  sheet(`<h2>${t.id ? 'Editar trabajo' : '🛠️ Programar trabajo'}</h2><div class="tipos">${Object.entries(TIPOS).map(([k, [e, n]]) => `<label><input type="radio" name="tt" value="${k}" ${k === t.tipo ? 'checked' : ''}><span>${e}</span>${n}</label>`).join('')}</div>` +
+    `<label>Descripción<input id="ttT" maxlength="200" value="${esc(t.titulo || '')}" placeholder="Ej: Limpieza a fondo y vaciado, pintura con epoxi…"></label>` +
+    `<label>¿Dónde?<select id="ttC" onchange="document.getElementById('ttOtro').hidden=!!this.value"><option value="">Otro lugar (no es cliente)</option>${S.c.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}" ${c.id === t.cliente_id ? 'selected' : ''}>${esc(c.nombre)} — ${esc(c.direccion)}</option>`).join('')}</select></label>` +
+    `<div id="ttOtro" ${otro ? '' : 'hidden'}><label>Nombre o lugar<input id="ttN" maxlength="120" value="${esc(t.nombre || '')}" placeholder="Ej: Club Náutico, Familia López"></label><label>Dirección<input id="ttD" maxlength="200" value="${esc(t.direccion || '')}" placeholder="Ej: Av. Colón 3500"></label></div>` +
+    `<div class="dos"><label>Empieza<input id="ttF" type="date" value="${t.fecha}"></label><label>Hora (opcional)<input id="ttH" type="time" value="${t.hora ? t.hora.slice(0, 5) : ''}"></label></div>` +
+    `<label>¿Cuántos días dura, aprox.?<input id="ttDi" type="number" inputmode="numeric" min="1" max="60" value="${t.dias || 1}"></label>` +
+    `<div class="dos"><label>Presupuesto mano de obra ($)<input id="ttP" type="number" inputmode="decimal" min="0" value="${t.presupuesto || ''}" placeholder="Lo que cobra la empresa"></label><label>Le pagamos al piletero ($)<input id="ttG" type="number" inputmode="decimal" min="0" value="${t.pago || ''}" placeholder="Lo que cobra él"></label></div>` +
+    `<label>¿Quién lo hace?<select id="ttQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === t.piletero_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>` +
+    `<label>Notas (opcional)<textarea id="ttK" rows="2" maxlength="1000" placeholder="Materiales, qué llevar, cómo entrar…">${esc(t.notas || '')}</textarea></label>` +
+    `<button class="btn" data-a="guardarTrab" data-id="${t.id || ''}">${t.id ? 'Guardar cambios' : 'Programar trabajo'}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
+function verTrabajo(id) {
+  const t = S.tr.find(x => x.id === id); if (!t) return toast('No encontré ese trabajo');
+  const [e, n] = TIPOS[t.tipo] || TIPOS.otro, l = lugarTr(t), g = isGestor(), mio = t.piletero_id === S.me.id;
+  const fechas = t.dias > 1 ? `Del ${fCorta(t.fecha)} al ${fCorta(finTr(t))} (${t.dias} días)` : fCorta(t.fecha);
+  const mapa = l.lat && l.lng ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : l.d ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.d + ', Mar del Plata')}` : '';
+  sheet(`<h2>${e} ${esc(t.titulo || n)}</h2><p class="sub">${esc(n)} · ${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</p><p class="who"><i class="dot" style="background:${col(t.piletero_id)}"></i>${t.piletero_id ? 'Lo hace ' + (mio ? 'vos' : esc(nom(t.piletero_id))) : 'Sin asignar'} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></p><p class="sub">📅 ${fechas}${t.hora ? ' · ' + t.hora.slice(0, 5) : ''}</p>` +
+    `<div class="stats">${g ? `<div><small>Presupuesto mano de obra</small><b>${peso(t.presupuesto)}</b></div>` : ''}<div><small>${g ? 'Le pagamos al piletero' : 'Cobrás vos'}</small><b>${peso(t.pago)}</b></div>${g ? `<div><small>Queda para la empresa</small><b>${peso((+t.presupuesto || 0) - (+t.pago || 0))}</b></div><div><small>Cobrado al cliente</small><b>${t.cobrado ? 'Sí ✓' : 'Todavía no'}</b></div>` : ''}</div>` +
+    `${t.notas ? `<p class="note">${esc(t.notas)}</p>` : ''}${t.pagado ? `<p class="sub">💸 Pagado el ${new Date(t.pagado).toLocaleDateString('es-AR')}</p>` : t.terminado ? `<p class="sub">✅ Terminado el ${new Date(t.terminado).toLocaleDateString('es-AR')}</p>` : ''}` +
+    `${t.estado === 'programado' && (g || mio) ? `<button class="btn" data-a="terminarTrab" data-id="${t.id}">✅ Marcar terminado</button>` : ''}` +
+    `${g && t.estado === 'terminado' ? `<button class="btn pagar" data-a="pagarTrab" data-id="${t.id}">💸 Pagar ${peso(t.pago)}${t.piletero_id ? ' a ' + esc(nom(t.piletero_id)) : ''}</button>` : ''}` +
+    `${g && t.estado !== 'cancelado' ? `<button class="btn sec" data-a="cobradoTrab" data-id="${t.id}">${t.cobrado ? 'Marcar como NO cobrado al cliente' : '💵 Ya se lo cobramos al cliente'}</button>` : ''}` +
+    `${mapa ? `<a class="btn sec" target="_blank" rel="noopener" href="${mapa}">Cómo llegar</a>` : ''}` +
+    `${g && t.estado === 'programado' ? `<button class="btn sec" data-a="editarTrab" data-id="${t.id}">Editar</button><button class="btn sec" data-a="cancelarTrab" data-id="${t.id}">Cancelar trabajo</button>` : ''}${g ? `<button class="btn sec" data-a="borrarTrab" data-id="${t.id}">Eliminar</button>` : ''}`);
+}
+async function trUpd(id, f) {
+  const t = S.tr.find(x => x.id === id);
+  if (sb) { const x = await sb.from('trabajos').update(f).eq('id', id).select().single(); if (x.error) throw new Error(x.error.message); Object.assign(t, x.data); }
+  else Object.assign(t, f);
+  return t;
+}
+// Trabajos de la semana (en Mi perfil)
+function trabajosSemanaHTML() {
+  S.tsem = S.tsem || 0;
+  const lun = new Date(); lun.setHours(12, 0, 0, 0); lun.setDate(lun.getDate() - (lun.getDay() + 6) % 7 + S.tsem * 7);
+  const a = ymd(lun), b = masDias(a, 6), g = isGestor();
+  const l = S.tr.filter(t => t.estado !== 'cancelado' && (g || t.piletero_id === S.me.id) && t.fecha <= b && finTr(t) >= a).sort((x, y) => x.fecha.localeCompare(y.fecha));
+  if (!g && !l.length && !S.tr.some(t => t.piletero_id === S.me.id)) return '';
+  const tit = S.tsem === 0 ? 'esta semana' : S.tsem === 1 ? 'la semana que viene' : S.tsem === -1 ? 'la semana pasada' : `${fCorta(a)} – ${fCorta(b)}`;
+  const tot = l.reduce((x, t) => x + (+t.presupuesto || 0), 0), pagar = l.filter(t => t.estado !== 'pagado').reduce((x, t) => x + (+t.pago || 0), 0);
+  const fila = t => { const [e, n] = TIPOS[t.tipo] || TIPOS.otro, lu = lugarTr(t); return `<div class="row" data-a="verTrab" data-id="${t.id}"><span class="te" style="font-size:22px">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(lu.n)} · ${fCorta(t.fecha)}${t.dias > 1 ? ' → ' + fCorta(finTr(t)) : ''}${g ? ' · ' + (t.piletero_id ? esc(nom(t.piletero_id)) : 'sin asignar') : ''}</small></div><div class="num"><b>${peso(g ? t.presupuesto : t.pago)}</b><span class="tag ${t.estado}">${EST_T[t.estado]}</span></div></div>`; };
+  return `<div class="dh"><button class="arrow" data-a="tsem" data-id="-1" aria-label="Semana anterior">‹</button><h3>🛠️ Trabajos de ${tit}</h3><button class="arrow" data-a="tsem" data-id="1" aria-label="Semana siguiente">›</button></div><div class="trSem">${l.length ? (g ? `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · presupuesto ${peso(tot)} · falta pagar ${peso(pagar)} a pileteros</p>` : `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · cobrás ${peso(l.reduce((x, t) => x + (+t.pago || 0), 0))}</p>`) + l.map(fila).join('') : '<p class="note">No hay trabajos programados esa semana.</p>'}${g ? `<button class="btn sec" data-a="nuevoTrab" data-id="${a < ymd(new Date()) && S.tsem === 0 ? ymd(new Date()) : a}">+ Programar trabajo</button>` : ''}</div>`;
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
   mon.setDate(sel.getDate() - ((sel.getDay() + 6) % 7));
   const days = [...Array(7)].map((_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; }), hoy = ymd(new Date());
   $('#cal').innerHTML = `<div class="calh"><button data-a="sem" data-id="-7" aria-label="Semana anterior">‹</button><b>${MES[mon.getMonth()]} ${mon.getFullYear()}</b><button data-a="sem" data-id="7" aria-label="Semana siguiente">›</button></div><div class="week">` +
-    days.map(d => { const k = ymd(d), n = visitsOn(d).length; return `<button class="day ${k === S.sel ? 'on' : ''} ${k === hoy ? 'hoy' : ''}" data-a="dia" data-id="${k}"><span>${DN[d.getDay()][0]}</span><b>${d.getDate()}</b><i>${n || ''}</i></button>`; }).join('') + '</div>';
-  const l = visitsOn(sel);
-  const cuando = S.sel === hoy ? 'Hoy' : 'El ' + DN[sel.getDay()].toLowerCase() + ' ' + sel.getDate(), titulo = l.length ? `${cuando} tenés ${l.length} ${l.length === 1 ? 'visita' : 'visitas'}` : `${cuando} no tenés visitas`;
-  $('#dayList').innerHTML = `<div class="dh"><h3>${titulo}</h3><div class="acts">${l.length ? '<button class="btn sm sec" data-a="recorrido">Recorrido</button>' : ''}<button class="btn sm" data-a="prog" data-id="${S.sel}">+ Programar</button></div></div>` + (l.length ? l.map(vcard).join('') : '<p class="note">No hay visitas ese día. Mantené apretado un día del calendario, o tocá “Programar”, para agendar una.</p>');
+    days.map(d => { const k = ymd(d), n = visitsOn(d).length + trOn(k).length; return `<button class="day ${k === S.sel ? 'on' : ''} ${k === hoy ? 'hoy' : ''}" data-a="dia" data-id="${k}"><span>${DN[d.getDay()][0]}</span><b>${d.getDate()}</b><i>${n || ''}</i></button>`; }).join('') + '</div>';
+  const l = visitsOn(sel), tr = trOn(S.sel);
+  const cuando = S.sel === hoy ? 'Hoy' : 'El ' + DN[sel.getDay()].toLowerCase() + ' ' + sel.getDate(), partes = [l.length ? `${l.length} ${l.length === 1 ? 'visita' : 'visitas'}` : '', tr.length ? `${tr.length} ${tr.length === 1 ? 'trabajo' : 'trabajos'}` : ''].filter(Boolean), titulo = partes.length ? `${cuando} tenés ${partes.join(' y ')}` : `${cuando} no tenés visitas`;
+  $('#dayList').innerHTML = `<div class="dh"><h3>${titulo}</h3><div class="acts">${l.length ? '<button class="btn sm sec" data-a="recorrido">Recorrido</button>' : ''}<button class="btn sm" data-a="prog" data-id="${S.sel}">+ Programar</button></div></div>` + tr.map(t => tcard(t, S.sel)).join('') + (l.length ? l.map(vcard).join('') : tr.length ? '' : `<p class="note">No hay visitas ese día. Mantené apretado un día del calendario, o tocá “Programar”, para agendar ${isGestor() ? 'una visita o un trabajo' : 'una'}.</p>`);
 }
 function renderUsers() {
   if (!ulayer) return;
@@ -1638,7 +1751,7 @@ document.addEventListener('pointerdown', e => {
   lpDone = false;
   const c = e.target.closest('.card, .day'); if (!c || e.target.closest('.chk')) return;
   lpX = e.clientX; lpY = e.clientY;
-  lpT = setTimeout(() => { lpDone = true; navigator.vibrate?.(15); c.classList.contains('day') ? programar(c.dataset.id) : c.classList.contains('vis') ? openVisita(c.dataset.id) : menuCliente(c.dataset.id); }, 500);
+  lpT = setTimeout(() => { lpDone = true; navigator.vibrate?.(15); c.classList.contains('day') ? elegirProg(c.dataset.id) : c.classList.contains('vis') ? openVisita(c.dataset.id) : c.classList.contains('trab') ? verTrabajo(c.dataset.id) : menuCliente(c.dataset.id); }, 500);
 });
 document.addEventListener('pointermove', e => { if (Math.abs(e.clientX - lpX) + Math.abs(e.clientY - lpY) > 12) clearTimeout(lpT); });
 ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => clearTimeout(lpT)));
@@ -1729,7 +1842,52 @@ async function act(e) {
     case 'sem': { const x = new Date(S.sel + 'T12:00'); x.setDate(x.getDate() + (+d.id)); S.sel = ymd(x); return renderCal(); }
     case 'dia': S.sel = d.id; return renderCal();
     case 'gps': return S.share ? stopShare() : startShare();
-    case 'prog': return programar(d.id);
+    case 'prog': return elegirProg(d.id);
+    case 'progVis': return programar(d.id);
+    case 'nuevoTrab': return formTrabajo({ tipo: 'limpieza', fecha: d.id || S.sel, dias: 1 });
+    case 'editarTrab': return formTrabajo(S.tr.find(x => x.id === d.id));
+    case 'verTrab': return verTrabajo(d.id);
+    case 'tsem': S.tsem = (S.tsem || 0) + (+d.id); return renderPerfil();
+    case 'guardarTrab': {
+      const cid = $('#ttC').value || null, f = { tipo: (document.querySelector('input[name=tt]:checked') || {}).value || 'otro', titulo: $('#ttT').value.trim() || null, cliente_id: cid,
+        nombre: cid ? null : $('#ttN').value.trim() || null, direccion: cid ? null : $('#ttD').value.trim() || null, fecha: $('#ttF').value, hora: $('#ttH').value || null,
+        dias: Math.round(+$('#ttDi').value || 1), presupuesto: Math.max(+$('#ttP').value || 0, 0), pago: Math.max(+$('#ttG').value || 0, 0), piletero_id: $('#ttQ').value || null, notas: $('#ttK').value.trim() || null };
+      if (!f.fecha) return toast('Poné la fecha en que empieza');
+      if (!cid && !f.nombre && !f.direccion) return toast('Elegí el cliente o escribí dónde es');
+      if (f.dias < 1 || f.dias > 60) return toast('La duración tiene que ser de 1 a 60 días');
+      t.disabled = true;
+      try {
+        if (!cid && f.direccion) { const g = await geo(f.direccion); if (g) { f.lat = g[0]; f.lng = g[1]; } }
+        if (d.id) await trUpd(d.id, f);
+        else if (sb) { const x = await sb.from('trabajos').insert(f).select().single(); if (x.error) throw new Error(x.error.message); S.tr.push(x.data); }
+        else S.tr.push({ id: crypto.randomUUID(), estado: 'programado', cobrado: false, creado: new Date().toISOString(), ...f });
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      S.sel = f.fecha; son('ok'); closeSheet(); renderAll();
+      return toast(d.id ? 'Trabajo actualizado' : f.piletero_id && f.piletero_id !== S.me.id ? `Trabajo programado. Le avisamos a ${nom(f.piletero_id)} 🛠️` : 'Trabajo programado 🛠️');
+    }
+    case 'terminarTrab': {
+      t.disabled = true;
+      try { if (sb) { const x = await sb.rpc('terminar_trabajo', { p_id: d.id }); if (x.error) throw new Error(x.error.message); await cargarTrabajos(); } else Object.assign(S.tr.find(x => x.id === d.id), { estado: 'terminado', terminado: new Date().toISOString() }); }
+      catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); renderAll(); verTrabajo(d.id); return toast(isGestor() ? 'Trabajo terminado. Ya lo podés pagar 💸' : '¡Bien! Les avisamos a los coordinadores ✅');
+    }
+    case 'pagarTrab': {
+      const x = S.tr.find(y => y.id === d.id);
+      if (!confirm(`¿Registrar el pago de ${peso(x.pago)}${x.piletero_id ? ' a ' + nom(x.piletero_id) : ''}?`)) return;
+      try { await trUpd(d.id, { estado: 'pagado', pagado: new Date().toISOString() }); } catch (e) { return toast(e.message); }
+      son('ok'); renderAll(); verTrabajo(d.id); return toast('Pago registrado 💸');
+    }
+    case 'cobradoTrab': { const x = S.tr.find(y => y.id === d.id); try { await trUpd(d.id, { cobrado: !x.cobrado }); } catch (e) { return toast(e.message); } renderAll(); return verTrabajo(d.id); }
+    case 'cancelarTrab': {
+      if (!confirm('¿Cancelar este trabajo? Deja de aparecer en el calendario.')) return;
+      try { await trUpd(d.id, { estado: 'cancelado' }); } catch (e) { return toast(e.message); }
+      closeSheet(); renderAll(); return toast('Trabajo cancelado');
+    }
+    case 'borrarTrab': {
+      if (!confirm('¿Eliminar este trabajo para siempre?')) return;
+      if (sb) { const x = await sb.from('trabajos').delete().eq('id', d.id); if (x.error) return toast(x.error.message); }
+      S.tr = S.tr.filter(x => x.id !== d.id); closeSheet(); renderAll(); return toast('Trabajo eliminado');
+    }
     case 'guardarV': {
       const f = $('#vf').value, cid = $('#vc').value, hoy = ymd(new Date()), hecha = $('#vd').value === 'si';
       if (!cid) return toast('Elegí un cliente');
