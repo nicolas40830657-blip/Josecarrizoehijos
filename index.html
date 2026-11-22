@@ -63,6 +63,18 @@ main{flex:1;position:relative;overflow:hidden}
 .objDots i.on{width:18px;background:var(--navy)}
 .objBar{height:8px;border-radius:4px;background:#eef1f6;overflow:hidden;margin:6px 0 2px}
 .objBar i{display:block;height:100%;border-radius:4px}
+.deleg{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:#fff3;border:1px solid currentColor;opacity:.9;white-space:nowrap}
+.btn.pasa{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.pils{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+.pil{display:flex;align-items:center;gap:8px;padding:10px;border-radius:14px;background:var(--g50);border:2px solid transparent;cursor:pointer;margin:0;font-size:14px}
+.pil input{display:none}
+.pil:has(input:checked){border-color:var(--navy);background:#eaf1fd}
+.pil .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.pil b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg2{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.seg2 label{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--g50);margin:0;font-size:14px;cursor:pointer;border:2px solid transparent}
+.seg2 label:has(input:checked){border-color:var(--navy);background:#eaf1fd}
+.seg2 input{-webkit-appearance:radio;appearance:auto;accent-color:var(--navy);width:20px;height:20px;min-height:0;margin:0;padding:0;border:0;box-shadow:none;flex:none}
 .lwAv{width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#FFF0F3;border:2px solid #ff3040}
 .likesW.cero .lwAv{border-color:#e3e8ef}
 .lwC{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
@@ -459,17 +471,20 @@ const DN = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'S�
 const MES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const REP = { no: 'Una sola vez', semanal: 'Todas las semanas', quincenal: 'Cada 15 días' };
+// Quién hace la visita: el piletero al que se la pasaron, o si no el del cliente
+const resp = v => v.piletero_id || (S.c.find(x => x.id === v.cliente_id) || {}).piletero_id;
 const visitsOn = d => {
   const k = new Date(ymd(d) + 'T12:00');
   return S.v.filter(v => {
     const n = Math.round((k - new Date(v.fecha + 'T12:00')) / 864e5), c = S.c.find(x => x.id === v.cliente_id);
     if ((v.omitir || []).includes(ymd(d))) return false;
-    return c && (isGestor() ? !S.F || c.piletero_id === S.F : c.piletero_id === S.me.id) && (v.repetir === 'semanal' ? n >= 0 && n % 7 === 0 : v.repetir === 'quincenal' ? n >= 0 && n % 14 === 0 : n === 0);
+    const quien = v.piletero_id || c.piletero_id;
+    return c && (isGestor() ? !S.F || quien === S.F : quien === S.me.id) && (v.repetir === 'semanal' ? n >= 0 && n % 7 === 0 : v.repetir === 'quincenal' ? n >= 0 && n % 14 === 0 : n === 0);
   }).sort((a, b) => (a.hora || '99').localeCompare(b.hora || '99'));
 };
 const vcard = v => {
-  const c = S.c.find(x => x.id === v.cliente_id), k = col(c.piletero_id), ok = S.r.some(r => r.visita_id === v.id && r.fecha === S.sel);
-  return `<div class="card vis ${ok ? 'ok' : ''}" style="--c:${k};--ink:${ink(k)}" data-a="visita" data-id="${v.id}"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small><small>${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}${c.valor_visita ? ' · ' + peso(c.valor_visita) : ''} · ${esc(nom(c.piletero_id))}</small>${avisoVisita(c.id, S.sel)}${avisoCliente(c)}</div><button class="chk" data-a="chk" data-id="${v.id}" aria-label="${ok ? 'Desmarcar visita' : 'Confirmar visita'}">✓</button></div>`;
+  const c = S.c.find(x => x.id === v.cliente_id), k = col(resp(v)), ok = S.r.some(r => r.visita_id === v.id && r.fecha === S.sel);
+  return `<div class="card vis ${ok ? 'ok' : ''}" style="--c:${k};--ink:${ink(k)}" data-a="visita" data-id="${v.id}"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small><small>${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}${c.valor_visita ? ' · ' + peso(c.valor_visita) : ''} · ${esc(nom(resp(v)))}${v.piletero_id ? ` <span class="deleg">↪ de ${esc(nom(c.piletero_id))}</span>` : ''}</small>${avisoVisita(c.id, S.sel)}${avisoCliente(c)}</div><button class="chk" data-a="chk" data-id="${v.id}" aria-label="${ok ? 'Desmarcar visita' : 'Confirmar visita'}">✓</button></div>`;
 };
 const card = c => { const n = nuevos(c.id); return `<button class="chatc crow" data-a="abrir" data-id="${c.id}"><span class="av" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span><span class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)} · ${esc(info(c))}</small>${avisoCliente(c)}</span><span class="der">${isGestor() ? `<small>${esc(nom(c.piletero_id))}</small>` : ''}${c.usuario_id ? '<small title="Usa la app">📱</small>' : ''}${n ? `<i class="nb">${n}</i>` : ''}</span></button>`; };
 const info = c => (c.frecuencia || 'Semanal') + (c.dia && c.dia !== 'Sin día fijo' ? ' · ' + c.dia : '');
@@ -1398,7 +1413,7 @@ const sheet = h => { $('#sheetBody').innerHTML = h; $('#sh').classList.add('on')
 const closeSheet = () => $('#sh').classList.remove('on');
 function openCliente(id) {
   const c = S.c.find(x => x.id === id), mine = c.piletero_id === S.me.id;
-  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}<button class="btn" data-a="chat" data-id="${c.id}">💬 Mensajes del cliente${nuevos(c.id) ? ' (' + nuevos(c.id) + ' nuevos)' : ''}</button>${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaPortal(c)}${accesoHTML(c)}${fichaVentas(c)}${fichaHist(c)}`);
+  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}${(isGestor() || mine) && pileteros().length > 1 ? `<button class="btn pasa" data-a="pasarC" data-id="${c.id}">👤 Pasar a otro piletero</button>` : ''}<button class="btn" data-a="chat" data-id="${c.id}">💬 Mensajes del cliente${nuevos(c.id) ? ' (' + nuevos(c.id) + ' nuevos)' : ''}</button>${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaPortal(c)}${accesoHTML(c)}${fichaVentas(c)}${fichaHist(c)}`);
 }
 function menuCliente(id) {
   const c = S.c.find(x => x.id === id);
@@ -1414,11 +1429,24 @@ function abrirRegistro(id) {
   const c = S.c.find(x => x.id === r.cliente_id) || {};
   sheet(`<h2>Visita confirmada</h2><p class="sub">${esc(c.nombre || '')} · ${new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p><label>¿Qué se hizo?<textarea id="rn" rows="3" placeholder="Ej: limpieza de fondo, cambio de arena">${esc(r.nota)}</textarea></label><label>Productos usados<input id="rp" value="${esc(r.productos)}" placeholder="Ej: cloro granulado 1 kg, clarificador"></label><label>Foto de antes (opcional · cómo estaba al llegar)<input id="rfa" type="file" accept="image/*"></label><label>Fotos de cómo quedó (hasta 4 · el cliente ve la última como “estado actual”)<input id="rf" type="file" accept="image/*" multiple></label><p class="note" style="margin-top:-4px">Con la foto de antes, el cliente puede comparar antes y después deslizando el dedo.</p>${vendibles().length ? `<label>¿Se está quedando sin algún producto? (le avisa en su app)</label><div class="recs">${vendibles().map(v => `<button type="button" class="chip ${recsDe(r.cliente_id).some(x => x.tipo === v.t && x.item_id === v.id) ? 'on' : ''}" data-a="recSel" data-id="${v.t}:${v.id}">${esc(v.nombre)}</button>`).join('')}</div>` : ''}<button class="btn" data-a="guardarReg" data-id="${r.id}">Guardar registro</button><button class="btn sec" data-a="cerrar">Omitir</button>`);
 }
+// Elegir piletero (para pasar visitas y clientes)
+const eligePil = (excluir, sel) => `<div class="pils">${pileteros().filter(p => p.id !== excluir).map(p => `<label class="pil"><input type="radio" name="pil" value="${p.id}" ${p.id === sel ? 'checked' : ''}><span class="av" style="background:${p.foto ? `center/cover url(${p.foto})` : p.color}">${p.foto ? '' : esc((p.nombre || '?')[0])}</span><b>${p.id === S.me.id ? 'Yo (' + esc(p.nombre) + ')' : esc(p.nombre)}</b></label>`).join('')}</div>`;
+const pilElegido = () => (document.querySelector('input[name=pil]:checked') || {}).value;
+function hojaPasarV(id) {
+  const v = S.v.find(x => x.id === id), c = S.c.find(x => x.id === v.cliente_id), quien = resp(v), rep = v.repetir !== 'no';
+  const dia = new Date(S.sel + 'T12:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  sheet(`<h2>↪ Pasar visita</h2><p class="sub">${esc(c.nombre)} · ${esc(c.direccion)}${v.hora ? ' · ' + v.hora.slice(0, 5) : ''}</p><h3>¿A quién se la pasás?</h3>${eligePil(quien)}${rep ? `<h3>¿Cuáles?</h3><div class="seg2"><label><input type="radio" name="alc" value="dia" checked><span>Solo el ${dia}</span></label><label><input type="radio" name="alc" value="todas"><span>Todas (${REP[v.repetir].toLowerCase()})</span></label></div>` : ''}<p class="note">Le aparece en su calendario y le llega una notificación. La visita la cobra quien la hace.</p><button class="btn" data-a="okPasarV" data-id="${v.id}">Pasar visita</button>${v.piletero_id ? `<button class="btn sec" data-a="devolverV" data-id="${v.id}">Devolvérsela a ${c.piletero_id === S.me.id ? 'mí' : esc(nom(c.piletero_id))}</button>` : ''}<button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
+function hojaPasarC(id) {
+  const c = S.c.find(x => x.id === id), fut = S.v.filter(v => v.cliente_id === c.id).length;
+  sheet(`<h2>👤 Pasar cliente</h2><p class="sub">${esc(c.nombre)} · ${esc(c.direccion)}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>Ahora lo atiende ${c.piletero_id === S.me.id ? 'vos' : esc(nom(c.piletero_id))}</p><h3>¿A quién se lo pasás?</h3>${eligePil(c.piletero_id)}<p class="note">El cliente pasa a ser suyo: lo ve en su lista y en el mapa${fut ? `, y sus ${fut === 1 ? 'visita programada pasa' : 'visitas programadas pasan'} a su calendario` : ''}. Le llega una notificación. Las visitas ya hechas quedan a nombre de quien las hizo.</p><button class="btn" data-a="okPasarC" data-id="${c.id}">Pasar cliente</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
 function openVisita(id) {
   const v = S.v.find(x => x.id === id), c = v && S.c.find(x => x.id === v.cliente_id);
   if (!c) return;
-  const reg = S.r.find(r => r.visita_id === v.id && r.fecha === S.sel), hecha = !!reg;
-  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}</p><p class="sub">${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}, desde el ${new Date(v.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p>${hecha ? '<p class="note">Esta visita ya está confirmada, por eso no se puede mover. Desmarcala primero si querés cambiarla.</p>' + (puedeReg(reg) ? '<button class="btn" data-a="editarReg" data-id="' + reg.id + '">Registro de la visita (notas y fotos)</button>' : '') : `<button class="btn" data-a="mover" data-id="${v.id}">Cambiar fecha u hora</button>`}<button class="btn sec" data-a="abrir" data-id="${c.id}">Ver cliente</button><button class="btn sec" data-a="borrarV" data-id="${v.id}">Eliminar visita${v.repetir === 'no' ? '' : ' y sus repeticiones'}</button>`);
+  const reg = S.r.find(r => r.visita_id === v.id && r.fecha === S.sel), hecha = !!reg, duenio = isGestor() || c.piletero_id === S.me.id, quien = resp(v);
+  const pasar = !hecha && (duenio || v.piletero_id === S.me.id) && pileteros().length > 1 ? `<button class="btn pasa" data-a="pasarV" data-id="${v.id}">↪ Pasar a otro piletero</button>` : '';
+  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}</p><p class="who"><i class="dot" style="background:${col(quien)}"></i>La hace ${quien === S.me.id ? 'vos' : esc(nom(quien))}${v.piletero_id ? ` · se la pasaron (el cliente es de ${c.piletero_id === S.me.id ? 'vos' : esc(nom(c.piletero_id))})` : ''}</p><p class="sub">${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}, desde el ${new Date(v.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p>${hecha ? '<p class="note">Esta visita ya está confirmada, por eso no se puede mover. Desmarcala primero si querés cambiarla.</p>' + (puedeReg(reg) ? '<button class="btn" data-a="editarReg" data-id="' + reg.id + '">Registro de la visita (notas y fotos)</button>' : '') : (duenio ? `<button class="btn" data-a="mover" data-id="${v.id}">Cambiar fecha u hora</button>` : '')}${pasar}<button class="btn sec" data-a="abrir" data-id="${c.id}">Ver cliente</button>${duenio ? `<button class="btn sec" data-a="borrarV" data-id="${v.id}">Eliminar visita${v.repetir === 'no' ? '' : ' y sus repeticiones'}</button>` : ''}`);
 }
 // Opciones de clientes para los formularios: siempre los míos; el coordinador puede tildar "todo el equipo"
 const misCs = () => S.c.filter(c => c.piletero_id === S.me.id);
@@ -1651,7 +1679,7 @@ async function act(e) {
       if (hecha && f > hoy) return toast('No podés registrar como hecha una visita futura');
       const c = S.c.find(x => x.id === cid);
       const v = await put('v', 'visitas', { cliente_id: cid, fecha: f, hora: $('#vh').value || null, repetir: $('#vr').value });
-      if (hecha && v) await put('r', 'realizadas', { visita_id: v.id, cliente_id: cid, piletero_id: c.piletero_id || S.me.id, fecha: f, valor: +c.valor_visita || 0 });
+      if (hecha && v) await put('r', 'realizadas', { visita_id: v.id, cliente_id: cid, piletero_id: resp(v) || S.me.id, fecha: f, valor: +c.valor_visita || 0 });
       S.sel = f; S.mes = f.slice(0, 7); closeSheet(); renderAll();
       return toast(hecha ? 'Visita registrada como hecha' : 'Visita programada');
     }
@@ -1671,6 +1699,34 @@ async function act(e) {
       S.sel = f; S.mes = f.slice(0, 7); closeSheet(); renderAll(); return toast('Visita cambiada');
     }
     case 'visita': return openVisita(d.id);
+    case 'pasarV': return hojaPasarV(d.id);
+    case 'pasarC': return hojaPasarC(d.id);
+    case 'okPasarV': case 'devolverV': {
+      const v = S.v.find(x => x.id === d.id), c = S.c.find(x => x.id === v.cliente_id), dev = d.a === 'devolverV', para = dev ? null : pilElegido();
+      if (!dev && !para) return toast('Elegí a qué piletero se la pasás');
+      const solo = !dev && v.repetir !== 'no' && (document.querySelector('input[name=alc]:checked') || {}).value !== 'todas';
+      t.disabled = true;
+      try {
+        if (sb) await rpc('delegar_visita', { p_visita: v.id, p_piletero: para, p_fecha: solo ? S.sel : null });
+        else {
+          const p2 = para === c.piletero_id ? null : para;
+          if (solo) { v.omitir = [...(v.omitir || []), S.sel]; S.v.push({ id: crypto.randomUUID(), cliente_id: v.cliente_id, fecha: S.sel, hora: v.hora, repetir: 'no', piletero_id: p2 }); }
+          else v.piletero_id = p2;
+        }
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); closeSheet(); renderAll();
+      return toast(dev ? 'Listo, la visita volvió a ' + (c.piletero_id === S.me.id ? 'vos' : nom(c.piletero_id)) : `Listo, se la pasaste a ${nom(para)}${solo ? ' (solo ese día)' : ''}. Le llegó un aviso 📅`);
+    }
+    case 'okPasarC': {
+      const c = S.c.find(x => x.id === d.id), para = pilElegido();
+      if (!para) return toast('Elegí a qué piletero se lo pasás');
+      t.disabled = true;
+      try {
+        if (sb) await rpc('pasar_cliente', { p_cliente: c.id, p_piletero: para });
+        else { c.piletero_id = para; S.v.forEach(v => { if (v.cliente_id === c.id && v.piletero_id === para) v.piletero_id = null; }); }
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); closeSheet(); renderAll(); return toast(`Listo, ${c.nombre} ahora es cliente de ${nom(para)} 👤`);
+    }
     case 'borrarV':
       if (!confirm('¿Eliminar esta visita?')) return;
       if (sb) { const x = await sb.from('visitas').delete().eq('id', d.id); if (x.error) return toast(x.error.message); }
@@ -1730,7 +1786,7 @@ async function act(e) {
       if (ex && ex.pago_id) return toast('Esa visita ya está incluida en un pago');
       let nuevo = null;
       if (ex) { if ((ex.nota || ex.productos) && !confirm('Esta visita tiene notas o fotos guardadas. Si la desmarcás se borran. ¿Seguir?')) return; await del('r', 'realizadas', ex.id); toast('Visita desmarcada'); }
-      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: c.piletero_id || S.me.id, fecha: S.sel, valor: +c.valor_visita || 0 }); son('ok'); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
+      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: resp(v) || S.me.id, fecha: S.sel, valor: +c.valor_visita || 0 }); son('ok'); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
       renderAll(); if (nuevo) abrirRegistro(nuevo.id); return;
     }
     case 'mes': { const x = mesDe(S.mes); x.setMonth(x.getMonth() + (+d.id)); S.mes = ymd(x).slice(0, 7); return renderPerfil(); }

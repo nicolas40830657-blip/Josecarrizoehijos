@@ -137,6 +137,10 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
     avisos.push({ usuarios: await equipoDe(quien), app: "equipo", pref: "", title: `🎁 Premio para ${quien.nombre}`, body: corto(`Recomendó a ${nuevo?.nombre || "un cliente"} y ya tuvo su primera visita. Llevale: ${pz.texto}`), url: `index.html#chat=${quien.id}`, tag: `premio-${pz.id}` });
     return avisos;
   }
+  if (tabla === "traspaso") {
+    if (!b.para) return null;
+    return { usuarios: [b.para], app: "equipo", pref: "", title: corto(String(b.title || "Te pasaron algo"), 80), body: corto(String(b.body || "")), url: String(b.url || "index.html"), tag: String(b.tag || "traspaso") };
+  }
   if (tabla === "chat_equipo") {
     const m = await uno("chat_equipo", id);
     if (!m || !(m.menciones || []).length) return null;
