@@ -101,6 +101,8 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .repBox b{display:block;font-size:16px}.repBox small{color:var(--g600);font-size:12px}
 .repBox p{grid-column:1/-1;margin:0;color:#c92a2a;font-weight:600;font-size:13px}
 .repBox.mal div{background:#fff0f0}
+.abTag{color:#1b4a86 !important;font-weight:600}
+.codigo{font:700 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:4px;margin:4px 0;color:var(--navy)}
 .ventasSec{margin-top:26px;padding-top:6px;border-top:1px solid #dde3ee}
 .ventasSec h2{font-size:22px;margin:12px 0 8px}
 .trSem .row{cursor:pointer;align-items:center}
@@ -490,7 +492,7 @@ const CFG = { url: 'https://gqromisweyqvdeeahxnl.supabase.co', key: 'sb_publisha
 
 const sb = CFG.url ? supabase.createClient(CFG.url, CFG.key) : null;
 const COLORS = ['#2563EB', '#0E9F6E', '#F59E0B', '#DB2777', '#7C3AED', '#0891B2'];
-const S = { tr: [], ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], sol: [], pz: [], aj: {}, eq: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
+const S = { adm: [], ap: [], tr: [], ms: [], msg: [], ped: [], rec: [], chat: null, chatFoto: null, p: [], c: [], h: [], v: [], r: [], pg: [], vt: [], fo: [], vcl: null, mov: [], co: {}, vc: {}, pr: [], k: [], inv: 'herr', ctab: 'cli', rc: [], av: [], mgl: [], sol: [], pz: [], aj: {}, eq: [], mg: new Set(), mes: '', me: null, F: null, u: [], sel: '', share: false, modo: 'auto' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 const P = id => S.p.find(x => x.id === id);
@@ -505,8 +507,8 @@ const isGestor = () => ['coordinador', 'administrador'].includes(S.me?.rol);
 const pileteros = () => S.p.filter(p => p.rol !== 'administrador' && p.activo !== false);
 const mesStats = k => {
   const rs = S.r.filter(r => (r.fecha || '').startsWith(k)), vs = S.vt.filter(v => (v.fecha || '').startsWith(k)), ps = S.pg.filter(x => (x.fecha || '').startsWith(k));
-  const sv = sumar(rs), tp = vs.reduce((a, v) => a + (+v.total || 0), 0), ts = trMes(k), tt = ts.reduce((a, t) => a + (+t.presupuesto || 0), 0);
-  return { n: sv.n, piletas: new Set(rs.map(r => r.cliente_id).filter(Boolean)).size, visitas: sv.t, prod: tp, trN: ts.length, trab: tt, trEmp: ts.reduce((a, t) => a + empTr(t), 0), total: sv.t + tp + tt, emp: sv.emp, pagado: ps.reduce((a, x) => a + (+x.monto || 0), 0) };
+  const comunes = rs.filter(r => !r.abono), sv = sumar(comunes), sab = sumar(rs.filter(r => r.abono)), ab = abonosMes(k), tp = vs.reduce((a, v) => a + (+v.total || 0), 0), ts = trMes(k), tt = ts.reduce((a, t) => a + (+t.presupuesto || 0), 0);
+  return { n: rs.length, piletas: new Set(rs.map(r => r.cliente_id).filter(Boolean)).size, visitas: sv.t, abN: ab.n, abonos: ab.t, abEmp: ab.t - sab.mio, prod: tp, trN: ts.length, trab: tt, trEmp: ts.reduce((a, t) => a + empTr(t), 0), total: sv.t + ab.t + tp + tt, emp: sv.emp, pagado: ps.reduce((a, x) => a + (+x.monto || 0), 0) };
 };
 const PORC = 0.7, PP = Math.round(PORC * 100); // 70% para el piletero, el resto para la empresa (visitas y trabajos)
 // Trabajos que cuentan en un mes: los no cancelados que empiezan ese mes
@@ -550,7 +552,7 @@ const vcard = v => {
   const c = S.c.find(x => x.id === v.cliente_id), k = col(resp(v)), ok = S.r.some(r => r.visita_id === v.id && r.fecha === S.sel);
   return `<div class="card vis ${ok ? 'ok' : ''}" style="--c:${k};--ink:${ink(k)}" data-a="visita" data-id="${v.id}"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small><small>${v.hora ? v.hora.slice(0, 5) + ' · ' : ''}${REP[v.repetir]}${c.valor_visita ? ' · ' + peso(c.valor_visita) : ''} · ${esc(nom(resp(v)))}${v.piletero_id ? ` <span class="deleg">↪ de ${esc(nom(c.piletero_id))}</span>` : ''}</small>${avisoVisita(c.id, S.sel)}${avisoCliente(c)}</div><button class="chk" data-a="chk" data-id="${v.id}" aria-label="${ok ? 'Desmarcar visita' : 'Confirmar visita'}">✓</button></div>`;
 };
-const card = c => { const n = nuevos(c.id); return `<button class="chatc crow" data-a="abrir" data-id="${c.id}"><span class="av" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span><span class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)} · ${esc(info(c))}</small>${avisoCliente(c)}</span><span class="der">${isGestor() ? `<small>${esc(nom(c.piletero_id))}</small>` : ''}${c.usuario_id ? '<small title="Usa la app">📱</small>' : ''}${n ? `<i class="nb">${n}</i>` : ''}</span></button>`; };
+const card = c => { const n = nuevos(c.id); return `<button class="chatc crow" data-a="abrir" data-id="${c.id}"><span class="av" style="background:${col(c.piletero_id)}">${esc((c.nombre || '?').trim()[0].toUpperCase())}</span><span class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)} · ${esc(info(c))}</small>${esAbono(c) ? `<small class="abTag">🏢 ${c.administracion_id && ADM(c.administracion_id) ? esc(ADM(c.administracion_id).nombre) + ' · ' : ''}abono ${peso(c.abono)}/mes</small>` : ''}${avisoCliente(c)}</span><span class="der">${isGestor() ? `<small>${esc(nom(c.piletero_id))}</small>` : ''}${c.usuario_id ? '<small title="Usa la app">📱</small>' : ''}${n ? `<i class="nb">${n}</i>` : ''}</span></button>`; };
 const info = c => (c.frecuencia || 'Semanal') + (c.dia && c.dia !== 'Sin día fijo' ? ' · ' + c.dia : '');
 const ink = h => { const n = parseInt(h.slice(1), 16); return (.299 * (n >> 16) + .587 * (n >> 8 & 255) + .114 * (n & 255)) > 150 ? '#0B2545' : '#fff'; };
 const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); setTimeout(() => e.classList.remove('on'), 2800); };
@@ -559,6 +561,8 @@ const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('
 function demo() {
   S.p = [{ id: 'p1', nombre: 'José', color: COLORS[0], rol: 'coordinador' }, { id: 'p2', nombre: 'Mariano', color: COLORS[1] }, { id: 'p3', nombre: 'Lucas', color: COLORS[2] }, { id: 'p4', nombre: 'Nico', color: COLORS[3] }, { id: 'p5', nombre: 'Viviana', color: COLORS[4], rol: 'administrador' }, { id: 'p5', nombre: 'Viviana', color: COLORS[4], rol: 'administrador' }];
   S.p.forEach(p => { p.porc_productos = p.rol === 'administrador' ? 0 : 10; });
+  S.adm = [{ id: 'a1', nombre: 'Administración Costa & Asoc.', contacto: 'Laura Costa', telefono: '2235001122', email: 'admin@costa.com', codigo: 'ACOSTA1' }];
+  S.ap = [];
   const OBJ = { p1: [14, 230000], p2: [14, 260000], p3: [8, 200000] }; S.p.forEach(p => { if (OBJ[p.id]) { p.obj_visitas = OBJ[p.id][0]; p.obj_monto = OBJ[p.id][1]; } });
   S.c = [
     { id: 'c1', valor_visita: 15000, telefono: '223 155 123456', dia: 'Lunes', nombre: 'Familia Pérez', direccion: 'Güemes 2450', lat: -37.9996, lng: -57.5547, notas: 'Pileta 8x4, cloro granulado', piletero_id: 'p1' },
@@ -566,7 +570,9 @@ function demo() {
     { id: 'c3', valor_visita: 18000, dia: 'Lunes', nombre: 'Dpto. Costa Azul', direccion: 'Av. Constitución 5100', lat: -37.989, lng: -57.575, notas: '', piletero_id: 'p1' },
     { id: 'c4', valor_visita: 25000, dia: 'Miércoles', nombre: 'Hotel Playa Grande', direccion: 'Av. Martínez de Hoz 3300', lat: -38.029, lng: -57.534, notas: 'Pileta climatizada', piletero_id: 'p3' },
     { id: 'c5', valor_visita: 22000, dia: 'Jueves', nombre: 'Quinta Gómez', direccion: 'Punta Mogotes, Av. Félix U. Camet 900', lat: -38.075, lng: -57.546, notas: '', piletero_id: 'p4' },
-    { id: 'c6', valor_visita: 16000, dia: 'Martes', frecuencia: 'Cada 15 días', nombre: 'Familia Suárez', direccion: 'Colón 2800', lat: -38.0023, lng: -57.55, notas: 'Limpieza de fondo semanal', piletero_id: 'p2' }
+    { id: 'c6', valor_visita: 16000, dia: 'Martes', frecuencia: 'Cada 15 días', nombre: 'Familia Suárez', direccion: 'Colón 2800', lat: -38.0023, lng: -57.55, notas: 'Limpieza de fondo semanal', piletero_id: 'p2' },
+    { id: 'c7', tipo: 'institucion', administracion_id: 'a1', abono: 160000, visitas_semana: 2, valor_visita: 18462, frecuencia: 'Semanal', dia: 'Lunes', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', lat: -38.003, lng: -57.545, notas: 'Pileta en terraza, piso 20', piletero_id: 'p1' },
+    { id: 'c8', tipo: 'institucion', administracion_id: 'a1', abono: 90000, visitas_semana: 1, valor_visita: 20769, frecuencia: 'Semanal', dia: 'Jueves', nombre: 'Edificio Mirador', direccion: 'Bv. Marítimo 2400', lat: -38.01, lng: -57.535, notas: '', piletero_id: 'p2' }
   ];
   S.h = [
     { id: 'h1', nombre: 'Bomba de achique', estado: 'disponible' },
@@ -598,8 +604,8 @@ function demo() {
     { id: 'r4', visita_id: 'v4', cliente_id: 'c4', piletero_id: 'p3', fecha: back(3), valor: 25000 }
   ];
   // visitas de ejemplo repartidas en el mes, para ver subir las líneas de objetivos
-  { const hoy = new Date(), CL = { p1: ['c1', 'c3'], p2: ['c2', 'c6'], p3: ['c4'], p4: ['c5'] }; let n = 0;
-    for (let d = 1; d < hoy.getDate() - 3; d++) Object.keys(CL).forEach((pid, j) => { if ((d * 7 + j * 3) % 5 > 1) return; const cid = CL[pid][d % CL[pid].length], c = S.c.find(x => x.id === cid); S.r.push({ id: 'rx' + (n++), cliente_id: cid, piletero_id: pid, fecha: ymd(new Date(hoy.getFullYear(), hoy.getMonth(), d)), valor: c.valor_visita, pago_id: 'x' }); }); }
+  { const hoy = new Date(), CL = { p1: ['c1', 'c3', 'c7'], p2: ['c2', 'c6', 'c8'], p3: ['c4'], p4: ['c5'] }; let n = 0;
+    for (let d = 1; d < hoy.getDate() - 3; d++) Object.keys(CL).forEach((pid, j) => { if ((d * 7 + j * 3) % 5 > 1) return; const cid = CL[pid][d % CL[pid].length], c = S.c.find(x => x.id === cid); S.r.push({ id: 'rx' + (n++), cliente_id: cid, piletero_id: pid, fecha: ymd(new Date(hoy.getFullYear(), hoy.getMonth(), d)), valor: c.valor_visita, abono: esAbono(c), pago_id: esAbono(c) ? null : 'x' }); }); }
   S.pr = [
     { id: 'pr1', nombre: 'Cloro granulado 90%', detalle: 'Granulado, 90% de cloro', stock: 12, precio: 9000 },
     { id: 'pr2', nombre: 'Cloro granulado 70%', detalle: 'Granulado, 70% de cloro', stock: 8, precio: 7500 },
@@ -649,6 +655,7 @@ async function load() {
   const [p, c, h, v, r, vt, pr, k, pg, mv, co, vcs] = await Promise.all([sb.from('perfiles').select(), sb.from('clientes').select(), sb.from('herramientas').select(), sb.from('visitas').select(), sb.from('realizadas').select(), sb.from('ventas').select(), sb.from('productos').select(), sb.from('kits').select(), sb.from('pagos').select(), sb.from('movimientos').select().order('creado', { ascending: false }).limit(200), sb.from('costos').select(), sb.from('ventas_costos').select()]);
   S.p = p.data || []; S.c = c.data || []; await cargarPortal(true); S.h = h.data || []; S.v = v.data || []; S.r = r.data || []; S.vt = (vt.data || []).filter(x => !x.anulada); S.pr = pr.data || []; S.k = k.data || []; S.pg = pg.data || []; S.mov = mv.data || []; S.co = {}; (co.data || []).forEach(x => { S.co[x.producto_id] = +x.costo; }); S.vc = {}; (vcs.data || []).forEach(x => { S.vc[x.venta_id] = +x.costo; });
   await cargarTrabajos().catch(() => {});
+  await cargarAdm().catch(() => {});
 }
 // ── Portal de clientes: mensajes sin leer, pedidos y recomendaciones
 async function cargarPortal(silencio) {
@@ -1169,7 +1176,7 @@ function hojaObjetivo(cual) {
 function renderPerfil() {
   const m = S.me, mine = S.c.filter(c => c.piletero_id === m.id).length, tl = S.h.filter(h => h.usuario_id === m.id || h.propietario_id === m.id);
   const where = h => { const c = S.c.find(x => x.id === h.cliente_id); return h.propietario_id ? 'Herramienta propia' : c ? 'En ' + c.nombre : 'La llevo conmigo'; };
-  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${trabajosSemanaHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}${plg('cobro', '💳', 'Mis datos para cobrar', m.pago_alias ? 'Alias: ' + esc(m.pago_alias) : m.pago_cbu ? 'CBU cargado' : 'Todavía sin cargar', `<div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div>`)}<button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button>${plg('push', '🔔', 'Notificaciones', 'Qué avisos te llegan a este celular', '<div class="cobro" id="pushBox"></div>')}${plg('color', '🎨', 'Tu color en el mapa', `<i class="dot" style="background:${m.color};display:inline-block;vertical-align:middle;margin-right:6px"></i>Tocá para cambiarlo`, `<div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div>`)}${plg('herr', '🧰', `Mis herramientas (${tl.length})`, tl.length ? tl.slice(0, 3).map(h => esc(h.nombre)).join(', ') + (tl.length > 3 ? '…' : '') : 'Todavía no tenés herramientas', `${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>`)}${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
+  $('#perfil').innerHTML = likesWidget() + `<div class="avatar" style="background:${m.foto ? `center/cover url(${m.foto})` : m.color}">${m.foto ? '' : esc(m.nombre[0] || '?')}</div><label class="up">Cambiar foto<input type="file" id="foto" accept="image/*"></label><h1>${esc(m.nombre)}</h1><p class="sub">${isCoord() ? 'Coordinador · ' : S.me.rol === 'administrador' ? 'Administración · ' : ''}${mine} clientes · ${tl.length} herramientas</p>${objetivosHTML()}${trabajosSemanaHTML()}${S.me.rol === 'administrador' ? '' : gananciasHTML()}${premioBox()}${plg('cobro', '💳', 'Mis datos para cobrar', m.pago_alias ? 'Alias: ' + esc(m.pago_alias) : m.pago_cbu ? 'CBU cargado' : 'Todavía sin cargar', `<div class="cobro"><p class="sub" style="margin:0 0 10px">Tus clientes los ven en su app para pagarte por transferencia.</p><label>Alias<input id="pgA" value="${esc(m.pago_alias)}" placeholder="Ej: pileta.jose.mp" autocapitalize="off"></label><label>CBU o CVU<input id="pgC" value="${esc(m.pago_cbu)}" inputmode="numeric" placeholder="22 números"></label><label>Titular de la cuenta<input id="pgT" value="${esc(m.pago_titular)}" placeholder="Nombre y apellido"></label><label>Banco o billetera<input id="pgB" value="${esc(m.pago_banco)}" placeholder="Ej: Mercado Pago, Banco Nación"></label><button class="btn" data-a="guardarCobro" style="margin-top:0">Guardar datos para cobrar</button></div>`)}<button class="btn verapp" data-a="verApp" style="margin-top:14px">📱 Ver app Mi pileta <small>Así ven tus clientes sus fotos</small></button><button class="btn sec" data-a="tourEq">👋 Ver el recorrido de la app</button>${plg('push', '🔔', 'Notificaciones', 'Qué avisos te llegan a este celular', '<div class="cobro" id="pushBox"></div>')}${plg('color', '🎨', 'Tu color en el mapa', `<i class="dot" style="background:${m.color};display:inline-block;vertical-align:middle;margin-right:6px"></i>Tocá para cambiarlo`, `<div class="sw">${COLORS.map(c => `<button class="swb ${c === m.color ? 'on' : ''}" style="background:${c}" data-a="color" data-id="${c}" aria-label="Color ${c}"></button>`).join('')}</div>`)}${plg('herr', '🧰', `Mis herramientas (${tl.length})`, tl.length ? tl.slice(0, 3).map(h => esc(h.nombre)).join(', ') + (tl.length > 3 ? '…' : '') : 'Todavía no tenés herramientas', `${tl.length ? tl.map(h => `<div class="row"><div class="grow"><b>${esc(h.nombre)}</b><small>${esc(where(h))}</small></div><button class="btn sm sec" data-a="${h.propietario_id ? 'borrarH' : 'devolver'}" data-id="${h.id}">${h.propietario_id ? 'Quitar' : 'Devolver'}</button></div>`).join('') : '<p class="note">Todavía no tenés herramientas. Agregá las tuyas o tomá una del inventario con “Usar”.</p>'}<button class="btn sec" data-a="nuevaHP">+ Agregar herramienta propia</button>`)}${isGestor() ? plg('adm', '🏢', `Administraciones (${S.adm.length})`, S.adm.length ? `${S.c.filter(esAbono).length} edificios con abono · ${peso(abonosMes(mesHoy()).t)}/mes` : 'Edificios con consorcio y abono mensual', admLista()) : ''}${isGestor() ? pendientesHTML() + equipoHTML() : ''}<button class="btn sec" data-a="salir" style="margin-top:24px">Cerrar sesión</button>`;
   montarPush(); montarObj();
 }
 // Reparto de cada trabajo: se fija a mano en % o en $ (piletero / empresa; lo que sobra queda para materiales u otros gastos)
@@ -1198,6 +1205,48 @@ function cambiarRep(m) {
   if (m === 'monto') { $('#rpP').value = P ? Math.round(P * a / 100) : ''; $('#rpE').value = P ? Math.round(P * b / 100) : ''; }
   else { $('#rpP').value = P ? +(a / P * 100).toFixed(1) : PP; $('#rpE').value = P ? +(b / P * 100).toFixed(1) : 100 - PP; }
   document.querySelectorAll('.rpU').forEach(x => { x.textContent = m === 'pct' ? '(%)' : '($)'; }); calcRep();
+}
+// ── Instituciones (edificios) con administración y abono mensual
+const esAbono = c => !!c && c.tipo === 'institucion' && +c.abono > 0;
+const valorAbono = (ab, vs) => +ab > 0 ? Math.round(+ab / (Math.max(+vs || 1, 1) * 52 / 12)) : 0;
+const ADM = id => S.adm.find(a => a.id === id);
+const edificiosDe = id => S.c.filter(c => c.administracion_id === id);
+const mesHoy = () => ymd(new Date()).slice(0, 7);
+async function cargarAdm() {
+  if (!sb) return;
+  const [a, b] = await Promise.all([sb.from('administraciones').select().order('nombre'), sb.from('abono_pagos').select()]);
+  if (!a.error) S.adm = a.data || []; if (!b.error) S.ap = b.data || [];
+}
+// Abonos de un mes: los edificios con abono que ya existían ese mes
+function abonosMes(k) {
+  if (k > mesHoy()) return { n: 0, t: 0 };
+  const fin = ymd(new Date(+k.slice(0, 4), +k.slice(5, 7), 0));
+  const l = S.c.filter(c => esAbono(c) && (!c.creado || c.creado.slice(0, 10) <= fin));
+  return { n: l.length, t: l.reduce((a, c) => a + (+c.abono || 0), 0) };
+}
+const cuentaAdm = (id, k) => { const ed = edificiosDe(id).filter(esAbono), pg = S.ap.find(x => x.administracion_id === id && x.mes === k); return { total: ed.reduce((a, c) => a + (+c.abono || 0), 0), pago: pg }; };
+const linkAdm = a => location.origin + location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/') + 'cliente.html?c=' + encodeURIComponent(a.codigo);
+function admLista() {
+  return `${S.adm.length ? S.adm.map(a => { const ed = edificiosDe(a.id), c = cuentaAdm(a.id, mesHoy()); return `<div class="row" data-a="verAdm" data-id="${a.id}" style="cursor:pointer"><span style="font-size:22px">🏢</span><div class="grow"><b>${esc(a.nombre)}</b><small>${ed.length} ${ed.length === 1 ? 'edificio' : 'edificios'} · ${peso(c.total)}/mes${a.usuario_id ? ' · 📱 usa la app' : ''}</small></div><div class="num"><span class="tag ${c.pago?.pagado ? 'entregado' : 'nuevo'}">${c.pago?.pagado ? 'Pagado' : 'Pendiente'}</span></div></div>`; }).join('') : '<p class="note">Todavía no cargaste administraciones. Se crean al registrar un cliente como institución, o con el botón de abajo.</p>'}<button class="btn sec" data-a="nuevaAdm">+ Nueva administración</button><button class="btn sec" data-a="pagoEmpresa">💳 Datos de la empresa para cobrar abonos</button>`;
+}
+function verAdm(id) {
+  const a = ADM(id); if (!a) return;
+  const ed = edificiosDe(id), k = mesHoy(), meses = [0, 1, 2, 3, 4, 5].map(i => { const d = mesDe(k); d.setMonth(d.getMonth() - i); return ymd(d).slice(0, 7); });
+  const link = linkAdm(a), msg = `Hola! Les comparto la app de José Carrizo e Hijos para ver el estado de las piletas de sus edificios, las fotos de cada visita y la cuenta mensual: ${link} (código ${a.codigo})`;
+  sheet(`<h2>🏢 ${esc(a.nombre)}</h2><p class="sub">${[a.contacto, a.telefono, a.email].filter(Boolean).map(esc).join(' · ') || 'Sin datos de contacto'}</p>` +
+    `<div class="stats"><div><small>Abono mensual total</small><b>${peso(cuentaAdm(id, k).total)}</b></div><div><small>Edificios</small><b>${ed.length}</b></div></div>` +
+    `<h3>Edificios</h3>${ed.length ? ed.map(c => `<div class="row" data-a="abrir" data-id="${c.id}" style="cursor:pointer"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)} · ${c.visitas_semana || 1} ${+c.visitas_semana > 1 ? 'veces' : 'vez'} por semana · ${esc(nom(c.piletero_id))}</small></div><div class="num"><b>${peso(c.abono)}</b><small>por mes</small></div></div>`).join('') : '<p class="note">Todavía no tiene edificios. Al cargar o editar un cliente, elegí "Institución" y esta administración.</p>'}` +
+    `<h3>Cuenta mensual</h3>${meses.map(m => { const c = cuentaAdm(id, m), pg = c.pago, pag = pg?.pagado; return `<div class="row"><div class="grow"><b>${mesTxt(m)}</b><small>${pag ? 'Pagado el ' + new Date(pg.fecha + 'T12:00').toLocaleDateString('es-AR') + ' · ' + peso(pg.monto) : 'Abono ' + peso(c.total)}</small></div><button class="btn sm ${pag ? 'sec' : ''}" data-a="pagoAdm" data-id="${id}|${m}">${pag ? 'Deshacer' : '💵 Marcar pagado'}</button></div>`; }).join('')}` +
+    `<h3>App de la administración</h3><div class="cobro"><p class="sub" style="margin:0 0 8px">Mandales este link. Crean su cuenta y ven todos sus edificios: fotos, visitas, la cuenta del mes, mensajes y la tienda.</p><p class="codigo">${esc(a.codigo)}</p><p class="sub" style="word-break:break-all">${esc(link)}</p>${a.usuario_id ? '<p class="note">📱 Ya entró a la app.</p>' : ''}<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${(a.telefono || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}">Mandar por WhatsApp</a><button class="btn sec" data-a="copiarAdm" data-id="${id}">Copiar link</button></div>` +
+    `${a.notas ? `<p class="note">${esc(a.notas)}</p>` : ''}<button class="btn sec" data-a="editarAdm" data-id="${id}">Editar datos</button>${ed.length ? '' : `<button class="btn sec" data-a="borrarAdm" data-id="${id}">Eliminar administración</button>`}`);
+}
+function formAdm(a) {
+  a = a || {};
+  sheet(`<h2>${a.id ? 'Editar administración' : '🏢 Nueva administración'}</h2><label>Nombre<input id="amN" maxlength="120" value="${esc(a.nombre || '')}" placeholder="Ej: Administración Pérez & Asoc."></label><label>Persona de contacto<input id="amC" maxlength="120" value="${esc(a.contacto || '')}"></label><label>Teléfono (WhatsApp)<input id="amT" type="tel" maxlength="40" value="${esc(a.telefono || '')}"></label><label>Email<input id="amE" type="email" maxlength="120" value="${esc(a.email || '')}"></label><label>Notas<textarea id="amK" rows="2" maxlength="1000">${esc(a.notas || '')}</textarea></label><button class="btn" data-a="guardarAdm" data-id="${a.id || ''}">Guardar</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+}
+function formPagoEmpresa() {
+  const v = S.aj.pago_empresa || {};
+  sheet(`<h2>💳 Datos para cobrar abonos</h2><p class="sub">Las administraciones los ven en su app para transferir la cuenta del mes.</p><label>Alias<input id="peA" value="${esc(v.alias || '')}" autocapitalize="off"></label><label>CBU o CVU<input id="peC" value="${esc(v.cbu || '')}" inputmode="numeric"></label><label>Titular<input id="peT" value="${esc(v.titular || '')}"></label><label>Banco o billetera<input id="peB" value="${esc(v.banco || '')}"></label><label>CUIT (opcional)<input id="peU" value="${esc(v.cuit || '')}" inputmode="numeric"></label><button class="btn" data-a="guardarPagoEmp">Guardar</button>`);
 }
 // Tarjetas plegables del perfil (se acuerdan cuáles abriste)
 S.abiertos = S.abiertos || new Set();
@@ -1324,17 +1373,17 @@ async function pollU() {
   if (!r.error) { S.u = r.data; renderUsers(); }
 }
 function gananciasHTML() {
-  const mine = S.r.filter(r => r.piletero_id === S.me.id), mis = delMes(mine), s = sumar(mis), pend = sumar(mine.filter(r => !r.pago_id)), g = {};
+  const mine = S.r.filter(r => r.piletero_id === S.me.id), mis = delMes(mine), s = sumar(mis.filter(r => !r.abono)), pend = sumar(mine.filter(r => !r.pago_id && !r.abono)), g = {};
   const mv = S.vt.filter(v => v.vendedor_id === S.me.id && (v.fecha || '').startsWith(S.mes)), prod = mv.reduce((a, v) => a + (+v.total || 0), 0), comi = mv.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0);
-  const mtr = trMes(S.mes, S.me.id), trPago = mtr.reduce((a, t) => a + (+t.pago || 0), 0);
+  const mtr = trMes(S.mes, S.me.id), trPago = mtr.reduce((a, t) => a + (+t.pago || 0), 0), mab = mis.filter(r => r.abono), abPago = sumar(mab).mio;
   mis.forEach(r => { const k = ymd(lunes(r.fecha)); (g[k] = g[k] || []).push(r); });
   const sem = Object.keys(g).sort().reverse().map(k => {
-    const a = new Date(k + 'T12:00'), b = new Date(a), w = sumar(g[k]), pw = sumar(g[k].filter(r => !r.pago_id)).emp;
+    const a = new Date(k + 'T12:00'), b = new Date(a), w = sumar(g[k]), pw = sumar(g[k].filter(r => !r.pago_id && !r.abono)).emp;
     b.setDate(a.getDate() + 6);
     return `<div class="row"><div class="grow"><b>${corto(a)} – ${corto(b)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)}</small></div><div class="num"><b>${pw > 0 ? peso(pw) : 'Pagado'}</b><small>${pw > 0 ? 'a devolver' : '✓'}</small></div></div>`;
   }).join('');
   const pagos = S.pg.filter(x => x.piletero_id === S.me.id).sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || ''))).slice(0, 5);
-  return `<div class="dh"><button class="arrow" data-a="mes" data-id="-1" aria-label="Mes anterior">‹</button><h3>Mis ganancias · ${mesTxt(S.mes)}</h3><button class="arrow" data-a="mes" data-id="1" aria-label="Mes siguiente">›</button></div><div class="stats"><div><small>Visitas hechas</small><b>${s.n}</b></div><div><small>Clientes atendidos</small><b>${new Set(mis.map(r => r.cliente_id).filter(Boolean)).size}</b></div><div><small>Facturado por visitas</small><b>${peso(s.t)}</b></div><div><small>Tu parte (${PP}%)</small><b>${peso(s.mio)}</b></div><div><small>Para la empresa (${100 - PP}%)</small><b>${peso(s.emp)}</b></div><div><small>Productos que vendiste</small><b>${peso(prod)}</b></div><div><small>Tu comisión por productos (${+S.me.porc_productos || 0}%)</small><b>${peso(comi)}</b></div>${mtr.length ? `<div><small>Tus trabajos (${mtr.length})</small><b>${peso(trPago)}</b></div>` : ''}<div><small>Total tuyo del mes</small><b>${peso(s.mio + comi + trPago)}</b></div></div>` +
+  return `<div class="dh"><button class="arrow" data-a="mes" data-id="-1" aria-label="Mes anterior">‹</button><h3>Mis ganancias · ${mesTxt(S.mes)}</h3><button class="arrow" data-a="mes" data-id="1" aria-label="Mes siguiente">›</button></div><div class="stats"><div><small>Visitas hechas</small><b>${mis.length}</b></div><div><small>Clientes atendidos</small><b>${new Set(mis.map(r => r.cliente_id).filter(Boolean)).size}</b></div><div><small>Facturado por visitas</small><b>${peso(s.t)}</b></div><div><small>Tu parte (${PP}%)</small><b>${peso(s.mio)}</b></div><div><small>Para la empresa (${100 - PP}%)</small><b>${peso(s.emp)}</b></div><div><small>Productos que vendiste</small><b>${peso(prod)}</b></div><div><small>Tu comisión por productos (${+S.me.porc_productos || 0}%)</small><b>${peso(comi)}</b></div>${mab.length ? `<div><small>Edificios con abono (${mab.length} visitas) · te paga la empresa</small><b>${peso(abPago)}</b></div>` : ''}${mtr.length ? `<div><small>Tus trabajos (${mtr.length})</small><b>${peso(trPago)}</b></div>` : ''}<div><small>Total tuyo del mes</small><b>${peso(s.mio + abPago + comi + trPago)}</b></div></div>` +
     `<div class="pend"><div><small>A devolver a la empresa</small><b>${peso(pend.emp)}</b><small>${pend.n} ${pend.n === 1 ? 'visita sin pagar' : 'visitas sin pagar'}</small></div><button class="btn" data-a="pagar" ${pend.n ? '' : 'disabled'}>Pagar</button></div>` +
     (sem || '<p class="note">Todavía no confirmaste visitas este mes. Tocá el check de cada visita en el calendario.</p>') +
     (pagos.length ? '<h3>Pagos a la empresa</h3>' + pagos.map(x => `<div class="row"><div class="grow"><b>${corto(new Date(x.fecha + 'T12:00'))}</b><small>${x.visitas} ${x.visitas === 1 ? 'visita' : 'visitas'}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
@@ -1346,8 +1395,8 @@ function pendientesHTML() {
 function equipoHTML() {
   const m = mesStats(S.mes), rs = delMes(S.r);
   const meses = [...new Set([...S.r, ...S.vt, ...S.pg, ...S.tr.filter(t => t.estado !== 'cancelado')].map(x => (x.fecha || '').slice(0, 7)).filter(Boolean))].sort().reverse().slice(0, 12);
-  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(sumar(S.r.filter(r => !r.pago_id)).emp)}</b></div></div>` +
-    pileteros().map(p => { const w = sumar(rs.filter(r => r.piletero_id === p.id)), d = sumar(S.r.filter(r => r.piletero_id === p.id && !r.pago_id)).emp; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)} · ${S.c.filter(c => c.piletero_id === p.id).length} clientes</small></div><div class="num"><b>${d > 0 ? peso(d) : 'Al día'}</b><small>${d > 0 ? 'debe' : ''}</small></div></div>`; }).join('') +
+  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Abonos mensuales (${m.abN} ${m.abN === 1 ? 'edificio' : 'edificios'})</small><b>${peso(m.abonos)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Para la empresa (abonos, menos lo de los pileteros)</small><b>${peso(m.abEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(sumar(S.r.filter(r => !r.pago_id && !r.abono)).emp)}</b></div></div>` +
+    pileteros().map(p => { const w = sumar(rs.filter(r => r.piletero_id === p.id)), d = sumar(S.r.filter(r => r.piletero_id === p.id && !r.pago_id && !r.abono)).emp; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)} · ${S.c.filter(c => c.piletero_id === p.id).length} clientes</small></div><div class="num"><b>${d > 0 ? peso(d) : 'Al día'}</b><small>${d > 0 ? 'debe' : ''}</small></div></div>`; }).join('') +
     '<h3>Historial mensual</h3>' + (meses.map(k => { const h = mesStats(k); return `<div class="row"><div class="grow"><b>${mesTxt(k)}</b><small>${h.n} ${h.n === 1 ? 'visita' : 'visitas'} · ${h.piletas} piletas${h.trN ? ` · ${h.trN} ${h.trN === 1 ? 'trabajo' : 'trabajos'} ${peso(h.trab)}` : ''} · pagado ${peso(h.pagado)}</small></div><div class="num"><b>${peso(h.total)}</b><small>facturado</small></div></div>`; }).join('') || '<p class="note">Todavía no hay datos.</p>');
 }
 
@@ -1649,7 +1698,7 @@ const sheet = h => { $('#sheetBody').innerHTML = h; $('#sh').classList.add('on')
 const closeSheet = () => $('#sh').classList.remove('on');
 function openCliente(id) {
   const c = S.c.find(x => x.id === id), mine = c.piletero_id === S.me.id;
-  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}${(isGestor() || mine) && pileteros().length > 1 ? `<button class="btn pasa" data-a="pasarC" data-id="${c.id}">👤 Pasar a otro piletero</button>` : ''}<button class="btn" data-a="chat" data-id="${c.id}">💬 Mensajes del cliente${nuevos(c.id) ? ' (' + nuevos(c.id) + ' nuevos)' : ''}</button>${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaPortal(c)}${accesoHTML(c)}${fichaVentas(c)}${fichaHist(c)}`);
+  sheet(`<h2>${esc(c.nombre)}</h2><p class="sub">${esc(c.direccion)}${c.telefono ? ' · ' + esc(c.telefono) : ''}</p><p class="who"><i class="dot" style="background:${col(c.piletero_id)}"></i>${c.piletero_id ? 'Lo atiende ' + esc(nom(c.piletero_id)) : 'Sin piletero asignado'}</p><p class="sub">Visita: ${esc(info(c))}${esAbono(c) ? ` · <b>abono ${peso(c.abono)}/mes</b> (${c.visitas_semana || 1} por semana)` : c.valor_visita ? ' · ' + peso(c.valor_visita) + ' por visita' : ''}</p>${c.administracion_id && ADM(c.administracion_id) ? `<button class="btn sec" data-a="verAdm" data-id="${c.administracion_id}">🏢 ${esc(ADM(c.administracion_id).nombre)}</button>` : ''}${c.notas ? `<p class="note">${esc(c.notas)}</p>` : ''}${mine ? '' : `<button class="btn" data-a="mio" data-id="${c.id}">Pasar a mis clientes</button>`}${(isGestor() || mine) && pileteros().length > 1 ? `<button class="btn pasa" data-a="pasarC" data-id="${c.id}">👤 Pasar a otro piletero</button>` : ''}<button class="btn" data-a="chat" data-id="${c.id}">💬 Mensajes del cliente${nuevos(c.id) ? ' (' + nuevos(c.id) + ' nuevos)' : ''}</button>${contact(c)}<button class="btn" data-a="ir" data-id="${c.id}">Ir hasta acá</button><button class="btn sec" data-a="editarC" data-id="${c.id}">Editar datos</button><a class="btn sec" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">Abrir en Google Maps</a><button class="btn sec" data-a="ventaCli" data-id="${c.id}">Registrar venta a este cliente</button>${fichaPortal(c)}${accesoHTML(c)}${fichaVentas(c)}${fichaHist(c)}`);
 }
 function menuCliente(id) {
   const c = S.c.find(x => x.id === id);
@@ -1657,7 +1706,16 @@ function menuCliente(id) {
 }
 function formCliente(c) {
   c = c || {};
-  sheet(`<h2>${c.id ? 'Editar cliente' : 'Nuevo cliente'}</h2><label>Nombre<input id="fn" value="${esc(c.nombre)}"></label><label>Dirección<input id="fd" value="${esc(c.direccion)}" placeholder="Ej: Güemes 2450"></label><label>Valor de cada visita ($)<input id="fv" type="number" inputmode="decimal" min="0" value="${c.valor_visita ?? 0}"></label><label>Teléfono (WhatsApp)<input id="fl" type="tel" inputmode="tel" value="${esc(c.telefono)}" placeholder="Ej: 223 155 123456"></label><label>Frecuencia habitual<select id="ff">${opts(FREQ, c.frecuencia || 'Semanal')}</select></label><label>Día habitual<select id="fy">${opts(DIAS, c.dia || 'Sin día fijo')}</select></label>${isGestor() ? `<label>Lo atiende<select id="fp">${pileteros().map(p => `<option value="${p.id}" ${p.id === (c.piletero_id || S.me.id) ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>` : ''}<label>Notas<textarea id="ft" rows="2">${esc(c.notas)}</textarea></label><button class="btn" data-a="guardarC" data-id="${c.id || ''}">Guardar cliente</button>${c.id && canDel(c) ? `<button class="btn sec" data-a="borrarC" data-id="${c.id}">Eliminar cliente</button>` : ''}`);
+  sheet(`<h2>${c.id ? 'Editar cliente' : 'Nuevo cliente'}</h2><label>Nombre<input id="fn" value="${esc(c.nombre)}"></label><label>Dirección<input id="fd" value="${esc(c.direccion)}" placeholder="Ej: Güemes 2450"></label><div class="seg3"><label><input type="radio" name="ctipo" value="particular" ${c.tipo !== 'institucion' ? 'checked' : ''} onchange="tipoCli()"><span>🏠 Particular</span></label><label><input type="radio" name="ctipo" value="institucion" ${c.tipo === 'institucion' ? 'checked' : ''} onchange="tipoCli()"><span>🏢 Institución</span></label></div><div id="fPart" ${c.tipo === 'institucion' ? 'hidden' : ''}><label>Valor de cada visita ($)<input id="fv" type="number" inputmode="decimal" min="0" value="${c.valor_visita ?? 0}"></label></div><div id="fInst" ${c.tipo === 'institucion' ? '' : 'hidden'}><label>Administración<select id="fa" onchange="document.getElementById('faNueva').hidden=this.value!=='nueva'"><option value="">Sin administración</option>${S.adm.map(a => `<option value="${a.id}" ${a.id === c.administracion_id ? 'selected' : ''}>${esc(a.nombre)}</option>`).join('')}${isGestor() ? '<option value="nueva">➕ Nueva administración…</option>' : ''}</select></label><div id="faNueva" hidden><label>Nombre de la administración<input id="faN" maxlength="120" placeholder="Ej: Administración Pérez & Asoc."></label><label>Teléfono de la administración<input id="faT" type="tel" maxlength="40"></label></div><div class="dos"><label>Abono mensual ($)<input id="fab" type="number" inputmode="decimal" min="0" value="${c.abono ?? ''}" oninput="tipoCli()"></label><label>Visitas por semana<select id="fvs" onchange="tipoCli()">${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${n === (+c.visitas_semana || 1) ? 'selected' : ''}>${n} ${n === 1 ? 'vez' : 'veces'}</option>`).join('')}</select></label></div><p class="note" id="fabN"></p></div><label>Teléfono (WhatsApp)<input id="fl" type="tel" inputmode="tel" value="${esc(c.telefono)}" placeholder="Ej: 223 155 123456"></label><label>Frecuencia habitual<select id="ff">${opts(FREQ, c.frecuencia || 'Semanal')}</select></label><label>Día habitual<select id="fy">${opts(DIAS, c.dia || 'Sin día fijo')}</select></label>${isGestor() ? `<label>Lo atiende<select id="fp">${pileteros().map(p => `<option value="${p.id}" ${p.id === (c.piletero_id || S.me.id) ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>` : ''}<label>Notas<textarea id="ft" rows="2">${esc(c.notas)}</textarea></label><button class="btn" data-a="guardarC" data-id="${c.id || ''}">Guardar cliente</button>${c.id && canDel(c) ? `<button class="btn sec" data-a="borrarC" data-id="${c.id}">Eliminar cliente</button>` : ''}`);
+  tipoCli();
+}
+function tipoCli() {
+  const inst = (document.querySelector('input[name=ctipo]:checked') || {}).value === 'institucion';
+  $('#fPart').hidden = inst; $('#fInst').hidden = !inst;
+  if (!inst) return;
+  const ab = +$('#fab').value || 0, vs = +$('#fvs').value || 1, v = valorAbono(ab, vs);
+  if (vs === 1) $('#ff').value = 'Semanal';
+  $('#fabN').innerHTML = ab ? `Se cobra <b>por mes</b> a la administración. Son ~${Math.round(vs * 52 / 12)} visitas al mes: cada visita vale <b>${peso(v)}</b> y el piletero cobra el ${PP}% (${peso(v * PORC)}), que le paga la empresa.` : 'Poné el abono mensual del edificio.';
 }
 
 function abrirRegistro(id) {
@@ -1961,7 +2019,7 @@ async function act(e) {
       if (hecha && f > hoy) return toast('No podés registrar como hecha una visita futura');
       const c = S.c.find(x => x.id === cid);
       const v = await put('v', 'visitas', { cliente_id: cid, fecha: f, hora: $('#vh').value || null, repetir: $('#vr').value });
-      if (hecha && v) await put('r', 'realizadas', { visita_id: v.id, cliente_id: cid, piletero_id: resp(v) || S.me.id, fecha: f, valor: +c.valor_visita || 0 });
+      if (hecha && v) await put('r', 'realizadas', { visita_id: v.id, cliente_id: cid, piletero_id: resp(v) || S.me.id, abono: esAbono(c), fecha: f, valor: +c.valor_visita || 0 });
       S.sel = f; S.mes = f.slice(0, 7); closeSheet(); renderAll();
       return toast(hecha ? 'Visita registrada como hecha' : 'Visita programada');
     }
@@ -2068,7 +2126,7 @@ async function act(e) {
       if (ex && ex.pago_id) return toast('Esa visita ya está incluida en un pago');
       let nuevo = null;
       if (ex) { if ((ex.nota || ex.productos) && !confirm('Esta visita tiene notas o fotos guardadas. Si la desmarcás se borran. ¿Seguir?')) return; await del('r', 'realizadas', ex.id); toast('Visita desmarcada'); }
-      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: resp(v) || S.me.id, fecha: S.sel, valor: +c.valor_visita || 0 }); son('ok'); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
+      else { nuevo = await put('r', 'realizadas', { visita_id: v.id, cliente_id: c.id, piletero_id: resp(v) || S.me.id, abono: esAbono(c), fecha: S.sel, valor: +c.valor_visita || 0 }); son('ok'); toast(c.valor_visita ? 'Visita registrada' : 'Visita registrada. Este cliente no tiene valor cargado.'); }
       renderAll(); if (nuevo) abrirRegistro(nuevo.id); return;
     }
     case 'mes': { const x = mesDe(S.mes); x.setMonth(x.getMonth() + (+d.id)); S.mes = ymd(x).slice(0, 7); return renderPerfil(); }
@@ -2115,13 +2173,13 @@ async function act(e) {
       closeSheet(); renderAll(); return toast('Venta registrada');
     }
     case 'pagar': {
-      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id);
+      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id && !r.abono);
       if (!mis.length) return toast('No tenés nada pendiente');
       const t = sumar(mis);
       return sheet(`<h2>Pagar a la empresa</h2><p class="sub">${mis.length} ${mis.length === 1 ? 'visita sin pagar' : 'visitas sin pagar'}</p><p class="note">Vas a registrar que devolviste ${peso(t.emp)} (${100 - PP}% de ${peso(t.t)}). Lo pendiente vuelve a $0 y las visitas quedan guardadas.</p><button class="btn" data-a="okPagar">Confirmar pago</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
     }
     case 'okPagar': {
-      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id);
+      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id && !r.abono);
       if (!mis.length) return closeSheet();
       if (sb) {
         const x = await sb.rpc('pagar', { empresa: (100 - PP) / 100 });
@@ -2160,6 +2218,48 @@ async function act(e) {
     }
     case 'verVenta': return verVenta(d.id);
     case 'verCobroPed': return verCobroPed(d.id);
+    case 'verAdm': return verAdm(d.id);
+    case 'nuevaAdm': return formAdm();
+    case 'editarAdm': return formAdm(ADM(d.id));
+    case 'pagoEmpresa': return formPagoEmpresa();
+    case 'copiarAdm': { try { await navigator.clipboard.writeText(linkAdm(ADM(d.id))); toast('Link copiado'); } catch (e) { toast('No pude copiar. Mantené apretado el link para copiarlo.'); } return; }
+    case 'guardarAdm': {
+      const f = { nombre: $('#amN').value.trim(), contacto: $('#amC').value.trim() || null, telefono: $('#amT').value.trim() || null, email: $('#amE').value.trim() || null, notas: $('#amK').value.trim() || null };
+      if (!f.nombre) return toast('Poné el nombre de la administración');
+      t.disabled = true;
+      try {
+        let a;
+        if (sb) { const x = d.id ? await sb.from('administraciones').update(f).eq('id', d.id).select().single() : await sb.from('administraciones').insert(f).select().single(); if (x.error) throw new Error(x.error.message); a = x.data; }
+        else a = d.id ? { ...ADM(d.id), ...f } : { id: crypto.randomUUID(), codigo: 'A' + Math.random().toString(36).slice(2, 8).toUpperCase(), ...f };
+        S.adm = S.adm.filter(x => x.id !== a.id).concat(a).sort((x, y) => x.nombre.localeCompare(y.nombre));
+        son('ok'); renderAll(); return verAdm(a.id);
+      } catch (e) { t.disabled = false; return toast(e.message); }
+    }
+    case 'borrarAdm': {
+      if (!confirm('¿Eliminar esta administración?')) return;
+      if (sb) { const x = await sb.from('administraciones').delete().eq('id', d.id); if (x.error) return toast(x.error.message); }
+      S.adm = S.adm.filter(x => x.id !== d.id); closeSheet(); renderAll(); return toast('Administración eliminada');
+    }
+    case 'pagoAdm': {
+      const [aid, m] = d.id.split('|'), c = cuentaAdm(aid, m), pg = c.pago;
+      t.disabled = true;
+      try {
+        if (pg && pg.pagado) { if (sb) { const x = await sb.from('abono_pagos').delete().eq('id', pg.id); if (x.error) throw new Error(x.error.message); } S.ap = S.ap.filter(x => x.id !== pg.id); }
+        else {
+          const row = { administracion_id: aid, mes: m, monto: c.total, pagado: true, fecha: ymd(new Date()) };
+          if (sb) { const x = await sb.from('abono_pagos').upsert(row, { onConflict: 'administracion_id,mes' }).select().single(); if (x.error) throw new Error(x.error.message); S.ap = S.ap.filter(y => !(y.administracion_id === aid && y.mes === m)).concat(x.data); }
+          else S.ap.push({ id: crypto.randomUUID(), ...row });
+        }
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); renderAll(); verAdm(aid); return toast(pg && pg.pagado ? 'Marcado como pendiente' : `${mesTxt(m)} pagado 💵`);
+    }
+    case 'guardarPagoEmp': {
+      const cbu = $('#peC').value.replace(/\D/g, '');
+      if (cbu && cbu.length !== 22) return toast('El CBU o CVU tiene 22 números');
+      const v = { alias: $('#peA').value.trim() || null, cbu: cbu || null, titular: $('#peT').value.trim() || null, banco: $('#peB').value.trim() || null, cuit: $('#peU').value.trim() || null };
+      if (sb) { const x = await sb.from('ajustes').upsert({ clave: 'pago_empresa', valor: v, actualizado: new Date().toISOString() }); if (x.error) return toast(x.error.message); }
+      S.aj.pago_empresa = v; closeSheet(); return toast('Listo. Las administraciones ya ven estos datos');
+    }
     case 'cobroPed': {
       const pe = S.ped.find(x => x.id === d.id), vs = S.vt.filter(v => (pe.venta_ids || []).includes(v.id)), nuevo = vs.some(v => v.cobrado === false);
       t.disabled = true;
@@ -2333,7 +2433,16 @@ async function act(e) {
       let g = c && dir === c.direccion ? [c.lat, c.lng] : null;
       if (!g) { t.disabled = true; g = await geo(dir); t.disabled = false; }
       if (!g) return toast('No encontré esa dirección. Probá con calle y número.');
-      const saved = await put('c', 'clientes', { ...c, nombre: n, direccion: dir, lat: g[0], lng: g[1], telefono: $('#fl').value.trim(), valor_visita: +$('#fv').value || 0, frecuencia: $('#ff').value, dia: $('#fy').value, notas: $('#ft').value.trim(), piletero_id: $('#fp') ? $('#fp').value : (c?.piletero_id || S.me.id) });
+      const inst = (document.querySelector('input[name=ctipo]:checked') || {}).value === 'institucion';
+      let adm = inst ? $('#fa').value || null : null;
+      if (inst && adm === 'nueva') {
+        const an = $('#faN').value.trim(); if (!an) return toast('Escribí el nombre de la administración');
+        try { const na = sb ? await (async () => { const x = await sb.from('administraciones').insert({ nombre: an, telefono: $('#faT').value.trim() || null }).select().single(); if (x.error) throw new Error(x.error.message); return x.data; })() : { id: crypto.randomUUID(), nombre: an, telefono: $('#faT').value.trim() || null, codigo: 'A' + Math.random().toString(36).slice(2, 8).toUpperCase() }; S.adm.push(na); adm = na.id; }
+        catch (e) { return toast(e.message); }
+      }
+      const ab = inst ? Math.max(+$('#fab').value || 0, 0) : null, vs = inst ? +$('#fvs').value || 1 : null;
+      if (inst && !ab) return toast('Poné el abono mensual del edificio');
+      const saved = await put('c', 'clientes', { ...c, nombre: n, direccion: dir, lat: g[0], lng: g[1], telefono: $('#fl').value.trim(), tipo: inst ? 'institucion' : 'particular', administracion_id: adm, abono: ab, visitas_semana: vs, valor_visita: inst ? valorAbono(ab, vs) : +$('#fv').value || 0, frecuencia: $('#ff').value, dia: $('#fy').value, notas: $('#ft').value.trim(), piletero_id: $('#fp') ? $('#fp').value : (c?.piletero_id || S.me.id) });
       const dia = $('#fy').value, fr = $('#ff').value;
       if (saved && DN.includes(dia) && (fr === 'Semanal' || fr === 'Cada 15 días') && !S.v.some(v => v.cliente_id === saved.id)) {
         const t2 = new Date(); t2.setDate(t2.getDate() + ((DN.indexOf(dia) - t2.getDay() + 7) % 7));

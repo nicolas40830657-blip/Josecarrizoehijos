@@ -52,6 +52,12 @@ main{flex:1;position:relative;overflow:hidden}
 .grow small{display:block;color:var(--g600);font-size:14px;line-height:1.43;letter-spacing:-.224px}
 small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .num{text-align:right;flex:none}.num b{font-size:16px}.num small{display:block;font-size:12px;color:var(--g600)}
+.admBar{margin:0 -20px 14px;padding:0 20px}
+.admBar>small{display:block;color:var(--g600);font-weight:600;margin-bottom:8px}
+.edifs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;overscroll-behavior-x:contain}.edifs::-webkit-scrollbar{display:none}
+.edif{flex:none;text-align:left;font:inherit;color:inherit;background:#fff;border:2px solid transparent;border-radius:16px;padding:10px 14px;box-shadow:var(--sh);cursor:pointer;max-width:220px}
+.edif b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.edif small{color:var(--g600);font-size:12px}
+.edif.on{border-color:var(--navy);background:#eaf1fd}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.stats .full{grid-column:1/-1}
 .stats div{background:var(--soft);border-radius:20px;padding:14px 16px;box-shadow:var(--sh);min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
 .stats div:nth-child(4n+1),.stats div:nth-child(4n+4){background:var(--grad);color:#fff}
@@ -382,6 +388,15 @@ function demo() {
     { id: 'm3', de_cliente: false, texto: 'Ya quedó lista la pileta 👌 Te estás quedando sin cloro, te lo dejé anotado en la app.', foto: pool, creado: ago(85), leido_cliente: false }
   ];
   C.user = { id: 'u-demo', email: 'demo@ejemplo.com', user_metadata: { nombre: 'Laura Pérez' } };
+  if (Q.get('demo') === 'adm') {
+    const mes = ymd(new Date()).slice(0, 7), ant = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return ymd(d).slice(0, 7); })();
+    C.d.cliente = { ...C.d.cliente, id: 'e1', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', tipo: 'institucion', abono: 160000, visitas_semana: 2, frecuencia: 'Semanal' };
+    C.adm = { id: 'a1', nombre: 'Administración Costa & Asoc.', mes, total: 250000, edificios: [
+      { id: 'e1', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', abono: 160000, visitas_semana: 2, piletero: 'José', ultima: back(1), visitas_mes: 6 },
+      { id: 'e2', nombre: 'Edificio Mirador', direccion: 'Bv. Marítimo 2400', abono: 90000, visitas_semana: 1, piletero: 'Mariano', ultima: back(3), visitas_mes: 3 }],
+      pagos: [{ mes: ant, monto: 250000, pagado: true, fecha: back(25) }], pago_empresa: { alias: 'carrizo.piletas', cbu: '0000003100012345678901', titular: 'José Carrizo', banco: 'Mercado Pago' } };
+    C.user.user_metadata.nombre = 'Laura Costa';
+  }
 }
 
 // ── Carga
@@ -393,6 +408,7 @@ async function cargar() {
   if (!C.d) return false;
   const f = await sb.rpc('mi_fotos', { p_limite: 6 });
   C.fotos = (!f.error && f.data) || [];
+  try { const a = await sb.rpc('mi_administracion'); C.adm = !a.error && a.data ? a.data : null; } catch (e) { C.adm = null; }
   await cargarMs();
   limpiarCarro();
   return true;
@@ -455,7 +471,7 @@ function renderInicio() {
   const fr = f && r.find(x => x.id === f.realizada_id), ff = fr ? fr.fecha : f ? ymd(new Date(f.creado)) : null;
   const nombre = (C.user?.user_metadata?.nombre || C.user?.user_metadata?.full_name || c.nombre || '').split(' ')[0];
   $('#inicio').innerHTML =
-    `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1><p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
+    (esAdm() ? edificiosHTML() + `<h1>${esc(c.nombre)}</h1>` : `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1>`) + `<p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
     (f ? `<div class="heroW"><button class="hero" data-a="fotoToque" data-id="${esc(f.id)}" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button><span class="bigh" aria-hidden="true">${CORAZON}</span>${botonGusta(f)}${fa ? `<button class="adb" data-a="comparar" data-id="${esc(f.realizada_id)}">↔ Antes y después</button>` : ''}</div>`
        : `<div class="hero"><div class="empty"><div><span>🏊</span>Cuando tu piletero pase, vas a ver acá la foto de cómo quedó tu pileta.</div></div></div>`) +
     (vino ? `<div class="estado ok"><div class="ic">✓</div><div><b>Tu piletero pasó hoy</b><small>${esc(ult.piletero || 'Tu piletero')} ya hizo el mantenimiento.</small></div></div>`
@@ -463,10 +479,10 @@ function renderInicio() {
       : `<div class="estado"><div class="ic">🕒</div><div><b>Todavía no hay visitas registradas</b><small>Cuando tu piletero confirme una visita la vas a ver acá.</small></div></div>`) +
     (recs.length ? `<div class="aviso"><small>Aviso de ${esc(p?.nombre || 'tu piletero')}</small><b>Te estás quedando <span class="hl">sin productos</span></b><ul>${recs.map(x => `<li><span>${esc(x.nombre)} ×${x.cantidad}${x.nota ? `<br><small>${esc(x.nota)}</small>` : ''}</span><span>${+x.precio ? peso(x.precio * x.cantidad) : 'Consultá'}</span></li>`).join('')}</ul><button class="btn" data-a="comprarRecs">Pedírselos ahora</button></div>` : '') +
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
-    `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div><div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div><div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
+    `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div>${esAdm() || +c.abono > 0 ? `<div><small>Abono mensual</small><b>${peso(c.abono)}</b></div>` : `<div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div>`}<div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
     avisosActivos(p) + `<button class="btn sec" data-a="avisar">📣 Avisarle algo a ${esc((p?.nombre || 'tu piletero').split(' ')[0])}</button>` +
     (tpend ? `<div class="estado warn"><div class="ic">$</div><div><b>Productos sin pagar: ${peso(tpend)}</b><small>${pend.map(v => esc(v.nombre) + ' ×' + v.cantidad).join(', ')}</small></div></div>` : '') +
-    cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia') +
+    (esAdm() ? cuentaAdmHTML(true) : +c.abono > 0 ? '' : cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia')) +
     `<div class="card pil">${avatar(p)}<div class="grow"><b>${esc(p?.nombre || 'Sin piletero asignado')}</b><small>Tu piletero · ${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ', los ' + esc(c.dia.toLowerCase()) : ''}</small></div><button class="btn sm" data-t="chat">Escribile</button></div>` +
     (ult ? `<h3>Lo que se hizo en la última visita</h3><div class="card"><p>${esc(ult.nota || 'Mantenimiento de rutina.')}</p>${ult.productos ? `<p class="sub" style="margin:6px 0 0">Productos usados: ${esc(ult.productos)}</p>` : ''}</div><button class="btn sec" data-t="hist">Ver todas las visitas</button>` : '') +
     premiosHTML() + recomendarHTML() +
@@ -586,6 +602,24 @@ async function darGusta(id, si, grande) {
   if (x.error) { fs.forEach(f => f.gusta = antes); renderInicio(); if (C.tab === 'hist') renderHist(); throw new Error('No se pudo guardar el me gusta'); }
 }
 const tieneCobro = p => p && (p.alias || p.cbu);
+// ── Modo administración (edificios con consorcio): varios edificios y una cuenta mensual
+const esAdm = () => !!C.adm;
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const mesLargo = k => MESES[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4);
+function edificiosHTML() {
+  if (!esAdm()) return '';
+  const a = C.adm;
+  return `<div class="admBar"><small>🏢 ${esc(a.nombre)} · ${a.edificios.length} ${a.edificios.length === 1 ? 'edificio' : 'edificios'}</small><div class="edifs">${a.edificios.map(e => `<button class="edif ${e.id === C.d.cliente.id ? 'on' : ''}" data-a="edif" data-id="${e.id}"><b>${esc(e.nombre)}</b><small>${e.ultima ? 'Última visita ' + corto(e.ultima) : 'Sin visitas aún'}</small></button>`).join('')}</div></div>`;
+}
+function cuentaAdmHTML(breve) {
+  if (!esAdm()) return '';
+  const a = C.adm, pg = (a.pagos || []).find(x => x.mes === a.mes), pagado = pg && pg.pagado, pe = a.pago_empresa || {};
+  if (breve) return `<button class="estado ${pagado ? 'ok' : 'warn'}" data-t="cuenta" style="width:100%;text-align:left;border:0;font:inherit;cursor:pointer"><div class="ic">$</div><div class="grow"><b>Cuenta de ${mesLargo(a.mes)}: ${peso(a.total)}</b><small>${pagado ? 'Pagada ✓ ¡Gracias!' : 'Abono mensual de tus ' + a.edificios.length + ' edificios · tocá para ver el detalle'}</small></div></button>`;
+  return `<h3>Cuenta del mes · ${mesLargo(a.mes)}</h3><div class="stats"><div class="full"><small>Abono mensual de tus edificios</small><b>${peso(a.total)}</b></div><div><small>Estado</small><b>${pagado ? 'Pagada ✓' : 'Pendiente'}</b></div><div><small>Edificios</small><b>${a.edificios.length}</b></div></div>` +
+    a.edificios.map(e => `<div class="row"><div class="grow"><b>${esc(e.nombre)}</b><small>${esc(e.direccion || '')} · ${e.visitas_semana || 1} ${+e.visitas_semana > 1 ? 'visitas' : 'visita'} por semana · ${e.visitas_mes} este mes</small></div><div class="num"><b>${peso(e.abono)}</b></div></div>`).join('') +
+    (!pagado && (pe.alias || pe.cbu) ? `<div class="pago"><h4>Datos para transferir a José Carrizo e Hijos</h4><p class="sub" style="margin:0 0 6px">${esc(pe.titular || '')}${pe.banco ? ' · ' + esc(pe.banco) : ''}${pe.cuit ? ' · CUIT ' + esc(pe.cuit) : ''}</p>${pe.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(pe.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(pe.alias)}" data-q="Alias">Copiar</button></div>` : ''}${pe.cbu ? `<div class="dato"><div class="grow"><small>CBU / CVU</small><b>${esc(pe.cbu)}</b></div><button class="cp" data-a="copiar" data-id="${esc(pe.cbu)}" data-q="CBU">Copiar</button></div>` : ''}<p class="note" style="margin-top:8px">Cuando transfieras, avisanos por Mensajes y lo marcamos como pagado.</p></div>` : '') +
+    ((a.pagos || []).filter(x => x.mes !== a.mes).length ? '<h3>Meses anteriores</h3>' + a.pagos.filter(x => x.mes !== a.mes).map(x => `<div class="row"><div class="grow"><b>${mesLargo(x.mes)}</b><small>Pagado el ${corto(x.fecha)}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
+}
 const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${titulo || 'Datos para transferir'}</h4><p class="sub" style="margin:0 0 6px">${esc(p.titular || p.nombre || '')}${p.banco ? ' · ' + esc(p.banco) : ''}</p>` +
   (p.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(p.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.alias)}" data-q="Alias">Copiar</button></div>` : '') +
   (p.cbu ? `<div class="dato"><div class="grow"><small>CBU / CVU</small><b>${esc(p.cbu)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.cbu)}" data-q="CBU">Copiar</button></div>` : '') +
@@ -666,12 +700,12 @@ async function renderHist() {
 function renderCuenta() {
   const c = C.d.cliente, u = C.user || {};
   $('#cuenta').innerHTML = `<h1>Mi <em>cuenta</em></h1><p class="sub">${esc(u.user_metadata?.nombre || u.user_metadata?.full_name || '')}${u.user_metadata?.nombre || u.user_metadata?.full_name ? ' · ' : ''}${esc(u.email || '')}</p>` +
-    `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>Valor de cada visita</b><small>${c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
-    cobroHTML(C.d.piletero, 'Datos para transferir a tu piletero') +
+    (esAdm() ? cuentaAdmHTML() : `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>${+c.abono > 0 ? 'Abono mensual' : 'Valor de cada visita'}</b><small>${+c.abono > 0 ? peso(c.abono) : c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
+    (+c.abono > 0 ? '' : cobroHTML(C.d.piletero, 'Datos para transferir a tu piletero'))) +
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Notificaciones</h3><div class="pago" id="pushBox" style="margin-top:0"></div>` +
-    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + recomendarHTML() +
+    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + (esAdm() ? '' : recomendarHTML()) +
     `<p class="legal">Tus datos se usan solo para el servicio de tu pileta. <a href="${PRIV}" target="_blank" rel="noopener">Política de privacidad</a> · Para ver, corregir o borrar tus datos, escribinos por Mensajes o al WhatsApp de la empresa.</p>` +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
     `<button class="btn sec" data-a="salir">Cerrar sesión</button>`;
@@ -847,6 +881,12 @@ async function act(e) {
   if (C.muestra && d.a === 'salir') { location.href = location.pathname; return; }
   const [tp, ip] = (d.id || '').split(':');
   switch (d.a) {
+    case 'edif': {
+      if (d.id === C.d.cliente.id) return;
+      if (C.demo) { const e = C.adm.edificios.find(x => x.id === d.id); C.d.cliente = { ...C.d.cliente, id: e.id, nombre: e.nombre, direccion: e.direccion, abono: e.abono, visitas_semana: e.visitas_semana }; renderAll(); return; }
+      const r = await sb.rpc('elegir_edificio', { p_cliente: d.id }); if (r.error) throw new Error(r.error.message);
+      C.fotosAll = null; await cargar(); renderAll(); window.scrollTo(0, 0); return;
+    }
     case 'modo': modo = d.id; return authUI();
     case 'login': return auth(false);
     case 'registro': return auth(true);

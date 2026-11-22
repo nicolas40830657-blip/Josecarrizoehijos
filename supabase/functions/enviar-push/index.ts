@@ -28,6 +28,15 @@ async function equipoDe(c: any): Promise<string[]> {
   const r = await sb.from("perfiles").select("id").in("rol", ["coordinador", "administrador"]).eq("activo", true);
   return (r.data || []).map((x: any) => x.id);
 }
+// Cliente con su usuario de la app: el propio, o el de la administración del edificio
+async function cli(id: string) {
+  const c = await uno("clientes", id);
+  if (c && !c.usuario_id && c.administracion_id) {
+    const a = await uno("administraciones", c.administracion_id, "usuario_id");
+    c.usuario_id = a?.usuario_id || null;
+  }
+  return c;
+}
 const itemsTxt = (items: any[]) => (items || []).map((i) => `${i.nombre} ×${i.n}`).join(", ");
 
 type Aviso = { usuarios: string[]; app: "equipo" | "cliente" | null; pref: string; title: string; body: string; url: string; tag: string };
@@ -45,7 +54,7 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
   if (tabla === "mensajes") {
     const m = await uno("mensajes", id);
     if (!m) return null;
-    const c = await uno("clientes", m.cliente_id);
+    const c = await cli(m.cliente_id);
     if (!c) return null;
     const body = m.texto ? corto(m.texto) : "📷 Te mandó una foto";
     if (m.de_cliente) {
@@ -58,7 +67,7 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
   if (tabla === "pedidos") {
     const p = await uno("pedidos", id);
     if (!p) return null;
-    const c = await uno("clientes", p.cliente_id);
+    const c = await cli(p.cliente_id);
     if (!c) return null;
     if (op === "INSERT") {
       // le llega al piletero del cliente y a coordinadores/administración (menos a quien lo cargó)
@@ -88,15 +97,15 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
     if (!r) return null;
     const ayer = new Date(Date.now() - 36 * 3600e3).toISOString().slice(0, 10);
     if (r.fecha < ayer) return null; // cargas atrasadas: no avisar
-    const c = await uno("clientes", r.cliente_id);
+    const c = await cli(r.cliente_id);
     if (!c?.usuario_id) return null;
     const pil = r.piletero_id ? await uno("perfiles", r.piletero_id, "nombre") : null;
-    return { usuarios: [c.usuario_id], app: "cliente", pref: "visitas", title: `🏊 ${primer(pil?.nombre) || "Tu piletero"} ya pasó por tu pileta`, body: r.nota ? corto(r.nota) : "Mirá cómo quedó en la app.", url: "cliente.html#inicio", tag: "visita" };
+    return { usuarios: [c.usuario_id], app: "cliente", pref: "visitas", title: `🏊 ${primer(pil?.nombre) || "Tu piletero"} ya pasó por ${c.administracion_id ? c.nombre : "tu pileta"}`, body: r.nota ? corto(r.nota) : "Mirá cómo quedó en la app.", url: "cliente.html#inicio", tag: "visita" };
   }
   if (tabla === "recomendaciones") {
     const r = await uno("recomendaciones", id);
     if (!r || r.estado !== "activa") return null;
-    const c = await uno("clientes", r.cliente_id);
+    const c = await cli(r.cliente_id);
     if (!c?.usuario_id) return null;
     const act = await sb.from("recomendaciones").select("tipo,item_id,cantidad").eq("cliente_id", c.id).eq("estado", "activa");
     const nombres: string[] = [];
@@ -110,7 +119,7 @@ async function armar(b: any): Promise<Aviso | Aviso[] | null> {
   if (tabla === "me_gusta") {
     const g = await uno("me_gusta", id);
     if (!g) return null;
-    const c = await uno("clientes", g.cliente_id);
+    const c = await cli(g.cliente_id);
     if (!c) return null;
     const f = await uno("fotos", g.foto_id, "id,realizada_id");
     const r = f?.realizada_id ? await uno("realizadas", f.realizada_id, "piletero_id,fecha") : null;
