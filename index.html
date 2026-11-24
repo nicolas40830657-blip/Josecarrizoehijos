@@ -107,6 +107,10 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .chkI .bx{width:26px;height:26px;border-radius:8px;border:2px solid #c3cde0;display:grid;place-items:center;color:transparent;font-weight:800;flex:none;background:#fff;transition:.15s}
 .chkI:has(input:checked){background:#e3f8ee}
 .chkI:has(input:checked) .bx{background:#05A357;border-color:#05A357;color:#fff}
+.pend.pendTodo{flex-direction:column;align-items:stretch;gap:12px}.pendTodo .grow{width:100%}
+.pendTodo .pdl{display:flex;justify-content:space-between;gap:10px;font-size:14px;opacity:.85;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.15)}
+.pendTodo .pdl span:last-child{font-weight:700;white-space:nowrap;opacity:1}
+.pendTodo .btn{width:100%;margin:0}
 .abTag{color:#1b4a86 !important;font-weight:600}
 .codigo{font:700 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:4px;margin:4px 0;color:var(--navy)}
 .ventasSec{margin-top:26px;padding-top:6px;border-top:1px solid #dde3ee}
@@ -1378,6 +1382,12 @@ async function pollU() {
   const r = await sb.from('ubicaciones').select();
   if (!r.error) { S.u = r.data; renderUsers(); }
 }
+// Lo que el piletero le tiene que pagar a la empresa: el 30% de sus mantenimientos + los productos sin rendir (menos su comisión)
+function deudaPil(pid) {
+  const rs = S.r.filter(r => r.piletero_id === pid && !r.pago_id && !r.abono), vs = S.vt.filter(v => v.vendedor_id === pid && v.cobrado === false && !v.anulada);
+  const m = sumar(rs).emp, pr = vs.reduce((a, v) => a + (+v.total || 0) * (1 - (+v.porc || 0) / 100), 0), comi = vs.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0);
+  return { rs, vs, m, pr, comi, total: m + pr };
+}
 function gananciasHTML() {
   const mine = S.r.filter(r => r.piletero_id === S.me.id), mis = delMes(mine), s = sumar(mis.filter(r => !r.abono)), pend = sumar(mine.filter(r => !r.pago_id && !r.abono)), g = {};
   const mv = S.vt.filter(v => v.vendedor_id === S.me.id && (v.fecha || '').startsWith(S.mes)), prod = mv.reduce((a, v) => a + (+v.total || 0), 0), comi = mv.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0);
@@ -1390,9 +1400,9 @@ function gananciasHTML() {
   }).join('');
   const pagos = S.pg.filter(x => x.piletero_id === S.me.id).sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || ''))).slice(0, 5);
   return `<div class="dh"><button class="arrow" data-a="mes" data-id="-1" aria-label="Mes anterior">‹</button><h3>Mis ganancias · ${mesTxt(S.mes)}</h3><button class="arrow" data-a="mes" data-id="1" aria-label="Mes siguiente">›</button></div><div class="stats"><div><small>Visitas hechas</small><b>${mis.length}</b></div><div><small>Clientes atendidos</small><b>${new Set(mis.map(r => r.cliente_id).filter(Boolean)).size}</b></div><div><small>Facturado por visitas</small><b>${peso(s.t)}</b></div><div><small>Tu parte (${PP}%)</small><b>${peso(s.mio)}</b></div><div><small>Para la empresa (${100 - PP}%)</small><b>${peso(s.emp)}</b></div><div><small>Productos que vendiste</small><b>${peso(prod)}</b></div><div><small>Tu comisión por productos (${+S.me.porc_productos || 0}%)</small><b>${peso(comi)}</b></div>${mab.length ? `<div><small>Edificios con abono (${mab.length} visitas) · te paga la empresa</small><b>${peso(abPago)}</b></div>` : ''}${mtr.length ? `<div><small>Tus trabajos (${mtr.length})</small><b>${peso(trPago)}</b></div>` : ''}<div><small>Total tuyo del mes</small><b>${peso(s.mio + abPago + comi + trPago)}</b></div></div>` +
-    `<div class="pend"><div><small>A devolver a la empresa</small><b>${peso(pend.emp)}</b><small>${pend.n} ${pend.n === 1 ? 'visita sin pagar' : 'visitas sin pagar'}</small></div><button class="btn" data-a="pagar" ${pend.n ? '' : 'disabled'}>Pagar</button></div>` +
+    (() => { const dd = deudaPil(S.me.id); return `<div class="pend pendTodo"><div class="grow"><small>A pagar a la empresa</small><b>${peso(dd.total)}</b><div class="pdl"><span>🧽 Mantenimientos (${dd.rs.length})</span><span>${peso(dd.m)}</span></div><div class="pdl"><span>🧪 Productos (${dd.vs.length})${dd.comi ? ' · ya descontada tu comisión' : ''}</span><span>${peso(dd.pr)}</span></div></div><button class="btn" data-a="pagar" ${dd.rs.length || dd.vs.length ? '' : 'disabled'}>Pagar todo</button></div>`; })() +
     (sem || '<p class="note">Todavía no confirmaste visitas este mes. Tocá el check de cada visita en el calendario.</p>') +
-    (pagos.length ? '<h3>Pagos a la empresa</h3>' + pagos.map(x => `<div class="row"><div class="grow"><b>${corto(new Date(x.fecha + 'T12:00'))}</b><small>${x.visitas} ${x.visitas === 1 ? 'visita' : 'visitas'}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
+    (pagos.length ? '<h3>Pagos a la empresa</h3>' + pagos.map(x => `<div class="row"><div class="grow"><b>${corto(new Date(x.fecha + 'T12:00'))}</b><small>${[x.visitas ? `${x.visitas} ${x.visitas === 1 ? 'visita' : 'visitas'}` : '', +x.ventas ? `${x.ventas} ${+x.ventas === 1 ? 'venta' : 'ventas'} (${peso(x.productos)})` : ''].filter(Boolean).join(' · ')}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
 }
 function pendientesHTML() {
   const pe = S.p.filter(p => p.activo === false);
@@ -1401,8 +1411,8 @@ function pendientesHTML() {
 function equipoHTML() {
   const m = mesStats(S.mes), rs = delMes(S.r);
   const meses = [...new Set([...S.r, ...S.vt, ...S.pg, ...S.tr.filter(t => t.estado !== 'cancelado')].map(x => (x.fecha || '').slice(0, 7)).filter(Boolean))].sort().reverse().slice(0, 12);
-  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Abonos mensuales (${m.abN} ${m.abN === 1 ? 'edificio' : 'edificios'})</small><b>${peso(m.abonos)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Para la empresa (abonos, menos lo de los pileteros)</small><b>${peso(m.abEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(sumar(S.r.filter(r => !r.pago_id && !r.abono)).emp)}</b></div></div>` +
-    pileteros().map(p => { const w = sumar(rs.filter(r => r.piletero_id === p.id)), d = sumar(S.r.filter(r => r.piletero_id === p.id && !r.pago_id && !r.abono)).emp; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)} · ${S.c.filter(c => c.piletero_id === p.id).length} clientes</small></div><div class="num"><b>${d > 0 ? peso(d) : 'Al día'}</b><small>${d > 0 ? 'debe' : ''}</small></div></div>`; }).join('') +
+  return `<h3>Métricas del equipo · ${mesTxt(S.mes)}</h3><div class="stats"><div><small>Visitas hechas</small><b>${m.n}</b></div><div><small>Piletas atendidas</small><b>${m.piletas}</b></div><div><small>Por visitas</small><b>${peso(m.visitas)}</b></div><div><small>Abonos mensuales (${m.abN} ${m.abN === 1 ? 'edificio' : 'edificios'})</small><b>${peso(m.abonos)}</b></div><div><small>Por productos y kits</small><b>${peso(m.prod)}</b></div><div><small>Otros trabajos (${m.trN})</small><b>${peso(m.trab)}</b></div><div><small>Facturación total</small><b>${peso(m.total)}</b></div><div><small>Para la empresa (${100 - PP}% de visitas)</small><b>${peso(m.emp)}</b></div><div><small>Para la empresa (de trabajos)</small><b>${peso(m.trEmp)}</b></div><div><small>Para la empresa (abonos, menos lo de los pileteros)</small><b>${peso(m.abEmp)}</b></div><div><small>Pagado a la empresa</small><b>${peso(m.pagado)}</b></div><div><small>Pendiente de pago (todos)</small><b>${peso(pileteros().reduce((a, p) => a + deudaPil(p.id).total, 0))}</b></div></div>` +
+    pileteros().map(p => { const w = sumar(rs.filter(r => r.piletero_id === p.id)), d = deudaPil(p.id).total; return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${w.n} ${w.n === 1 ? 'visita' : 'visitas'} · generó ${peso(w.t)} · ${S.c.filter(c => c.piletero_id === p.id).length} clientes</small></div><div class="num"><b>${d > 0 ? peso(d) : 'Al día'}</b><small>${d > 0 ? 'debe' : ''}</small></div></div>`; }).join('') +
     '<h3>Historial mensual</h3>' + (meses.map(k => { const h = mesStats(k); return `<div class="row"><div class="grow"><b>${mesTxt(k)}</b><small>${h.n} ${h.n === 1 ? 'visita' : 'visitas'} · ${h.piletas} piletas${h.trN ? ` · ${h.trN} ${h.trN === 1 ? 'trabajo' : 'trabajos'} ${peso(h.trab)}` : ''} · pagado ${peso(h.pagado)}</small></div><div class="num"><b>${peso(h.total)}</b><small>facturado</small></div></div>`; }).join('') || '<p class="note">Todavía no hay datos.</p>');
 }
 
@@ -2181,23 +2191,26 @@ async function act(e) {
       closeSheet(); renderAll(); return toast('Venta registrada');
     }
     case 'pagar': {
-      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id && !r.abono);
-      if (!mis.length) return toast('No tenés nada pendiente');
-      const t = sumar(mis);
-      return sheet(`<h2>Pagar a la empresa</h2><p class="sub">${mis.length} ${mis.length === 1 ? 'visita sin pagar' : 'visitas sin pagar'}</p><p class="note">Vas a registrar que devolviste ${peso(t.emp)} (${100 - PP}% de ${peso(t.t)}). Lo pendiente vuelve a $0 y las visitas quedan guardadas.</p><button class="btn" data-a="okPagar">Confirmar pago</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+      const dd = deudaPil(S.me.id);
+      if (!dd.rs.length && !dd.vs.length) return toast('No tenés nada pendiente');
+      const t = sumar(dd.rs);
+      return sheet(`<h2>Pagar todo a la empresa</h2><p class="sub">Un solo pago por los mantenimientos y los productos.</p>` +
+        `<div class="row"><div class="grow"><b>🧽 Mantenimientos</b><small>${dd.rs.length} ${dd.rs.length === 1 ? 'visita' : 'visitas'} · ${100 - PP}% de ${peso(t.t)}</small></div><div class="num"><b>${peso(dd.m)}</b></div></div>` +
+        `<div class="row"><div class="grow"><b>🧪 Productos que vendiste</b><small>${dd.vs.length} ${dd.vs.length === 1 ? 'venta' : 'ventas'} · ${peso(dd.pr + dd.comi)}${dd.comi ? ' menos tu comisión de ' + peso(dd.comi) : ''}</small>${dd.vs.length ? `<small>${esc(dd.vs.slice(0, 4).map(v => v.nombre + ' ×' + v.cantidad).join(' · '))}${dd.vs.length > 4 ? '…' : ''}</small>` : ''}</div><div class="num"><b>${peso(dd.pr)}</b></div></div>` +
+        `<div class="row tot"><div class="grow"><b>Total a pagar</b></div><div class="num"><b>${peso(dd.total)}</b></div></div><p class="note">Al confirmar queda registrado que le pagaste ${peso(dd.total)} a la empresa: las visitas quedan pagadas y los productos, cobrados.</p><button class="btn" data-a="okPagar">Confirmar pago de ${peso(dd.total)}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
     }
     case 'okPagar': {
-      const mis = S.r.filter(r => r.piletero_id === S.me.id && !r.pago_id && !r.abono);
-      if (!mis.length) return closeSheet();
+      const dd = deudaPil(S.me.id);
+      if (!dd.rs.length && !dd.vs.length) return closeSheet();
       if (sb) {
         const x = await sb.rpc('pagar', { empresa: (100 - PP) / 100 });
         if (x.error) throw new Error(x.error.message);
         const yo = S.me.id; await load(); S.me = P(yo);
       } else {
-        const pg = { id: crypto.randomUUID(), piletero_id: S.me.id, fecha: ymd(new Date()), monto: sumar(mis).emp, visitas: mis.length, creado: new Date().toISOString() };
-        S.pg.push(pg); mis.forEach(r => { r.pago_id = pg.id; });
+        const pg = { id: crypto.randomUUID(), piletero_id: S.me.id, fecha: ymd(new Date()), monto: dd.total, visitas: dd.rs.length, productos: dd.pr, ventas: dd.vs.length, creado: new Date().toISOString() };
+        S.pg.push(pg); dd.rs.forEach(r => { r.pago_id = pg.id; }); dd.vs.forEach(v => { v.cobrado = true; v.pago_id = pg.id; });
       }
-      closeSheet(); renderAll(); return toast('Pago registrado');
+      son('ok'); closeSheet(); renderAll(); return toast('Pago registrado: mantenimientos y productos al día ✓');
     }
     case 'reponer': {
       if (!isGestor()) return;
