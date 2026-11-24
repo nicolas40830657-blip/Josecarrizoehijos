@@ -1384,7 +1384,7 @@ async function pollU() {
 }
 // Lo que el piletero le tiene que pagar a la empresa: el 30% de sus mantenimientos + los productos sin rendir (menos su comisión)
 function deudaPil(pid) {
-  const rs = S.r.filter(r => r.piletero_id === pid && !r.pago_id && !r.abono), vs = S.vt.filter(v => v.vendedor_id === pid && v.cobrado === false && !v.anulada);
+  const rs = S.r.filter(r => r.piletero_id === pid && !r.pago_id && !r.abono), vs = S.vt.filter(v => v.vendedor_id === pid && !v.pago_id && !v.anulada);
   const m = sumar(rs).emp, pr = vs.reduce((a, v) => a + (+v.total || 0) * (1 - (+v.porc || 0) / 100), 0), comi = vs.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0);
   return { rs, vs, m, pr, comi, total: m + pr };
 }
@@ -2196,8 +2196,8 @@ async function act(e) {
       const t = sumar(dd.rs);
       return sheet(`<h2>Pagar todo a la empresa</h2><p class="sub">Un solo pago por los mantenimientos y los productos.</p>` +
         `<div class="row"><div class="grow"><b>🧽 Mantenimientos</b><small>${dd.rs.length} ${dd.rs.length === 1 ? 'visita' : 'visitas'} · ${100 - PP}% de ${peso(t.t)}</small></div><div class="num"><b>${peso(dd.m)}</b></div></div>` +
-        `<div class="row"><div class="grow"><b>🧪 Productos que vendiste</b><small>${dd.vs.length} ${dd.vs.length === 1 ? 'venta' : 'ventas'} · ${peso(dd.pr + dd.comi)}${dd.comi ? ' menos tu comisión de ' + peso(dd.comi) : ''}</small>${dd.vs.length ? `<small>${esc(dd.vs.slice(0, 4).map(v => v.nombre + ' ×' + v.cantidad).join(' · '))}${dd.vs.length > 4 ? '…' : ''}</small>` : ''}</div><div class="num"><b>${peso(dd.pr)}</b></div></div>` +
-        `<div class="row tot"><div class="grow"><b>Total a pagar</b></div><div class="num"><b>${peso(dd.total)}</b></div></div><p class="note">Al confirmar queda registrado que le pagaste ${peso(dd.total)} a la empresa: las visitas quedan pagadas y los productos, cobrados.</p><button class="btn" data-a="okPagar">Confirmar pago de ${peso(dd.total)}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
+        `<div class="row"><div class="grow"><b>🧪 Productos que vendiste</b><small>${dd.vs.length} ${dd.vs.length === 1 ? 'venta' : 'ventas'} · ${peso(dd.pr + dd.comi)}${dd.comi ? ' menos tu comisión de ' + peso(dd.comi) : ''}</small>${dd.vs.length ? `<small>${esc(dd.vs.slice(0, 4).map(v => v.nombre + ' ×' + v.cantidad).join(' · '))}${dd.vs.length > 4 ? '…' : ''}</small>` : ''}${dd.vs.some(v => v.cobrado === false) ? `<small class="u">⚠ ${dd.vs.filter(v => v.cobrado === false).length} todavía sin cobrar al cliente</small>` : ''}</div><div class="num"><b>${peso(dd.pr)}</b></div></div>` +
+        `<div class="row tot"><div class="grow"><b>Total a pagar</b></div><div class="num"><b>${peso(dd.total)}</b></div></div><p class="note">Al confirmar queda registrado que le pagaste ${peso(dd.total)} a la empresa: las visitas y los productos quedan rendidos.</p><button class="btn" data-a="okPagar">Confirmar pago de ${peso(dd.total)}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
     }
     case 'okPagar': {
       const dd = deudaPil(S.me.id);
@@ -2208,7 +2208,7 @@ async function act(e) {
         const yo = S.me.id; await load(); S.me = P(yo);
       } else {
         const pg = { id: crypto.randomUUID(), piletero_id: S.me.id, fecha: ymd(new Date()), monto: dd.total, visitas: dd.rs.length, productos: dd.pr, ventas: dd.vs.length, creado: new Date().toISOString() };
-        S.pg.push(pg); dd.rs.forEach(r => { r.pago_id = pg.id; }); dd.vs.forEach(v => { v.cobrado = true; v.pago_id = pg.id; });
+        S.pg.push(pg); dd.rs.forEach(r => { r.pago_id = pg.id; }); dd.vs.forEach(v => { v.pago_id = pg.id; });
       }
       son('ok'); closeSheet(); renderAll(); return toast('Pago registrado: mantenimientos y productos al día ✓');
     }
