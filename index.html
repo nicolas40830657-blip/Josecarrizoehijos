@@ -101,6 +101,12 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .repBox b{display:block;font-size:16px}.repBox small{color:var(--g600);font-size:12px}
 .repBox p{grid-column:1/-1;margin:0;color:#c92a2a;font-weight:600;font-size:13px}
 .repBox.mal div{background:#fff0f0}
+.chkL{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px}
+.chkI{display:flex;align-items:center;gap:12px;margin:0;padding:12px 14px;border-radius:14px;background:var(--g50);cursor:pointer;font-size:15px;font-weight:600;color:var(--ink)}
+.chkI input{display:none}
+.chkI .bx{width:26px;height:26px;border-radius:8px;border:2px solid #c3cde0;display:grid;place-items:center;color:transparent;font-weight:800;flex:none;background:#fff;transition:.15s}
+.chkI:has(input:checked){background:#e3f8ee}
+.chkI:has(input:checked) .bx{background:#05A357;border-color:#05A357;color:#fff}
 .abTag{color:#1b4a86 !important;font-weight:600}
 .codigo{font:700 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:4px;margin:4px 0;color:var(--navy)}
 .ventasSec{margin-top:26px;padding-top:6px;border-top:1px solid #dde3ee}
@@ -1718,10 +1724,12 @@ function tipoCli() {
   $('#fabN').innerHTML = ab ? `Se cobra <b>por mes</b> a la administración. Son ~${Math.round(vs * 52 / 12)} visitas al mes: cada visita vale <b>${peso(v)}</b> y el piletero cobra el ${PP}% (${peso(v * PORC)}), que le paga la empresa.` : 'Poné el abono mensual del edificio.';
 }
 
+// Checklist del mantenimiento (el cliente lo ve en su app)
+const TAREAS = [['superficie', '🍃', 'Limpieza de superficie'], ['fondo', '🧹', 'Barrido de fondo'], ['productos', '🧪', 'Aplicación de productos'], ['retrolavado', '🔄', 'Retrolavado y enjuague']];
 function abrirRegistro(id) {
   const r = S.r.find(x => x.id === id); if (!r) return;
   const c = S.c.find(x => x.id === r.cliente_id) || {};
-  sheet(`<h2>Visita confirmada</h2><p class="sub">${esc(c.nombre || '')} · ${new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p><label>¿Qué se hizo?<textarea id="rn" rows="3" placeholder="Ej: limpieza de fondo, cambio de arena">${esc(r.nota)}</textarea></label><label>Productos usados<input id="rp" value="${esc(r.productos)}" placeholder="Ej: cloro granulado 1 kg, clarificador"></label><label>Foto de antes (opcional · cómo estaba al llegar)<input id="rfa" type="file" accept="image/*"></label><label>Fotos de cómo quedó (hasta 4 · el cliente ve la última como “estado actual”)<input id="rf" type="file" accept="image/*" multiple></label><p class="note" style="margin-top:-4px">Con la foto de antes, el cliente puede comparar antes y después deslizando el dedo.</p>${vendibles().length ? `<label>¿Se está quedando sin algún producto? (le avisa en su app)</label><div class="recs">${vendibles().map(v => `<button type="button" class="chip ${recsDe(r.cliente_id).some(x => x.tipo === v.t && x.item_id === v.id) ? 'on' : ''}" data-a="recSel" data-id="${v.t}:${v.id}">${esc(v.nombre)}</button>`).join('')}</div>` : ''}<button class="btn" data-a="guardarReg" data-id="${r.id}">Guardar registro</button><button class="btn sec" data-a="cerrar">Omitir</button>`);
+  sheet(`<h2>Visita confirmada</h2><p class="sub">${esc(c.nombre || '')} · ${new Date(r.fecha + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</p><h3 style="margin-top:4px">Checklist del mantenimiento <small style="font-weight:400;color:var(--g600)">· lo ve el cliente</small></h3><div class="chkL">${TAREAS.map(([k, e, n]) => `<label class="chkI"><input type="checkbox" name="tarea" value="${k}" ${(r.tareas || []).includes(k) ? 'checked' : ''}><span class="bx">✓</span><span>${e} ${n}</span></label>`).join('')}</div><button class="btn sm sec" data-a="chkTodo" style="margin:0 0 10px">✓ Marcar todo</button><label>Otras cosas que se hicieron (opcional)<textarea id="rn" rows="2" placeholder="Ej: cambio de arena, limpieza de bordes">${esc(r.nota)}</textarea></label><label>Productos usados<input id="rp" value="${esc(r.productos)}" placeholder="Ej: cloro granulado 1 kg, clarificador"></label><label>Foto de antes (opcional · cómo estaba al llegar)<input id="rfa" type="file" accept="image/*"></label><label>Fotos de cómo quedó (hasta 4 · el cliente ve la última como “estado actual”)<input id="rf" type="file" accept="image/*" multiple></label><p class="note" style="margin-top:-4px">Con la foto de antes, el cliente puede comparar antes y después deslizando el dedo.</p>${vendibles().length ? `<label>¿Se está quedando sin algún producto? (le avisa en su app)</label><div class="recs">${vendibles().map(v => `<button type="button" class="chip ${recsDe(r.cliente_id).some(x => x.tipo === v.t && x.item_id === v.id) ? 'on' : ''}" data-a="recSel" data-id="${v.t}:${v.id}">${esc(v.nombre)}</button>`).join('')}</div>` : ''}<button class="btn" data-a="guardarReg" data-id="${r.id}">Guardar registro</button><button class="btn sec" data-a="cerrar">Omitir</button>`);
 }
 // Elegir piletero (para pasar visitas y clientes)
 const eligePil = (excluir, sel) => `<div class="pils">${pileteros().filter(p => p.id !== excluir).map(p => `<label class="pil"><input type="radio" name="pil" value="${p.id}" ${p.id === sel ? 'checked' : ''}><span class="av" style="background:${p.foto ? `center/cover url(${p.foto})` : p.color}">${p.foto ? '' : esc((p.nombre || '?')[0])}</span><b>${p.id === S.me.id ? 'Yo (' + esc(p.nombre) + ')' : esc(p.nombre)}</b></label>`).join('')}</div>`;
@@ -2279,11 +2287,13 @@ async function act(e) {
     }
     case 'orden': R.orden = R.orden === 'corto' ? 'dado' : 'corto'; return trazar();
     case 'editarReg': return abrirRegistro(d.id);
+    case 'chkTodo': { const l = [...document.querySelectorAll('input[name=tarea]')], todos = l.every(x => x.checked); l.forEach(x => { x.checked = !todos; }); return; }
     case 'guardarReg': {
       const r = S.r.find(x => x.id === d.id), files = [...($('#rf').files || [])].slice(0, 4);
       t.disabled = true;
       try {
-        await upd('r', 'realizadas', r.id, { nota: $('#rn').value.trim() || null, productos: $('#rp').value.trim() || null });
+        const tareas = [...document.querySelectorAll('input[name=tarea]:checked')].map(x => x.value);
+        await upd('r', 'realizadas', r.id, { nota: $('#rn').value.trim() || null, productos: $('#rp').value.trim() || null, tareas: tareas.length ? tareas : null });
         const antes = ($('#rfa').files || [])[0];
         if (antes) await subirFoto(r, antes, 'antes');
         for (const f of files) await subirFoto(r, f);

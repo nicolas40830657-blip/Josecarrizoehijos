@@ -52,6 +52,15 @@ main{flex:1;position:relative;overflow:hidden}
 .grow small{display:block;color:var(--g600);font-size:14px;line-height:1.43;letter-spacing:-.224px}
 small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .num{text-align:right;flex:none}.num b{font-size:16px}.num small{display:block;font-size:12px;color:var(--g600)}
+.chkCard{background:#fff;border-radius:20px;box-shadow:var(--sh);padding:14px 16px;margin:12px 0}
+.chkCard .ch b{display:block;font-size:16px}.chkCard .ch small{color:var(--g600);font-size:13px}
+.chkCard .ci{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #eef1f6;font-size:15px;color:var(--g600)}
+.chkCard .ch+.ci{margin-top:8px}
+.chkCard .ci .bx{width:24px;height:24px;border-radius:8px;border:2px solid #d5dce8;display:grid;place-items:center;font-weight:800;color:#fff;flex:none}
+.chkCard .ci.ok{color:var(--ink);font-weight:600}.chkCard .ci.ok .bx{background:#05A357;border-color:#05A357}
+.chkCard .ci small{margin-left:auto;font-size:12px;color:var(--g400)}
+.chkCard .cn{margin:8px 0 0;font-size:14px;color:var(--g600)}
+.tareasH{color:#05874a !important;font-weight:600;margin-top:4px}
 .admBar{margin:0 -20px 14px;padding:0 20px}
 .admBar>small{display:block;color:var(--g600);font-weight:600;margin-bottom:8px}
 .edifs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;overscroll-behavior-x:contain}.edifs::-webkit-scrollbar{display:none}
@@ -251,12 +260,13 @@ nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stro
 
 <section id="link" hidden><div>
   <div class="brand">Vinculá<br>tu pileta</div>
-  <p class="sub">Ingresá el código de 6 caracteres que te pasó tu piletero. Lo hacés una sola vez.</p>
-  <input id="cod" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABC123">
+  <p class="sub" id="linkSub">Ingresá el código que te pasó tu piletero. Lo hacés una sola vez.</p>
+  <input id="cod" maxlength="7" autocomplete="off" autocapitalize="characters" placeholder="ABC123">
   <button class="btn" data-a="vincular">Vincular mi pileta</button>
-  <p class="note" style="margin-top:18px">¿No tenés el código? Pedíselo a tu piletero o escribinos por WhatsApp al 223 540-5578.</p>
-  <div class="o-sep"><span>¿Todavía no sos cliente?</span></div>
-  <button class="btn quiero" data-a="quiero">🏊 Quiero mi piletero</button>
+  <div class="o-sep"><span>¿Todavía no tenés piletero?</span></div>
+  <button class="btn quiero" data-a="quiero">🏊 Pedir mi piletero</button>
+  <a class="btn wa" id="linkWa" target="_blank" rel="noopener" href="https://wa.me/5492235405578?text=Hola!%20Quiero%20consultar%20por%20el%20mantenimiento%20de%20mi%20pileta">💬 Escribinos al 223 540-5578</a>
+  <button class="btn sec" data-a="tourLink">¿Cómo hago? Ver la ayuda</button>
   <button class="btn sec" data-a="salir">Cerrar sesión</button>
 </div></section>
 
@@ -357,8 +367,8 @@ function demo() {
     piletero: { id: 'p1', nombre: 'José', color: '#1F63E8', alias: 'pileta.jose.mp', cbu: '0000003100012345678901', titular: 'José Carrizo', banco: 'Mercado Pago' },
     visitas: [{ fecha: mon, hora: '09:00', repetir: 'semanal', omitir: [] }],
     realizadas: [
-      { id: 'r1', fecha: back(0), valor: 15000, nota: 'Limpieza de fondo, cepillado de paredes y control de pH (7,4).', productos: 'Cloro granulado 1 kg', piletero: 'José' },
-      { id: 'r2', fecha: back(7), valor: 15000, nota: 'Retrolavado del filtro y aspirado.', productos: 'Clarificador', piletero: 'José' },
+      { id: 'r1', fecha: back(0), valor: 15000, nota: 'Limpieza de fondo, cepillado de paredes y control de pH (7,4).', productos: 'Cloro granulado 1 kg', piletero: 'José', tareas: ['superficie', 'fondo', 'productos', 'retrolavado'] },
+      { id: 'r2', fecha: back(7), valor: 15000, nota: 'Retrolavado del filtro y aspirado.', productos: 'Clarificador', piletero: 'José', tareas: ['superficie', 'fondo', 'retrolavado'] },
       { id: 'r3', fecha: back(14), valor: 15000, nota: 'Limpieza general.', productos: '', piletero: 'José' }
     ],
     ventas: [
@@ -477,6 +487,7 @@ function renderInicio() {
     (vino ? `<div class="estado ok"><div class="ic">✓</div><div><b>Tu piletero pasó hoy</b><small>${esc(ult.piletero || 'Tu piletero')} ya hizo el mantenimiento.</small></div></div>`
       : ult ? `<div class="estado"><div class="ic">🕒</div><div><b>Última visita: ${hace(ult.fecha)}</b><small>${largo(ult.fecha)}${ult.piletero ? ' · ' + esc(ult.piletero) : ''}</small></div></div>`
       : `<div class="estado"><div class="ic">🕒</div><div><b>Todavía no hay visitas registradas</b><small>Cuando tu piletero confirme una visita la vas a ver acá.</small></div></div>`) +
+    checklistHTML(ult) +
     (recs.length ? `<div class="aviso"><small>Aviso de ${esc(p?.nombre || 'tu piletero')}</small><b>Te estás quedando <span class="hl">sin productos</span></b><ul>${recs.map(x => `<li><span>${esc(x.nombre)} ×${x.cantidad}${x.nota ? `<br><small>${esc(x.nota)}</small>` : ''}</span><span>${+x.precio ? peso(x.precio * x.cantidad) : 'Consultá'}</span></li>`).join('')}</ul><button class="btn" data-a="comprarRecs">Pedírselos ahora</button></div>` : '') +
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
     `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div>${esAdm() || +c.abono > 0 ? `<div><small>Abono mensual</small><b>${peso(c.abono)}</b></div>` : `<div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div>`}<div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
@@ -511,6 +522,28 @@ function tourCliente() {
       ? { el: '#muestraBar button', pad: 4, radio: 24, antes: ir('inicio'), titulo: '¿Te gustó? 🏊', texto: 'Tocá «Quiero mi piletero», creá tu cuenta y te contactamos para coordinar la primera visita. Mientras, podés seguir mirando la app.' }
       : { el: null, antes: ir('inicio'), titulo: '¡Listo! 🎉', texto: 'Te recomendamos activar las notificaciones para enterarte cuando pasa tu piletero. Podés volver a ver este recorrido desde Cuenta.' }
   ], { ultimo: C.muestra ? 'Quiero mi piletero' : 'Empezar', alTerminar: completo => { if (C.muestra) { if (completo) return quiero(); return setTimeout(burbuja, 300); } try { localStorage.setItem(TOUR, 'hecho'); } catch (e) {} son('ok'); setTimeout(burbuja, 300); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+}
+// Recorrido al entrar con el link de invitación (?c=CODIGO): crear la cuenta
+function tourInvita(forzar) {
+  if (!window.JCTour || !Q.get('c') || modo !== 'crear') return;
+  try { if (!forzar && localStorage.getItem('jch-tour-invita')) return; localStorage.setItem('jch-tour-invita', '1'); } catch (e) {}
+  setTimeout(() => JCTour.start([
+    { el: null, titulo: '¡Bienvenido! 👋', texto: `Te invitamos a la app de tu pileta. Tu código ${Q.get('c').toUpperCase()} ya está cargado: solo tenés que crear tu cuenta.` },
+    { el: ['.btn-google', '#em'], titulo: 'Creá tu cuenta', texto: 'Entrá con Google en un toque, o escribí tu nombre, tu mail y una contraseña.' },
+    { el: '#authForm [data-a=registro]', titulo: 'Tocá «Crear mi cuenta»', texto: 'Y listo: tu pileta se vincula sola. Si ya tenías cuenta, tocá «Ya tengo cuenta» arriba.' }
+  ], { ultimo: 'Entendido' }), 700);
+}
+// Recorrido en la pantalla de vincular: vincular, o pedir piletero, o escribirnos
+function tourLink(forzar) {
+  if (!window.JCTour) return;
+  try { if (!forzar && localStorage.getItem('jch-tour-link')) return; localStorage.setItem('jch-tour-link', '1'); } catch (e) {}
+  const conCod = !!$('#cod').value;
+  setTimeout(() => JCTour.start([
+    { el: '#cod', titulo: conCod ? 'Tu código ya está puesto ✓' : 'Tu código', texto: conCod ? 'Lo cargamos desde el link que te mandamos. No hace falta que escribas nada.' : 'Escribí el código que te pasó tu piletero (son 6 letras y números).' },
+    { el: '#link [data-a=vincular]', titulo: 'Tocá «Vincular mi pileta»', texto: 'Así ves las fotos de cada visita, lo que se hizo, cuándo vuelve tu piletero y podés pedir productos.' },
+    { el: '#link [data-a=quiero]', titulo: '¿No tenés piletero?', texto: 'Tocá «Pedir mi piletero», completás los datos de tu pileta y te contactamos para coordinar la primera visita.' },
+    { el: '#linkWa', titulo: '¿Dudas?', texto: 'Escribinos por WhatsApp al 223 540-5578 y te ayudamos.' }
+  ], { ultimo: 'Entendido' }), 500);
 }
 function quizasTour() {
   let v; try { v = localStorage.getItem(TOUR); } catch (e) { return; }
@@ -620,6 +653,14 @@ function cuentaAdmHTML(breve) {
     (!pagado && (pe.alias || pe.cbu) ? `<div class="pago"><h4>Datos para transferir a José Carrizo e Hijos</h4><p class="sub" style="margin:0 0 6px">${esc(pe.titular || '')}${pe.banco ? ' · ' + esc(pe.banco) : ''}${pe.cuit ? ' · CUIT ' + esc(pe.cuit) : ''}</p>${pe.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(pe.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(pe.alias)}" data-q="Alias">Copiar</button></div>` : ''}${pe.cbu ? `<div class="dato"><div class="grow"><small>CBU / CVU</small><b>${esc(pe.cbu)}</b></div><button class="cp" data-a="copiar" data-id="${esc(pe.cbu)}" data-q="CBU">Copiar</button></div>` : ''}<p class="note" style="margin-top:8px">Cuando transfieras, avisanos por Mensajes y lo marcamos como pagado.</p></div>` : '') +
     ((a.pagos || []).filter(x => x.mes !== a.mes).length ? '<h3>Meses anteriores</h3>' + a.pagos.filter(x => x.mes !== a.mes).map(x => `<div class="row"><div class="grow"><b>${mesLargo(x.mes)}</b><small>Pagado el ${corto(x.fecha)}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
 }
+// Checklist del mantenimiento que confirma el piletero en cada visita
+const TAREAS = [['superficie', '🍃', 'Limpieza de superficie'], ['fondo', '🧹', 'Barrido de fondo'], ['productos', '🧪', 'Aplicación de productos'], ['retrolavado', '🔄', 'Retrolavado y enjuague']];
+function checklistHTML(r) {
+  if (!r || !Array.isArray(r.tareas) || !r.tareas.length) return '';
+  const n = r.tareas.length;
+  return `<div class="chkCard"><div class="ch"><b>✅ Lo que se hizo en la última visita</b><small>${largo(r.fecha)}${r.piletero ? ' · ' + esc(r.piletero) : ''} · ${n} de ${TAREAS.length}</small></div>${TAREAS.map(([k, e, t]) => { const ok = r.tareas.includes(k); return `<div class="ci ${ok ? 'ok' : ''}"><span class="bx">${ok ? '✓' : ''}</span><span>${e} ${t}</span>${ok ? '' : '<small>No esta vez</small>'}</div>`; }).join('')}${r.nota ? `<p class="cn">📝 ${esc(r.nota)}</p>` : ''}</div>`;
+}
+const tareasTxt = r => Array.isArray(r.tareas) && r.tareas.length ? TAREAS.filter(([k]) => r.tareas.includes(k)).map(([, e, t]) => '✓ ' + t).join(' · ') : '';
 const cobroHTML = (p, titulo) => !tieneCobro(p) ? '' : `<div class="pago"><h4>${titulo || 'Datos para transferir'}</h4><p class="sub" style="margin:0 0 6px">${esc(p.titular || p.nombre || '')}${p.banco ? ' · ' + esc(p.banco) : ''}</p>` +
   (p.alias ? `<div class="dato"><div class="grow"><small>Alias</small><b>${esc(p.alias)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.alias)}" data-q="Alias">Copiar</button></div>` : '') +
   (p.cbu ? `<div class="dato"><div class="grow"><small>CBU / CVU</small><b>${esc(p.cbu)}</b></div><button class="cp" data-a="copiar" data-id="${esc(p.cbu)}" data-q="CBU">Copiar</button></div>` : '') +
@@ -694,7 +735,7 @@ async function renderHist() {
   }
   const fo = id => C.fotosAll.filter(f => f.realizada_id === id), vs = C.d.ventas;
   $('#hist').innerHTML = `<h1>Tu <em>historial</em></h1><p class="sub">Todas las visitas a tu pileta y los productos que compraste.</p>` +
-    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small><small style="color:var(--ink);margin-top:4px">${esc(x.nota || 'Mantenimiento de rutina')}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<span class="fw"><img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">${f.tipo === 'antes' ? '<span class="tagf">Antes</span>' : botonGusta(f)}</span>`).join('')}</div>${fo(x.id).some(f => f.tipo === 'antes') && fo(x.id).some(f => f.tipo !== 'antes') ? `<button class="btn sm sec" style="margin-top:8px" data-a="comparar" data-id="${esc(x.id)}">↔ Comparar antes y después</button>` : ''}` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
+    '<h3>Visitas</h3>' + (r.length ? r.map(x => `<div class="row" style="align-items:flex-start"><div class="grow"><b>${Largo(x.fecha)}</b><small>${esc(x.piletero || '')}${x.piletero ? ' · ' : ''}${hace(x.fecha)}</small>${tareasTxt(x) ? `<small class="tareasH">${tareasTxt(x)}</small>` : ''}<small style="color:var(--ink);margin-top:4px">${esc(x.nota || (tareasTxt(x) ? '' : 'Mantenimiento de rutina'))}</small>${x.productos ? `<small>Productos usados: ${esc(x.productos)}</small>` : ''}${fo(x.id).length ? `<div class="fotos">${fo(x.id).map(f => `<span class="fw"><img src="${esc(f.data)}" alt="Foto de la visita" data-a="verFoto" data-src="${esc(f.data)}">${f.tipo === 'antes' ? '<span class="tagf">Antes</span>' : botonGusta(f)}</span>`).join('')}</div>${fo(x.id).some(f => f.tipo === 'antes') && fo(x.id).some(f => f.tipo !== 'antes') ? `<button class="btn sm sec" style="margin-top:8px" data-a="comparar" data-id="${esc(x.id)}">↔ Comparar antes y después</button>` : ''}` : ''}</div><div class="num"><b>${x.valor ? peso(x.valor) : ''}</b></div></div>`).join('') : '<p class="note">Todavía no hay visitas registradas.</p>') +
     '<h3>Productos comprados</h3>' + (vs.length ? vs.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${largo(v.fecha)}</small><small class="${v.cobrado === false ? 'u' : 'a'}">${v.cobrado === false ? 'Pendiente de pago' : 'Pagado'}</small></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('') : '<p class="note">No compraste productos todavía.</p>');
 }
 function renderCuenta() {
@@ -781,6 +822,7 @@ function authUI() {
     : '<p class="note">No se pudo conectar con el servidor. Revisá tu conexión.</p>') +
     '<button class="btn sec" data-a="demo" style="margin-top:22px">Ver cómo funciona (demo)</button>' +
     `<p class="legal">Al ${modo === 'crear' ? 'crear tu cuenta' : 'entrar'} aceptás nuestra <a href="${PRIV}" target="_blank" rel="noopener">política de privacidad</a>.</p>`;
+  if (Q.get('c') && !quieroFlag()) { $('#auth .brand').innerHTML = '¡Bienvenido a<br><em>tu pileta</em>!'; $('#auth .sub').innerHTML = `Tu piletero te invitó. Tu código <b>${esc(Q.get('c').toUpperCase())}</b> ya está cargado: creá tu cuenta y listo.`; tourInvita(); }
 }
 const PRIV = 'https://www.josecarrizoehijos.ar/privacidad.html';
 // ── Recomendados, muestra y "Quiero mi piletero"
@@ -810,7 +852,8 @@ async function sinPileta() {
   if (s && s.estado === 'pendiente') return mostrarEspera(s);
   if (s && s.estado === 'rechazada' && !quieroFlag()) return mostrarEspera(s);
   if (quieroFlag() || (LSx.get('jch-ref') && !Q.get('c'))) return mostrarSolic();
-  mostrar('link'); if (Q.get('c')) $('#cod').value = Q.get('c').toUpperCase().slice(0, 6);
+  mostrar('link'); if (Q.get('c')) $('#cod').value = Q.get('c').toUpperCase().slice(0, 7);
+  tourLink();
 }
 let esperaTimer = null;
 function mostrarEspera(s) {
@@ -926,6 +969,7 @@ async function act(e) {
     }
     case 'verPromos': { son('tap'); go('tienda'); renderTienda(); setTimeout(() => { const h = $('#promos'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); return; }
     case 'quiero': return quiero();
+    case 'tourLink': return tourLink(true);
     case 'verMuestra': location.href = location.pathname + '?muestra'; return;
     case 'miUbic': {
       if (!navigator.geolocation) return toast('Tu celular no permite compartir la ubicación');
