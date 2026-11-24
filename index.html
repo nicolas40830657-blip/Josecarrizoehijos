@@ -111,6 +111,10 @@ details.plg .plgB .cobro{box-shadow:none;padding:0;background:none;margin:0}
 .pendTodo .pdl{display:flex;justify-content:space-between;gap:10px;font-size:14px;opacity:.85;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.15)}
 .pendTodo .pdl span:last-child{font-weight:700;white-space:nowrap;opacity:1}
 .pendTodo .btn{width:100%;margin:0}
+.repEmp{display:flex;justify-content:space-between;align-items:center;background:#eaf1fd;border-radius:14px;padding:12px 14px;margin:4px 0 10px;font-size:15px}
+.repEmp b{font-size:18px;color:var(--navy)}
+.eqRowT{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.eqRowT select{flex:1;min-width:0}.eqRowT input{width:120px;flex:none}.eqRowT .btn{margin:0;flex:none}
 .abTag{color:#1b4a86 !important;font-weight:600}
 .codigo{font:700 26px/1.2 ui-monospace,Menlo,monospace;letter-spacing:4px;margin:4px 0;color:var(--navy)}
 .ventasSec{margin-top:26px;padding-top:6px;border-top:1px solid #dde3ee}
@@ -522,7 +526,7 @@ const mesStats = k => {
 };
 const PORC = 0.7, PP = Math.round(PORC * 100); // 70% para el piletero, el resto para la empresa (visitas y trabajos)
 // Trabajos que cuentan en un mes: los no cancelados que empiezan ese mes
-const trMes = (k, pid) => (S.tr || []).filter(t => t.estado !== 'cancelado' && (t.fecha || '').startsWith(k) && (!pid || t.piletero_id === pid));
+const trMes = (k, pid) => (S.tr || []).filter(t => t.estado !== 'cancelado' && (t.fecha || '').startsWith(k) && (!pid || participa(t, pid)));
 const peso = n => '$' + Math.round(+n || 0).toLocaleString('es-AR');
 const mesDe = k => new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, 1, 12);
 const mesTxt = k => MES[mesDe(k).getMonth()] + ' ' + mesDe(k).getFullYear();
@@ -654,9 +658,9 @@ function demo() {
     { id: 'pe2', cliente_id: 'c4', items: [{ t: 'p', id: 'pr1', nombre: 'Cloro granulado 90%', precio: 9000, n: 4 }], total: 36000, pago: 'transferencia', estado: 'confirmado', origen: 'equipo', creado_por: 'p3', entrega: ymd(new Date()), lleva_id: 'p3', coordinacion: 'Lo pidió el encargado por WhatsApp. Dejarlo en recepción.', creado: ago(60 * 20) },
     { id: 'pe3', cliente_id: 'c2', items: [{ t: 'p', id: 'pr5', nombre: 'Clarificador', precio: 5000, n: 2 }], total: 10000, pago: 'efectivo', estado: 'confirmado', origen: 'app', entrega: null, lleva_id: null, creado: ago(60 * 5) }];
   { const h = ymd(new Date()); S.tr = [
-    { id: 't1', tipo: 'limpieza', titulo: 'Limpieza a fondo y vaciado', cliente_id: null, nombre: 'Club Náutico', direccion: 'Av. Martínez de Hoz 900', lat: -38.02, lng: -57.53, fecha: h, hora: '08:30:00', dias: 2, presupuesto: 180000, pago: 90000, piletero_id: 'p2', estado: 'programado', cobrado: false },
-    { id: 't2', tipo: 'pintura', titulo: 'Pintura con epoxi', cliente_id: 'c5', fecha: masDias(h, 2), dias: 3, presupuesto: 450000, pago: 200000, empresa: 135000, reparto: 'monto', piletero_id: 'p1', estado: 'programado', cobrado: false, notas: 'Llevar 2 latas de epoxi celeste y rodillos' },
-    { id: 't3', tipo: 'reparacion', titulo: 'Cambio de bomba', cliente_id: 'c4', fecha: masDias(h, -3), dias: 1, presupuesto: 60000, pago: 30000, piletero_id: 'p3', estado: 'terminado', cobrado: true, terminado: new Date().toISOString() }]; }
+    { id: 't1', tipo: 'limpieza', titulo: 'Limpieza a fondo y vaciado', cliente_id: null, nombre: 'Club Náutico', direccion: 'Av. Martínez de Hoz 900', lat: -38.02, lng: -57.53, fecha: h, hora: '08:30:00', dias: 2, presupuesto: 180000, pago: 90000, empresa: 36000, responsable_id: 'p1', resp_pago: 30000, equipo: [{ id: 'p2', pago: 90000 }], piletero_id: 'p2', estado: 'programado', cobrado: false },
+    { id: 't2', tipo: 'pintura', titulo: 'Pintura con epoxi', cliente_id: 'c5', fecha: masDias(h, 2), dias: 3, presupuesto: 450000, pago: 200000, empresa: 90000, reparto: 'monto', responsable_id: 'p1', resp_pago: 80000, equipo: [{ id: 'p3', pago: 120000 }, { id: 'p4', pago: 80000 }], piletero_id: 'p3', estado: 'programado', cobrado: false, notas: 'Llevar 2 latas de epoxi celeste y rodillos' },
+    { id: 't3', tipo: 'reparacion', titulo: 'Cambio de bomba', cliente_id: 'c4', fecha: masDias(h, -3), dias: 1, presupuesto: 60000, pago: 30000, empresa: 12000, responsable_id: 'p1', resp_pago: 0, equipo: [{ id: 'p3', pago: 30000 }], piletero_id: 'p3', estado: 'terminado', cobrado: true, terminado: new Date().toISOString() }]; }
   S.rec = [{ id: 're1', cliente_id: 'c3', tipo: 'p', item_id: 'pr3', cantidad: 1, estado: 'activa', creado: ago(60 * 30) }];
 }
 
@@ -1190,7 +1194,15 @@ function renderPerfil() {
   montarPush(); montarObj();
 }
 // Reparto de cada trabajo: se fija a mano en % o en $ (piletero / empresa; lo que sobra queda para materiales u otros gastos)
-const empTr = t => t.empresa != null ? +t.empresa : (+t.presupuesto || 0) * (1 - PORC);
+// Trabajos: 20% fijo para la empresa; el responsable (quien toma el trabajo) y cada empleado cobran lo que se carga a mano
+const EMP_TR = 0.2;
+const empTr = t => t.empresa != null ? +t.empresa : Math.round((+t.presupuesto || 0) * EMP_TR);
+const equipoTr = t => Array.isArray(t.equipo) ? t.equipo.filter(e => e && e.id) : t.piletero_id ? [{ id: t.piletero_id, pago: +t.pago || 0 }] : [];
+const participa = (t, u) => !!u && (t.responsable_id === u || t.piletero_id === u || equipoTr(t).some(e => e.id === u));
+const pagoEn = (t, u) => t.mio != null ? +t.mio : (t.responsable_id === u ? +t.resp_pago || 0 : 0) + equipoTr(t).filter(e => e.id === u).reduce((a, e) => a + (+e.pago || 0), 0);
+const pagosTr = t => (+t.resp_pago || 0) + equipoTr(t).reduce((a, e) => a + (+e.pago || 0), 0);
+const nombresTr = t => { const l = equipoTr(t).map(e => e.id === S.me.id ? 'vos' : nom(e.id)); return l.length ? l.join(', ') : 'Sin empleados'; };
+const quienesTr = t => [...new Set([t.responsable_id, ...equipoTr(t).map(e => e.id)].filter(Boolean))];
 const pctTxt = n => (Math.round(n * 10) / 10).toLocaleString('es-AR') + '%';
 const modoRep = () => (document.querySelector('input[name=rpM]:checked') || {}).value || 'pct';
 function repCampos(t) {
@@ -1205,10 +1217,18 @@ function repVals() {
 }
 function calcRep() {
   const el = document.getElementById('ttRep'); if (!el) return;
-  const v = repVals(), resto = v.P - v.pago - v.emp;
+  const P = Math.max(+$('#ttP').value || 0, 0), emp = Math.round(P * EMP_TR), rp = Math.max(+$('#ttRP').value || 0, 0), eq = leerEq(), et = eq.reduce((a, e) => a + e.pago, 0), resto = P - emp - rp - et;
+  $('#rpEmp').textContent = peso(emp);
+  const pc = v => P ? pctTxt(v / P * 100) : '';
   el.classList.toggle('mal', resto < 0);
-  el.innerHTML = `<div><span>👷 Piletero</span><b>${peso(v.pago)}</b><small>${pctTxt(v.pa)}</small></div><div><span>🏢 Empresa</span><b>${peso(v.emp)}</b><small>${pctTxt(v.pb)}</small></div>` +
-    (resto > 0 ? `<div><span>🧰 Materiales u otros</span><b>${peso(resto)}</b><small>${pctTxt(v.P ? resto / v.P * 100 : 0)}</small></div>` : '') + (resto < 0 ? `<p>⚠ El reparto se pasa del presupuesto por ${peso(-resto)}</p>` : '');
+  el.innerHTML = `<div><span>🏢 Empresa</span><b>${peso(emp)}</b><small>${pc(emp)}</small></div><div><span>👤 ${esc(nom($('#ttR').value) || 'Responsable')}</span><b>${peso(rp)}</b><small>${pc(rp)}</small></div><div><span>👷 Empleados (${eq.length})</span><b>${peso(et)}</b><small>${pc(et)}</small></div>` +
+    (resto > 0 ? `<div><span>🧰 Materiales u otros</span><b>${peso(resto)}</b><small>${pc(resto)}</small></div>` : '') + (resto < 0 ? `<p>⚠ Los pagos se pasan de la facturación por ${peso(-resto)}</p>` : '');
+}
+const filaEq = e => `<div class="eqRowT"><select class="eqP" onchange="calcRep()"><option value="">Elegí…</option>${S.p.filter(p => p.activo !== false).map(p => `<option value="${p.id}" ${p.id === e.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select><input class="eqM" type="number" inputmode="decimal" min="0" placeholder="$ que cobra" value="${e.pago ?? ''}" oninput="calcRep()"><button class="btn sm sec" data-a="eqDel" aria-label="Quitar">✕</button></div>`;
+function leerEq() {
+  const vistos = new Set();
+  return [...document.querySelectorAll('#ttEq .eqRowT')].map(r => ({ id: r.querySelector('.eqP').value, pago: Math.max(+r.querySelector('.eqM').value || 0, 0) }))
+    .filter(e => e.id && !vistos.has(e.id) && vistos.add(e.id));
 }
 function cambiarRep(m) {
   const P = +$('#ttP').value || 0, a = +$('#rpP').value || 0, b = +$('#rpE').value || 0;
@@ -1269,7 +1289,7 @@ const EST_T = { programado: 'Programado', terminado: 'Terminado', pagado: 'Pagad
 const masDias = (k, n) => { const d = new Date(k + 'T12:00'); d.setDate(d.getDate() + n); return ymd(d); };
 const finTr = t => masDias(t.fecha, (+t.dias || 1) - 1);
 const lugarTr = t => { const c = t.cliente_id && S.c.find(x => x.id === t.cliente_id); return { n: t.nombre || c?.nombre || 'Sin nombre', d: t.direccion || c?.direccion || '', lat: t.lat ?? c?.lat, lng: t.lng ?? c?.lng }; };
-const misTr = () => S.tr.filter(t => t.estado !== 'cancelado' && (isGestor() ? !S.F || t.piletero_id === S.F : t.piletero_id === S.me.id));
+const misTr = () => S.tr.filter(t => t.estado !== 'cancelado' && (isGestor() ? !S.F || participa(t, S.F) : participa(t, S.me.id)));
 const trOn = k => misTr().filter(t => t.fecha <= k && k <= finTr(t));
 const fCorta = k => new Date(k + 'T12:00').toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'numeric' });
 async function cargarTrabajos() {
@@ -1279,7 +1299,7 @@ async function cargarTrabajos() {
 }
 function tcard(t, k) {
   const [e, n] = TIPOS[t.tipo] || TIPOS.otro, l = lugarTr(t), dia = Math.round((new Date(k + 'T12:00') - new Date(t.fecha + 'T12:00')) / 864e5) + 1;
-  return `<div class="card trab" style="--c:${col(t.piletero_id)}" data-a="verTrab" data-id="${t.id}"><span class="te">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</small><small>${t.hora ? t.hora.slice(0, 5) + ' · ' : ''}${t.dias > 1 ? `Día ${dia} de ${t.dias} · ` : ''}${t.piletero_id ? esc(t.piletero_id === S.me.id ? 'Vos' : nom(t.piletero_id)) : 'Sin asignar'} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></small></div></div>`;
+  return `<div class="card trab" style="--c:${col(equipoTr(t)[0]?.id || t.responsable_id)}" data-a="verTrab" data-id="${t.id}"><span class="te">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</small><small>${t.hora ? t.hora.slice(0, 5) + ' · ' : ''}${t.dias > 1 ? `Día ${dia} de ${t.dias} · ` : ''}${esc(nombresTr(t))} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></small></div></div>`;
 }
 function elegirProg(k) {
   if (!isGestor()) return programar(k);
@@ -1294,22 +1314,27 @@ function formTrabajo(t) {
     `<div id="ttOtro" ${otro ? '' : 'hidden'}><label>Nombre o lugar<input id="ttN" maxlength="120" value="${esc(t.nombre || '')}" placeholder="Ej: Club Náutico, Familia López"></label><label>Dirección<input id="ttD" maxlength="200" value="${esc(t.direccion || '')}" placeholder="Ej: Av. Colón 3500"></label></div>` +
     `<div class="dos"><label>Empieza<input id="ttF" type="date" value="${t.fecha}"></label><label>Hora (opcional)<input id="ttH" type="time" value="${t.hora ? t.hora.slice(0, 5) : ''}"></label></div>` +
     `<label>¿Cuántos días dura, aprox.?<input id="ttDi" type="number" inputmode="numeric" min="1" max="60" value="${t.dias || 1}"></label>` +
-    `<label>Presupuesto mano de obra ($)<input id="ttP" type="number" inputmode="decimal" min="0" value="${t.presupuesto || ''}" placeholder="Lo que se le cobra al cliente" oninput="calcRep()"></label>${repCampos(t)}` +
-    `<label>¿Quién lo hace?<select id="ttQ"><option value="">Todavía no sé</option>${pileteros().map(p => `<option value="${p.id}" ${p.id === t.piletero_id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>` +
+    `<label>Facturación total del trabajo ($)<input id="ttP" type="number" inputmode="decimal" min="0" value="${t.presupuesto || ''}" placeholder="Lo que se le cobra al cliente" oninput="calcRep()"></label>` +
+    `<h3>Reparto de la plata</h3><div class="repEmp"><span>🏢 Empresa · ${Math.round(EMP_TR * 100)}% fijo</span><b id="rpEmp">$0</b></div>` +
+    `<div class="dos"><label>Toma el trabajo<select id="ttR" onchange="calcRep()">${S.p.filter(p => p.activo !== false).map(p => `<option value="${p.id}" ${p.id === (t.responsable_id || S.me.id) ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label><label>Le pagamos ($)<input id="ttRP" type="number" inputmode="decimal" min="0" value="${t.resp_pago ?? ''}" placeholder="0" oninput="calcRep()"></label></div>` +
+    `<h3>Empleados que lo hacen</h3><div id="ttEq">${(equipoTr(t).length ? equipoTr(t) : [{ id: '', pago: '' }]).map(filaEq).join('')}</div><button class="btn sm sec" data-a="eqAdd" style="margin:0 0 10px">+ Agregar empleado</button>` +
+    `<div class="repBox" id="ttRep"></div>` +
     `<label>Notas (opcional)<textarea id="ttK" rows="2" maxlength="1000" placeholder="Materiales, qué llevar, cómo entrar…">${esc(t.notas || '')}</textarea></label>` +
     `<button class="btn" data-a="guardarTrab" data-id="${t.id || ''}">${t.id ? 'Guardar cambios' : 'Programar trabajo'}</button><button class="btn sec" data-a="cerrar">Cancelar</button>`);
   calcRep();
 }
 function verTrabajo(id) {
   const t = S.tr.find(x => x.id === id); if (!t) return toast('No encontré ese trabajo');
-  const [e, n] = TIPOS[t.tipo] || TIPOS.otro, l = lugarTr(t), g = isGestor(), mio = t.piletero_id === S.me.id;
+  const [e, n] = TIPOS[t.tipo] || TIPOS.otro, l = lugarTr(t), g = isGestor(), mio = participa(t, S.me.id), P = +t.presupuesto || 0, resto = P - empTr(t) - pagosTr(t);
   const fechas = t.dias > 1 ? `Del ${fCorta(t.fecha)} al ${fCorta(finTr(t))} (${t.dias} días)` : fCorta(t.fecha);
   const mapa = l.lat && l.lng ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : l.d ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.d + ', Mar del Plata')}` : '';
-  sheet(`<h2>${e} ${esc(t.titulo || n)}</h2><p class="sub">${esc(n)} · ${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</p><p class="who"><i class="dot" style="background:${col(t.piletero_id)}"></i>${t.piletero_id ? 'Lo hace ' + (mio ? 'vos' : esc(nom(t.piletero_id))) : 'Sin asignar'} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></p><p class="sub">📅 ${fechas}${t.hora ? ' · ' + t.hora.slice(0, 5) : ''}</p>` +
-    `<div class="stats">${g ? `<div><small>Presupuesto mano de obra</small><b>${peso(t.presupuesto)}</b></div>` : ''}<div><small>${g ? 'Le pagamos al piletero' : 'Cobrás vos'}${g && +t.presupuesto ? ' (' + pctTxt(t.pago / t.presupuesto * 100) + ')' : ''}</small><b>${peso(t.pago)}</b></div>${g ? `<div><small>Para la empresa${+t.presupuesto ? ' (' + pctTxt(empTr(t) / t.presupuesto * 100) + ')' : ''}</small><b>${peso(empTr(t))}</b></div>${(+t.presupuesto || 0) - (+t.pago || 0) - empTr(t) > 0 ? `<div><small>Materiales u otros</small><b>${peso((+t.presupuesto || 0) - (+t.pago || 0) - empTr(t))}</b></div>` : ''}<div><small>Cobrado al cliente</small><b>${t.cobrado ? 'Sí ✓' : 'Todavía no'}</b></div>` : ''}</div>` +
+  const pc = v => P ? ' (' + pctTxt(v / P * 100) + ')' : '';
+  const reparto = g ? `<div class="stats"><div class="full"><small>Facturación total</small><b>${peso(P)}</b></div><div><small>🏢 Empresa${pc(empTr(t))}</small><b>${peso(empTr(t))}</b></div>${t.responsable_id ? `<div><small>👤 ${esc(nom(t.responsable_id))} (toma el trabajo)</small><b>${peso(t.resp_pago)}</b></div>` : ''}${equipoTr(t).map(x => `<div><small>👷 ${esc(nom(x.id))}</small><b>${peso(x.pago)}</b></div>`).join('')}${resto > 0 ? `<div><small>🧰 Materiales u otros</small><b>${peso(resto)}</b></div>` : ''}<div><small>Cobrado al cliente</small><b>${t.cobrado ? 'Sí ✓' : 'Todavía no'}</b></div></div>`
+    : `<div class="stats"><div class="full"><small>Cobrás vos</small><b>${peso(pagoEn(t, S.me.id))}</b></div></div>`;
+  sheet(`<h2>${e} ${esc(t.titulo || n)}</h2><p class="sub">${esc(n)} · ${esc(l.n)}${l.d ? ' · ' + esc(l.d) : ''}</p><p class="who"><i class="dot" style="background:${col(equipoTr(t)[0]?.id || t.responsable_id)}"></i>${t.responsable_id ? 'Lo toma ' + (t.responsable_id === S.me.id ? 'vos' : esc(nom(t.responsable_id))) + ' · ' : ''}Lo hacen: ${esc(nombresTr(t))} · <span class="tag ${t.estado}">${EST_T[t.estado]}</span></p><p class="sub">📅 ${fechas}${t.hora ? ' · ' + t.hora.slice(0, 5) : ''}</p>` + reparto +
     `${t.notas ? `<p class="note">${esc(t.notas)}</p>` : ''}${t.pagado ? `<p class="sub">💸 Pagado el ${new Date(t.pagado).toLocaleDateString('es-AR')}</p>` : t.terminado ? `<p class="sub">✅ Terminado el ${new Date(t.terminado).toLocaleDateString('es-AR')}</p>` : ''}` +
     `${t.estado === 'programado' && (g || mio) ? `<button class="btn" data-a="terminarTrab" data-id="${t.id}">✅ Marcar terminado</button>` : ''}` +
-    `${g && t.estado === 'terminado' ? `<button class="btn pagar" data-a="pagarTrab" data-id="${t.id}">💸 Pagar ${peso(t.pago)}${t.piletero_id ? ' a ' + esc(nom(t.piletero_id)) : ''}</button>` : ''}` +
+    `${g && t.estado === 'terminado' ? `<button class="btn pagar" data-a="pagarTrab" data-id="${t.id}">💸 Pagar ${peso(pagosTr(t))} a los que trabajaron</button>` : ''}` +
     `${g && t.estado !== 'cancelado' ? `<button class="btn sec" data-a="cobradoTrab" data-id="${t.id}">${t.cobrado ? 'Marcar como NO cobrado al cliente' : '💵 Ya se lo cobramos al cliente'}</button>` : ''}` +
     `${mapa ? `<a class="btn sec" target="_blank" rel="noopener" href="${mapa}">Cómo llegar</a>` : ''}` +
     `${g && t.estado === 'programado' ? `<button class="btn sec" data-a="editarTrab" data-id="${t.id}">Editar</button><button class="btn sec" data-a="cancelarTrab" data-id="${t.id}">Cancelar trabajo</button>` : ''}${g ? `<button class="btn sec" data-a="borrarTrab" data-id="${t.id}">Eliminar</button>` : ''}`);
@@ -1325,12 +1350,12 @@ function trabajosSemanaHTML() {
   S.tsem = S.tsem || 0;
   const lun = new Date(); lun.setHours(12, 0, 0, 0); lun.setDate(lun.getDate() - (lun.getDay() + 6) % 7 + S.tsem * 7);
   const a = ymd(lun), b = masDias(a, 6), g = isGestor();
-  const l = S.tr.filter(t => t.estado !== 'cancelado' && (g || t.piletero_id === S.me.id) && t.fecha <= b && finTr(t) >= a).sort((x, y) => x.fecha.localeCompare(y.fecha));
-  if (!g && !l.length && !S.tr.some(t => t.piletero_id === S.me.id)) return '';
+  const l = S.tr.filter(t => t.estado !== 'cancelado' && (g || participa(t, S.me.id)) && t.fecha <= b && finTr(t) >= a).sort((x, y) => x.fecha.localeCompare(y.fecha));
+  if (!g && !l.length && !S.tr.some(t => participa(t, S.me.id))) return '';
   const tit = S.tsem === 0 ? 'esta semana' : S.tsem === 1 ? 'la semana que viene' : S.tsem === -1 ? 'la semana pasada' : `${fCorta(a)} – ${fCorta(b)}`;
-  const tot = l.reduce((x, t) => x + (+t.presupuesto || 0), 0), pagar = l.filter(t => t.estado !== 'pagado').reduce((x, t) => x + (+t.pago || 0), 0);
-  const fila = t => { const [e, n] = TIPOS[t.tipo] || TIPOS.otro, lu = lugarTr(t); return `<div class="row" data-a="verTrab" data-id="${t.id}"><span class="te" style="font-size:22px">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(lu.n)} · ${fCorta(t.fecha)}${t.dias > 1 ? ' → ' + fCorta(finTr(t)) : ''}${g ? ' · ' + (t.piletero_id ? esc(nom(t.piletero_id)) : 'sin asignar') : ''}</small></div><div class="num"><b>${peso(g ? t.presupuesto : t.pago)}</b><span class="tag ${t.estado}">${EST_T[t.estado]}</span></div></div>`; };
-  return `<div class="dh"><button class="arrow" data-a="tsem" data-id="-1" aria-label="Semana anterior">‹</button><h3>🛠️ Trabajos de ${tit}</h3><button class="arrow" data-a="tsem" data-id="1" aria-label="Semana siguiente">›</button></div><div class="trSem">${l.length ? (g ? `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · presupuesto ${peso(tot)} · falta pagar ${peso(pagar)} a pileteros</p>` : `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · cobrás ${peso(l.reduce((x, t) => x + (+t.pago || 0), 0))}</p>`) + l.map(fila).join('') : '<p class="note">No hay trabajos programados esa semana.</p>'}${g ? `<button class="btn sec" data-a="nuevoTrab" data-id="${a < ymd(new Date()) && S.tsem === 0 ? ymd(new Date()) : a}">+ Programar trabajo</button>` : ''}</div>`;
+  const tot = l.reduce((x, t) => x + (+t.presupuesto || 0), 0), pagar = l.filter(t => t.estado !== 'pagado').reduce((x, t) => x + pagosTr(t), 0);
+  const fila = t => { const [e, n] = TIPOS[t.tipo] || TIPOS.otro, lu = lugarTr(t); return `<div class="row" data-a="verTrab" data-id="${t.id}"><span class="te" style="font-size:22px">${e}</span><div class="grow"><b>${esc(t.titulo || n)}</b><small>${esc(lu.n)} · ${fCorta(t.fecha)}${t.dias > 1 ? ' → ' + fCorta(finTr(t)) : ''}${g ? ' · ' + esc(nombresTr(t)) : ''}</small></div><div class="num"><b>${peso(g ? t.presupuesto : pagoEn(t, S.me.id))}</b><span class="tag ${t.estado}">${EST_T[t.estado]}</span></div></div>`; };
+  return `<div class="dh"><button class="arrow" data-a="tsem" data-id="-1" aria-label="Semana anterior">‹</button><h3>🛠️ Trabajos de ${tit}</h3><button class="arrow" data-a="tsem" data-id="1" aria-label="Semana siguiente">›</button></div><div class="trSem">${l.length ? (g ? `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · facturación ${peso(tot)} · empresa ${peso(l.reduce((x, t) => x + empTr(t), 0))} · falta pagar ${peso(pagar)}</p>` : `<p class="sub">${l.length} ${l.length === 1 ? 'trabajo' : 'trabajos'} · cobrás ${peso(l.reduce((x, t) => x + pagoEn(t, S.me.id), 0))}</p>`) + l.map(fila).join('') : '<p class="note">No hay trabajos programados esa semana.</p>'}${g ? `<button class="btn sec" data-a="nuevoTrab" data-id="${a < ymd(new Date()) && S.tsem === 0 ? ymd(new Date()) : a}">+ Programar trabajo</button>` : ''}</div>`;
 }
 function renderCal() {
   const sel = new Date(S.sel + 'T12:00'), mon = new Date(sel);
@@ -1391,7 +1416,7 @@ function deudaPil(pid) {
 function gananciasHTML() {
   const mine = S.r.filter(r => r.piletero_id === S.me.id), mis = delMes(mine), s = sumar(mis.filter(r => !r.abono)), pend = sumar(mine.filter(r => !r.pago_id && !r.abono)), g = {};
   const mv = S.vt.filter(v => v.vendedor_id === S.me.id && (v.fecha || '').startsWith(S.mes)), prod = mv.reduce((a, v) => a + (+v.total || 0), 0), comi = mv.reduce((a, v) => a + (+v.total || 0) * (+v.porc || 0) / 100, 0);
-  const mtr = trMes(S.mes, S.me.id), trPago = mtr.reduce((a, t) => a + (+t.pago || 0), 0), mab = mis.filter(r => r.abono), abPago = sumar(mab).mio;
+  const mtr = trMes(S.mes, S.me.id), trPago = mtr.reduce((a, t) => a + pagoEn(t, S.me.id), 0), mab = mis.filter(r => r.abono), abPago = sumar(mab).mio;
   mis.forEach(r => { const k = ymd(lunes(r.fecha)); (g[k] = g[k] || []).push(r); });
   const sem = Object.keys(g).sort().reverse().map(k => {
     const a = new Date(k + 'T12:00'), b = new Date(a), w = sumar(g[k]), pw = sumar(g[k].filter(r => !r.pago_id && !r.abono)).emp;
@@ -1992,9 +2017,12 @@ async function act(e) {
     case 'guardarTrab': {
       const cid = $('#ttC').value || null, f = { tipo: (document.querySelector('input[name=tt]:checked') || {}).value || 'otro', titulo: $('#ttT').value.trim() || null, cliente_id: cid,
         nombre: cid ? null : $('#ttN').value.trim() || null, direccion: cid ? null : $('#ttD').value.trim() || null, fecha: $('#ttF').value, hora: $('#ttH').value || null,
-        dias: Math.round(+$('#ttDi').value || 1), presupuesto: Math.max(+$('#ttP').value || 0, 0), pago: repVals().pago, empresa: repVals().emp, reparto: modoRep(), piletero_id: $('#ttQ').value || null, notas: $('#ttK').value.trim() || null };
+        dias: Math.round(+$('#ttDi').value || 1), presupuesto: Math.max(+$('#ttP').value || 0, 0), notas: $('#ttK').value.trim() || null };
+      const eq = leerEq();
+      Object.assign(f, { empresa: Math.round(f.presupuesto * EMP_TR), reparto: 'monto', responsable_id: $('#ttR').value || S.me.id, resp_pago: Math.max(+$('#ttRP').value || 0, 0), equipo: eq, piletero_id: eq[0]?.id || null, pago: eq.reduce((a, e) => a + e.pago, 0) });
       if (!f.fecha) return toast('Poné la fecha en que empieza');
-      if (f.pago + f.empresa > f.presupuesto) return toast('El reparto se pasa del presupuesto. Revisá los números.');
+      if (f.empresa + f.resp_pago + f.pago > f.presupuesto) return toast('Los pagos se pasan de la facturación. Revisá los números.');
+      if (!eq.length) return toast('Elegí al menos un empleado que haga el trabajo');
       if (!cid && !f.nombre && !f.direccion) return toast('Elegí el cliente o escribí dónde es');
       if (f.dias < 1 || f.dias > 60) return toast('La duración tiene que ser de 1 a 60 días');
       t.disabled = true;
@@ -2005,7 +2033,8 @@ async function act(e) {
         else S.tr.push({ id: crypto.randomUUID(), estado: 'programado', cobrado: false, creado: new Date().toISOString(), ...f });
       } catch (e) { t.disabled = false; return toast(e.message); }
       S.sel = f.fecha; son('ok'); closeSheet(); renderAll();
-      return toast(d.id ? 'Trabajo actualizado' : f.piletero_id && f.piletero_id !== S.me.id ? `Trabajo programado. Le avisamos a ${nom(f.piletero_id)} 🛠️` : 'Trabajo programado 🛠️');
+      const av = quienesTr(f).filter(u => u !== S.me.id).map(nom);
+      return toast(d.id ? 'Trabajo actualizado' : av.length ? `Trabajo programado. Les avisamos a ${av.join(', ')} 🛠️` : 'Trabajo programado 🛠️');
     }
     case 'terminarTrab': {
       t.disabled = true;
@@ -2015,7 +2044,8 @@ async function act(e) {
     }
     case 'pagarTrab': {
       const x = S.tr.find(y => y.id === d.id);
-      if (!confirm(`¿Registrar el pago de ${peso(x.pago)}${x.piletero_id ? ' a ' + nom(x.piletero_id) : ''}?`)) return;
+      const det = [x.responsable_id && +x.resp_pago ? `${nom(x.responsable_id)}: ${peso(x.resp_pago)}` : '', ...equipoTr(x).map(e => `${nom(e.id)}: ${peso(e.pago)}`)].filter(Boolean).join('\n');
+      if (!confirm(`¿Registrar el pago de ${peso(pagosTr(x))}?\n\n${det}`)) return;
       try { await trUpd(d.id, { estado: 'pagado', pagado: new Date().toISOString() }); } catch (e) { return toast(e.message); }
       son('ok'); renderAll(); verTrabajo(d.id); return toast('Pago registrado 💸');
     }
@@ -2300,6 +2330,8 @@ async function act(e) {
     }
     case 'orden': R.orden = R.orden === 'corto' ? 'dado' : 'corto'; return trazar();
     case 'editarReg': return abrirRegistro(d.id);
+    case 'eqAdd': { $('#ttEq').insertAdjacentHTML('beforeend', filaEq({ id: '', pago: '' })); return; }
+    case 'eqDel': { const r = t.closest('.eqRowT'); if (document.querySelectorAll('#ttEq .eqRowT').length > 1) r.remove(); else { r.querySelector('.eqP').value = ''; r.querySelector('.eqM').value = ''; } return calcRep(); }
     case 'chkTodo': { const l = [...document.querySelectorAll('input[name=tarea]')], todos = l.every(x => x.checked); l.forEach(x => { x.checked = !todos; }); return; }
     case 'guardarReg': {
       const r = S.r.find(x => x.id === d.id), files = [...($('#rf').files || [])].slice(0, 4);
