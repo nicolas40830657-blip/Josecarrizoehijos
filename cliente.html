@@ -67,6 +67,20 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .edif{flex:none;text-align:left;font:inherit;color:inherit;background:#fff;border:2px solid transparent;border-radius:16px;padding:10px 14px;box-shadow:var(--sh);cursor:pointer;max-width:220px}
 .edif b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.edif small{color:var(--g600);font-size:12px}
 .edif.on{border-color:var(--navy);background:#eaf1fd}
+.semana{background:#fff;border-radius:24px;padding:16px 18px;margin:12px 0;box-shadow:var(--sh)}
+.semana .sh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.semana .sh small{display:block;color:var(--g600);font-size:13px}.semana .sh b{font-size:22px;letter-spacing:-.3px}
+.semana .pc{min-width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;background:#eaf1fd;color:var(--navy)}
+.semana.ok .pc{background:var(--ok);color:#fff;font-size:22px}
+.semana .barra{display:grid;gap:6px;margin:14px 0 10px}
+.semana .barra i{height:34px;border-radius:12px;background:var(--g300);font-style:normal;font-size:12px;font-weight:700;color:#fff;display:grid;place-items:center;transition:background .4s}
+.semana .barra i.on{background:linear-gradient(135deg,var(--navy),var(--blue))}.semana.ok .barra i.on{background:linear-gradient(135deg,#048a49,var(--ok))}
+.semana p{margin:0;color:var(--g600);font-size:14px;line-height:1.4}
+.semana .sant{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--g300)}
+.semana .sant small{order:-1;width:100%;color:var(--g600);font-size:12px}
+.semana .sant span{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--g600);min-width:46px}
+.semana .sant span b{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:13px;margin-bottom:3px}
+.semana .sant .ok b{background:#e3f6ec;color:var(--ok)}.semana .sant .no b{background:#fff4e5;color:var(--warn)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.stats .full{grid-column:1/-1}
 .stats div{background:var(--soft);border-radius:20px;padding:14px 16px;box-shadow:var(--sh);min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
 .stats div:nth-child(4n+1),.stats div:nth-child(4n+4){background:var(--grad);color:#fff}
@@ -402,6 +416,8 @@ function demo() {
     const ant = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return ymd(d).slice(0, 7); })();
     C.d.cliente = { ...C.d.cliente, nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', tipo: 'institucion', abono: 160000, visitas_semana: 2, valor_visita: 0, contacto: 'Laura Costa' };
     C.d.abono_cobros = [{ mes: ant, monto: 160000, fecha: back(27) }];
+    [3, 10, 17].forEach((n, i) => C.d.realizadas.push({ ...C.d.realizadas[C.d.realizadas.length - 1], id: 'rx' + i, fecha: back(n), fotos: [] }));
+    C.d.realizadas.sort((x, y) => y.fecha.localeCompare(x.fecha));
     C.user.user_metadata.nombre = 'Laura Costa';
   }
   if (Q.get('demo') === 'adm') {
@@ -497,6 +513,7 @@ function renderInicio() {
     (recs.length ? `<div class="aviso"><small>Aviso de ${esc(p?.nombre || 'tu piletero')}</small><b>Te estás quedando <span class="hl">sin productos</span></b><ul>${recs.map(x => `<li><span>${esc(x.nombre)} ×${x.cantidad}${x.nota ? `<br><small>${esc(x.nota)}</small>` : ''}</span><span>${+x.precio ? peso(x.precio * x.cantidad) : 'Consultá'}</span></li>`).join('')}</ul><button class="btn" data-a="comprarRecs">Pedírselos ahora</button></div>` : '') +
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
     `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div>${esAdm() || +c.abono > 0 ? `<div><small>Abono mensual</small><b>${peso(c.abono)}</b></div>` : `<div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div>`}<div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
+    semanaHTML(c, p) +
     avisosActivos(p) + `<button class="btn sec" data-a="avisar">📣 Avisarle algo a ${esc((p?.nombre || 'tu piletero').split(' ')[0])}</button>` +
     (tpend ? `<div class="estado warn"><div class="ic">$</div><div><b>Productos sin pagar: ${peso(tpend)}</b><small>${pend.map(v => esc(v.nombre) + ' ×' + v.cantidad).join(', ')}</small></div></div>` : '') +
     (esAdm() ? cuentaAdmHTML(true) : +c.abono > 0 ? abonoCliHTML(p) : cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia')) +
@@ -667,6 +684,23 @@ function checklistHTML(r) {
   return `<div class="chkCard"><div class="ch"><b>✅ Lo que se hizo en la última visita</b><small>${largo(r.fecha)}${r.piletero ? ' · ' + esc(r.piletero) : ''} · ${n} de ${TAREAS.length}</small></div>${TAREAS.map(([k, e, t]) => { const ok = r.tareas.includes(k); return `<div class="ci ${ok ? 'ok' : ''}"><span class="bx">${ok ? '✓' : ''}</span><span>${e} ${t}</span>${ok ? '' : '<small>No esta vez</small>'}</div>`; }).join('')}${r.nota ? `<p class="cn">📝 ${esc(r.nota)}</p>` : ''}</div>`;
 }
 const tareasTxt = r => Array.isArray(r.tareas) && r.tareas.length ? TAREAS.filter(([k]) => r.tareas.includes(k)).map(([, e, t]) => '✓ ' + t).join(' · ') : '';
+// Edificios con abono: barra de la semana, sube con cada visita del piletero
+const DSEM = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const lunes = k => { const d = fd(k), w = (d.getDay() + 6) % 7; d.setDate(d.getDate() - w); return ymd(d); };
+const masD = (k, n) => { const d = fd(k); d.setDate(d.getDate() + n); return ymd(d); };
+function semanaHTML(c, p) {
+  if (!(+c.abono > 0 || c.tipo === 'institucion')) return '';
+  const meta = Math.max(1, +c.visitas_semana || 1), l0 = lunes(hoy()), pil = esc((p?.nombre || 'tu piletero').split(' ')[0]);
+  const fechasDe = l => [...new Set((C.d.realizadas || []).map(r => r.fecha).filter(f => f >= l && f <= masD(l, 6)))].sort();
+  const f = fechasDe(l0), n = f.length, ok = n >= meta, pct = Math.min(100, Math.round(n / meta * 100));
+  const seg = Array.from({ length: meta }, (_, i) => `<i class="${i < n ? 'on' : ''}">${i < n ? DSEM[fd(f[i]).getDay()] + ' ' + fd(f[i]).getDate() : ''}</i>`).join('');
+  const ant = [1, 2, 3, 4].map(k => { const l = masD(l0, -7 * k), m = fechasDe(l).length; return { l, m }; }).filter(x => x.l >= (C.d.realizadas || []).reduce((a, r) => r.fecha < a ? r.fecha : a, '9999') || x.m);
+  const faltan = meta - n, dSem = (fd(hoy()).getDay() + 6) % 7;
+  return `<div class="semana ${ok ? 'ok' : ''}"><div class="sh"><div><small>Mantenimiento de esta semana</small><b>${n} de ${meta} ${meta === 1 ? 'visita' : 'visitas'}</b></div><span class="pc">${ok ? '✓' : pct + '%'}</span></div>` +
+    `<div class="barra" style="grid-template-columns:repeat(${meta},1fr)">${seg}</div>` +
+    `<p>${ok ? `¡Listo! ${pil} pasó ${n === 1 ? 'la visita' : 'las ' + n + ' visitas'} de esta semana.` : n ? `Ya pasó ${n} ${n === 1 ? 'vez' : 'veces'}. ${faltan === 1 ? 'Falta 1 visita' : 'Faltan ' + faltan + ' visitas'} antes del domingo.` : dSem < 5 ? `${pil} viene ${meta} ${meta === 1 ? 'vez' : 'veces'} por semana. La barra sube cada vez que pasa.` : `Todavía no pasó esta semana.`}</p>` +
+    (ant.length ? `<div class="sant">${ant.map(x => `<span class="${x.m >= meta ? 'ok' : 'no'}"><b>${x.m >= meta ? '✓' : x.m + '/' + meta}</b>${fd(x.l).getDate()}/${fd(x.l).getMonth() + 1}</span>`).join('')}<small>Semanas anteriores</small></div>` : '') + `</div>`;
+}
 // Edificios con abono: el piletero cobra el abono del mes y lo confirma en su app
 function abonoCliHTML(p, hist) {
   const c = C.d.cliente, mes = ymd(new Date()).slice(0, 7), l = C.d.abono_cobros || [], x = l.find(a => a.mes === mes);
