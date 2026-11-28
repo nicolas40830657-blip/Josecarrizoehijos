@@ -1197,6 +1197,7 @@ function hojaObjetivo(cual) {
 }
 // ── Perfil del coordinador: tarjetas cuadradas, cada una abre su sección
 const abonoOk = c => conAdm(c) ? !!pagoAdm(c.administracion_id, mesHoy()) : !!cobroAb(c.id, mesHoy());
+S.apil = S.apil || [];
 const SECS = {
   fact: ['💰', 'Facturación', () => `${peso(mesStats(S.mes).total)} en ${mesTxt(S.mes).split(' ')[0].toLowerCase()}`],
   deben: ['💵', 'Lo que deben', () => { const d = pileteros().reduce((a, p) => a + deudaPil(p.id).total, 0); return d ? peso(d) + ' sin rendir' : 'Todos al día ✓'; }],
@@ -1216,9 +1217,9 @@ function tilesHTML() {
 }
 function secContenido(k, cuenta) {
   if (k === 'fact') return equipoHTML();
-  if (k === 'deben') return `<p class="sub">Lo que cada piletero tiene que rendirle a la empresa (mantenimientos, productos y abonos). Cuando paga, usa "Pagar todo" en su perfil.</p>` + pileteros().map(p => { const d = deudaPil(p.id); return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>🧽 ${peso(d.m)} · 🧪 ${peso(d.pr)} · 🏢 ${peso(d.ab)}</small></div><div class="num"><b>${d.total > 0 ? peso(d.total) : 'Al día ✓'}</b></div></div>`; }).join('');
+  if (k === 'deben') return debenEmpHTML() + `<h3>Lo que rinden los pileteros</h3><p class="sub">Lo que cada piletero tiene que rendirle a la empresa (mantenimientos, productos y abonos). Cuando paga, usa "Pagar todo" en su perfil.</p>` + pileteros().map(p => { const d = deudaPil(p.id); return `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>🧽 ${peso(d.m)} · 🧪 ${peso(d.pr)} · 🏢 ${peso(d.ab)}</small></div><div class="num"><b>${d.total > 0 ? peso(d.total) : 'Al día ✓'}</b></div></div>`; }).join('');
   if (k === 'trab') return trabajosSemanaHTML() || '<p class="note">No hay trabajos.</p>';
-  if (k === 'edif') { const e = S.c.filter(esAbono); return (e.length ? `<h3>Abonos de ${mesTxt(mesHoy())}</h3>` + e.map(c => { const x = abonoOk(c); return `<div class="row" data-a="abrir" data-id="${c.id}" style="cursor:pointer"><i class="dot" style="background:${col(c.piletero_id)}"></i><div class="grow"><b>${esc(c.nombre)}</b><small>${conAdm(c) ? '🏛️ ' + esc(ADM(c.administracion_id).nombre) : 'Lo cobra ' + esc(nom(c.piletero_id))}${c.contacto ? ' · 👤 ' + esc(c.contacto) : ''} · ${peso(c.abono)}/mes</small></div>${x ? '<span class="tag entregado">' + (conAdm(c) ? 'Pagado' : 'Cobrado') + '</span>' : '<span class="tag nuevo">Pendiente</span>'}</div>`; }).join('') : '<p class="note">Todavía no hay edificios con abono. Al cargar un cliente, elegí "🏢 Institución".</p>'); }
+  if (k === 'edif') { const e = S.c.filter(esAbono); return (e.length ? `<h3>Abonos de ${mesTxt(mesHoy())}</h3>` + e.map(c => { const x = abonoOk(c); return `<div class="row" data-a="abrir" data-id="${c.id}" style="cursor:pointer"><i class="dot" style="background:${col(c.piletero_id)}"></i><div class="grow"><b>${esc(c.nombre)}</b><small>${conAdm(c) ? '🏛️ ' + esc(admNom(c)) : 'Lo cobra ' + esc(nom(c.piletero_id))}${c.contacto ? ' · 👤 ' + esc(c.contacto) : ''} · ${peso(c.abono)}/mes</small></div>${x ? '<span class="tag entregado">' + (conAdm(c) ? 'Pagado' : 'Cobrado') + '</span>' : '<span class="tag nuevo">Pendiente</span>'}</div>`; }).join('') : '<p class="note">Todavía no hay edificios con abono. Al cargar un cliente, elegí "🏢 Institución".</p>'); }
   if (k === 'adms') return `<p class="sub">Cada administración tiene su panel (se abre en la computadora) con todos sus edificios, el abono, los productos y los datos de la empresa para pagar. El coordinador de cada edificio tiene otro link, sin plata.</p>` + admLista();
   if (k === 'ped') return `<p class="sub">Los pedidos están en Inventario → 🧾 Pedidos.</p><button class="btn" data-a="pedidos">Ir a Pedidos</button>`;
   if (k === 'obj') return objetivosHTML() || '<p class="note">Sin objetivos.</p>';
@@ -1227,6 +1228,11 @@ function secContenido(k, cuenta) {
   if (k === 'premio') return premioBox();
   if (k === 'cuenta') return cuenta;
   return '';
+}
+function debenEmpHTML() {
+  const ps = pileteros().map(p => ({ p, d: debePil(p.id) })).filter(x => x.d.total > 0);
+  if (!ps.length) return '';
+  return `<h3>La empresa les debe (abonos de administraciones)</h3><p class="sub">Cuando una administración paga el abono, la empresa le paga el ${PP}% al piletero de cada edificio.</p>` + ps.map(({ p, d }) => `<div class="row"><i class="dot" style="background:${p.color}"></i><div class="grow"><b>${esc(p.nombre)}</b><small>${d.l.map(x => esc(x.c.nombre) + ' · ' + mesTxt(x.mes).split(' ')[0].toLowerCase()).join(', ')}</small></div><button class="btn sm" data-a="pagarPilAb" data-id="${p.id}">💸 Pagué ${peso(d.total)}</button></div>`).join('');
 }
 function abrirSec(k) {
   S.sec = k; const [ic, t] = SECS[k];
@@ -1298,15 +1304,15 @@ const edificiosDe = id => S.c.filter(c => c.administracion_id === id);
 const mesHoy = () => ymd(new Date()).slice(0, 7);
 async function cargarAdm() {
   if (!sb) return;
-  const [a, b, c] = await Promise.all([sb.from('administraciones').select().order('nombre'), sb.from('abono_pagos').select(), sb.from('abono_cobros').select()]);
-  if (!a.error) S.adm = a.data || []; if (!b.error) S.ap = b.data || []; if (!c.error) S.ac = c.data || [];
+  const [a, b, c, d] = await Promise.all([sb.from('administraciones').select().order('nombre'), sb.from('abono_pagos').select(), sb.from('abono_cobros').select(), sb.from('abono_pil').select()]);
+  if (!a.error) S.adm = a.data || []; if (!b.error) S.ap = b.data || []; if (!c.error) S.ac = c.data || []; if (!d.error) S.apil = d.data || [];
 }
 // El abono lo cobra el piletero cada mes: 70% para él, 30% para la empresa (entra en "Pagar todo")
 const cobroAb = (cid, k) => S.ac.find(a => a.cliente_id === cid && a.mes === k);
 const mesAnt = (k, n) => { const d = mesDe(k); d.setMonth(d.getMonth() - n); return ymd(d).slice(0, 7); };
 function abonoBox(c) {
   if (!esAbono(c)) return '';
-  if (conAdm(c)) { const a = ADM(c.administracion_id), pg = pagoAdm(a.id, mesHoy()); return `<div class="box"><b>🏛️ Abono mensual · ${peso(c.abono)}</b><p class="sub" style="margin:4px 0 6px">Lo paga <b>${esc(a.nombre)}</b> a la empresa. ${PP}% para el piletero (${peso(c.abono * PORC)}), ${100 - PP}% para la empresa.</p><div class="row"><div class="grow"><b>Abono de ${mesTxt(mesHoy())}</b><small>${pg ? 'La administración pagó el ' + new Date(pg.fecha + 'T12:00').toLocaleDateString('es-AR') : 'Todavía no lo pagó'}</small></div><span class="tag ${pg ? 'entregado' : 'nuevo'}">${pg ? 'Pagado' : 'Pendiente'}</span></div></div>`; }
+  if (conAdm(c)) { const pg = pagoAdm(c.administracion_id, mesHoy()), yp = pilAb(c.id, mesHoy()); return `<div class="box"><b>🏛️ Abono mensual · ${peso(c.abono)}</b><p class="sub" style="margin:4px 0 6px">Lo paga <b>${esc(admNom(c))}</b> a la empresa${yp ? ` · la empresa ya le pagó a ${esc(nom(yp.piletero_id))} su parte ✓` : ''}. ${PP}% para el piletero (${peso(c.abono * PORC)}), ${100 - PP}% para la empresa.</p><div class="row"><div class="grow"><b>Abono de ${mesTxt(mesHoy())}</b><small>${pg ? 'La administración pagó el ' + new Date(pg.fecha + 'T12:00').toLocaleDateString('es-AR') : 'Todavía no lo pagó'}</small></div><span class="tag ${pg ? 'entregado' : 'nuevo'}">${pg ? 'Pagado' : 'Pendiente'}</span></div></div>`; }
   const k = mesHoy(), a = cobroAb(c.id, k), ant = mesAnt(k, 1), aa = cobroAb(c.id, ant), puede = isGestor() || c.piletero_id === S.me.id;
   const fila = (m, x) => `<div class="row"><div class="grow"><b>Abono de ${mesTxt(m)}</b><small>${x ? `Cobrado el ${new Date(x.fecha + 'T12:00').toLocaleDateString('es-AR')} · ${peso(x.monto)} · ${esc(nom(x.piletero_id))}${x.pago_id ? ' · rendido ✓' : ''}` : 'Todavía no se cobró'}</small></div>${x ? `<span class="tag entregado">Cobrado</span>${puede && !x.pago_id ? `<button class="btn sm sec" data-a="anularAb" data-id="${x.id}" aria-label="Deshacer">↶</button>` : ''}` : puede ? `<button class="btn sm" data-a="cobrarAb" data-id="${c.id}|${m}">💵 Cobré</button>` : '<span class="tag nuevo">Pendiente</span>'}</div>`;
   return `<div class="box"><b>🏢 Abono mensual · ${peso(c.abono)}</b><p class="sub" style="margin:4px 0 6px">Lo cobra el piletero: ${PP}% para él, ${100 - PP}% para la empresa.</p>${fila(k, a)}${fila(ant, aa)}</div>`;
@@ -1323,7 +1329,15 @@ function abonosMes(k) {
   const l = S.c.filter(c => esAbono(c) && (!c.creado || c.creado.slice(0, 10) <= fin));
   return { n: l.length, t: l.reduce((a, c) => a + (+c.abono || 0), 0) };
 }
-const conAdm = c => esAbono(c) && !!c.administracion_id && !!ADM(c.administracion_id);
+const conAdm = c => esAbono(c) && !!c.administracion_id;
+const admNom = c => (ADM(c.administracion_id) || {}).nombre || 'la administración';
+// 70% del abono de edificios de administraciones: la empresa se lo paga al piletero
+const pilAb = (cid, k) => S.apil.find(x => x.cliente_id === cid && x.mes === k);
+function debePil(pid) {
+  const l = [];
+  S.ap.filter(x => x.pagado).forEach(x => edificiosDe(x.administracion_id).filter(c => esAbono(c) && c.piletero_id === pid && !pilAb(c.id, x.mes)).forEach(c => l.push({ c, mes: x.mes, monto: Math.round((+c.abono || 0) * PORC) })));
+  return { l, total: l.reduce((a, x) => a + x.monto, 0) };
+}
 const pagoAdm = (aid, k) => S.ap.find(x => x.administracion_id === aid && x.mes === k && x.pagado);
 const prodAdm = (aid, k) => S.vt.filter(v => !v.anulada && (v.fecha || '').startsWith(k) && edificiosDe(aid).some(c => c.id === v.cliente_id));
 const cuentaAdm = (id, k) => { const ed = edificiosDe(id).filter(esAbono), pg = S.ap.find(x => x.administracion_id === id && x.mes === k); return { total: ed.reduce((a, c) => a + (+c.abono || 0), 0), pago: pg }; };
@@ -1501,7 +1515,7 @@ function gananciasHTML() {
   const pagos = S.pg.filter(x => x.piletero_id === S.me.id).sort((a, b) => ((b.fecha || '') + (b.creado || '')).localeCompare((a.fecha || '') + (a.creado || ''))).slice(0, 5);
   return `<div class="dh"><button class="arrow" data-a="mes" data-id="-1" aria-label="Mes anterior">‹</button><h3>Mis ganancias · ${mesTxt(S.mes)}</h3><button class="arrow" data-a="mes" data-id="1" aria-label="Mes siguiente">›</button></div><div class="stats"><div><small>Visitas hechas</small><b>${mis.length}</b></div><div><small>Clientes atendidos</small><b>${new Set(mis.map(r => r.cliente_id).filter(Boolean)).size}</b></div><div><small>Facturado por visitas</small><b>${peso(s.t)}</b></div><div><small>Tu parte (${PP}%)</small><b>${peso(s.mio)}</b></div><div><small>Para la empresa (${100 - PP}%)</small><b>${peso(s.emp)}</b></div><div><small>Productos que vendiste</small><b>${peso(prod)}</b></div><div><small>Tu comisión por productos (${+S.me.porc_productos || 0}%)</small><b>${peso(comi)}</b></div>${mab.length ? `<div><small>Abonos cobrados (${mab.length}) · tu ${PP}%</small><b>${peso(abPago)}</b></div>` : ''}${mtr.length ? `<div><small>Tus trabajos (${mtr.length})</small><b>${peso(trPago)}</b></div>` : ''}<div><small>Total tuyo del mes</small><b>${peso(s.mio + abPago + comi + trPago)}</b></div></div>` +
     (() => { const dd = deudaPil(S.me.id); return `<div class="pend pendTodo"><div class="grow"><small>A pagar a la empresa</small><b>${peso(dd.total)}</b><div class="pdl"><span>🧽 Mantenimientos (${dd.rs.length})</span><span>${peso(dd.m)}</span></div><div class="pdl"><span>🧪 Productos (${dd.vs.length})${dd.comi ? ' · ya descontada tu comisión' : ''}</span><span>${peso(dd.pr)}</span></div>${dd.as.length || S.c.some(c => esAbono(c) && c.piletero_id === S.me.id) ? `<div class="pdl"><span>🏢 Abonos cobrados (${dd.as.length}) · ${100 - PP}%</span><span>${peso(dd.ab)}</span></div>` : ''}</div><button class="btn" data-a="pagar" ${dd.rs.length || dd.vs.length || dd.as.length ? '' : 'disabled'}>${dd.rs.length || dd.vs.length || dd.as.length ? 'Pagar todo · ' + peso(dd.total) : 'Estás al día ✓'}</button></div>`; })() +
-    (misEd.length ? `<h3>🏢 Abonos de tus edificios · ${mesTxt(mesHoy())}</h3>` + misEd.map(c => { const x = cobroAb(c.id, mesHoy()); if (conAdm(c)) return `<div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>Lo paga ${esc(ADM(c.administracion_id).nombre)} a la empresa · tu ${PP}%: ${peso(c.abono * PORC)}</small></div><span class="tag ${pagoAdm(c.administracion_id, mesHoy()) ? 'entregado' : 'nuevo'}">${pagoAdm(c.administracion_id, mesHoy()) ? 'Pagado' : 'Pendiente'}</span></div>`; return `<div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${c.contacto ? esc(c.contacto) + ' · ' : ''}abono ${peso(c.abono)}</small></div>${x ? `<span class="tag entregado">Cobrado ✓</span>` : `<button class="btn sm" data-a="cobrarAb" data-id="${c.id}|${mesHoy()}">💵 Cobré</button>`}</div>`; }).join('') : '') +
+    (misEd.length ? `<h3>🏢 Abonos de tus edificios · ${mesTxt(mesHoy())}</h3>` + misEd.map(c => { const x = cobroAb(c.id, mesHoy()); if (conAdm(c)) { const yp = pilAb(c.id, mesHoy()); return `<div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>Lo paga ${esc(admNom(c))} a la empresa · tu ${PP}%: ${peso(c.abono * PORC)}${yp ? ' · te lo pagó el ' + new Date(yp.fecha + 'T12:00').toLocaleDateString('es-AR') : ''}</small></div><span class="tag ${yp ? 'entregado' : 'nuevo'}">${yp ? 'Cobrado ✓' : 'Te lo paga la empresa'}</span></div>`; } return `<div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${c.contacto ? esc(c.contacto) + ' · ' : ''}abono ${peso(c.abono)}</small></div>${x ? `<span class="tag entregado">Cobrado ✓</span>` : `<button class="btn sm" data-a="cobrarAb" data-id="${c.id}|${mesHoy()}">💵 Cobré</button>`}</div>`; }).join('') : '') +
     (sem || '<p class="note">Todavía no confirmaste visitas este mes. Tocá el check de cada visita en el calendario.</p>') +
     (pagos.length ? '<h3>Pagos a la empresa</h3>' + pagos.map(x => `<div class="row"><div class="grow"><b>${corto(new Date(x.fecha + 'T12:00'))}</b><small>${[x.visitas ? `${x.visitas} ${x.visitas === 1 ? 'visita' : 'visitas'}` : '', +x.ventas ? `${x.ventas} ${+x.ventas === 1 ? 'venta' : 'ventas'} (${peso(x.productos)})` : '', +x.abonos_n ? `${x.abonos_n} ${+x.abonos_n === 1 ? 'abono' : 'abonos'} (${peso(x.abonos)})` : ''].filter(Boolean).join(' · ')}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
 }
@@ -2393,6 +2407,17 @@ async function act(e) {
       if (!confirm('¿Eliminar esta administración?')) return;
       if (sb) { const x = await sb.from('administraciones').delete().eq('id', d.id); if (x.error) return toast(x.error.message); }
       S.adm = S.adm.filter(x => x.id !== d.id); closeSheet(); renderAll(); return toast('Administración eliminada');
+    }
+    case 'pagarPilAb': {
+      const d0 = debePil(d.id); if (!d0.l.length) return;
+      if (!confirm(`¿Le pagaste ${peso(d0.total)} a ${nom(d.id)}? (${PP}% de los abonos de administraciones)`)) return;
+      t.disabled = true;
+      const rows = d0.l.map(x => ({ cliente_id: x.c.id, mes: x.mes, piletero_id: d.id, monto: x.monto }));
+      try {
+        if (sb) { const x = await sb.from('abono_pil').insert(rows).select(); if (x.error) throw new Error(x.error.message); S.apil = S.apil.concat(x.data); }
+        else S.apil = S.apil.concat(rows.map(r => ({ id: crypto.randomUUID(), fecha: ymd(new Date()), ...r })));
+      } catch (e) { t.disabled = false; return toast(e.message); }
+      son('ok'); renderAll(); return toast(`Listo: ${peso(d0.total)} para ${nom(d.id)} 💸`);
     }
     case 'pagoAdm': {
       const [aid, m] = d.id.split('|'), c = cuentaAdm(aid, m), pg = c.pago;
