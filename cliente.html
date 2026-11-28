@@ -67,6 +67,22 @@ small.u{color:var(--warn)!important}small.a{color:var(--ok)!important}
 .edif{flex:none;text-align:left;font:inherit;color:inherit;background:#fff;border:2px solid transparent;border-radius:16px;padding:10px 14px;box-shadow:var(--sh);cursor:pointer;max-width:220px}
 .edif b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.edif small{color:var(--g600);font-size:12px}
 .edif.on{border-color:var(--navy);background:#eaf1fd}
+.edif .ex{display:none;font-size:12px;color:var(--g600);margin-top:6px}
+.edif .mini{display:flex;align-items:center;gap:4px;margin-top:8px}.edif .mini i{flex:1;max-width:28px;height:6px;border-radius:3px;background:var(--g200)}.edif .mini i.on{background:var(--ok)}
+.edif .mini em{font-style:normal;font-size:11px;color:var(--g600);margin-left:4px;white-space:nowrap}
+body.sp nav{grid-template-columns:repeat(4,1fr)}body.sp nav [data-t=tienda]{display:none}
+@media (min-width:900px){
+  body.adm nav{left:24px;right:auto;top:24px;bottom:auto;width:210px;margin:0;grid-template-columns:1fr;gap:4px;padding:10px;border-radius:24px}
+  body.adm nav button{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;font-size:15px}
+  body.adm .view{padding:36px 40px 60px 270px}
+  body.adm .wrap{max-width:1000px}
+  body.adm .edifs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));overflow:visible;gap:12px}
+  body.adm .edif{max-width:none;padding:14px 16px}body.adm .edif .ex{display:block}
+  body.adm .hero{aspect-ratio:auto;height:400px}
+  body.adm .tabla .row{border-radius:12px}
+  body.adm #burb{display:none}
+  body.adm nav .bdg{position:static;margin-left:auto}
+}
 .semana{background:#fff;border-radius:24px;padding:16px 18px;margin:12px 0;box-shadow:var(--sh)}
 .semana .sh{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .semana .sh small{display:block;color:var(--g600);font-size:13px}.semana .sh b{font-size:22px;letter-spacing:-.3px}
@@ -412,6 +428,13 @@ function demo() {
     { id: 'm3', de_cliente: false, texto: 'Ya quedó lista la pileta 👌 Te estás quedando sin cloro, te lo dejé anotado en la app.', foto: pool, creado: ago(85), leido_cliente: false }
   ];
   C.user = { id: 'u-demo', email: 'demo@ejemplo.com', user_metadata: { nombre: 'Laura Pérez' } };
+  if (Q.get('demo') === 'coord') {
+    C.d.sin_plata = true; C.d.cliente = { ...C.d.cliente, nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', tipo: 'institucion', abono: null, valor_visita: null, visitas_semana: 2, contacto: 'Laura Costa', administracion: 'Administración Costa & Asoc.' };
+    C.d.ventas = []; C.d.recomendaciones = []; C.d.pedidos = []; C.d.catalogo = []; C.d.premios = []; C.d.premio_recomendar = null;
+    if (C.d.piletero) C.d.piletero = { ...C.d.piletero, alias: null, cbu: null };
+    [3].forEach((n, i) => C.d.realizadas.push({ ...C.d.realizadas[C.d.realizadas.length - 1], id: 'ry' + i, fecha: back(n) })); C.d.realizadas.sort((x, y) => y.fecha.localeCompare(x.fecha));
+    C.user.user_metadata.nombre = 'Laura Costa';
+  }
   if (Q.get('demo') === 'edif') {
     const ant = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return ymd(d).slice(0, 7); })();
     C.d.cliente = { ...C.d.cliente, nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', tipo: 'institucion', abono: 160000, visitas_semana: 2, valor_visita: 0, contacto: 'Laura Costa' };
@@ -424,9 +447,9 @@ function demo() {
     const mes = ymd(new Date()).slice(0, 7), ant = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return ymd(d).slice(0, 7); })();
     C.d.cliente = { ...C.d.cliente, id: 'e1', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', tipo: 'institucion', abono: 160000, visitas_semana: 2, frecuencia: 'Semanal' };
     C.adm = { id: 'a1', nombre: 'Administración Costa & Asoc.', mes, total: 250000, edificios: [
-      { id: 'e1', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', abono: 160000, visitas_semana: 2, piletero: 'José', ultima: back(1), visitas_mes: 6, contacto: 'Laura Costa', cobro: null },
-      { id: 'e2', nombre: 'Edificio Mirador', direccion: 'Bv. Marítimo 2400', abono: 90000, visitas_semana: 1, piletero: 'Mariano', ultima: back(3), visitas_mes: 3, contacto: 'Martín Ruiz', cobro: { monto: 90000, fecha: back(2) } }],
-      pagos: [{ mes: ant, monto: 250000, n: 2, pagado: true, fecha: back(25) }], pago_empresa: { alias: 'carrizo.piletas', cbu: '0000003100012345678901', titular: 'José Carrizo', banco: 'Mercado Pago' } };
+      { id: 'e1', nombre: 'Edificio Torre Mar', direccion: 'Av. Colón 1200', abono: 160000, visitas_semana: 2, piletero: 'José', ultima: back(1), visitas_mes: 6, semana: 1, contacto: 'Laura Costa' },
+      { id: 'e2', nombre: 'Edificio Mirador', direccion: 'Bv. Marítimo 2400', abono: 90000, visitas_semana: 1, piletero: 'Mariano', ultima: back(3), visitas_mes: 3, semana: 1, contacto: 'Martín Ruiz' }],
+      productos: [{ fecha: back(4), nombre: 'Cloro granulado 90%', cantidad: 2, total: 18000, cobrado: false, edificio: 'Edificio Torre Mar' }, { fecha: back(9), nombre: 'Clarificador', cantidad: 1, total: 5000, cobrado: true, edificio: 'Edificio Mirador' }], pagos: [{ mes: ant, monto: 250000, pagado: true, fecha: back(25) }], pago_empresa: { alias: 'carrizo.piletas', cbu: '0000003100012345678901', titular: 'José Carrizo', banco: 'Mercado Pago' } };
     C.user.user_metadata.nombre = 'Laura Costa';
   }
 }
@@ -503,7 +526,7 @@ function renderInicio() {
   const fr = f && r.find(x => x.id === f.realizada_id), ff = fr ? fr.fecha : f ? ymd(new Date(f.creado)) : null;
   const nombre = (C.user?.user_metadata?.nombre || C.user?.user_metadata?.full_name || c.nombre || '').split(' ')[0];
   $('#inicio').innerHTML =
-    (esAdm() ? edificiosHTML() + `<h1>${esc(c.nombre)}</h1>` : `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1>`) + `<p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
+    (esAdm() ? edificiosHTML() + `<h1>${esc(c.nombre)}</h1>` : SP() ? `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>${esc(c.nombre)}</h1>${c.administracion ? `<p class="sub" style="margin:0 0 2px">Coordinador del edificio · ${esc(c.administracion)}</p>` : ''}` : `<p class="hola">Hola${nombre ? ', ' + esc(nombre) : ''} 👋</p><h1>Tu <em>pileta</em></h1>`) + `<p class="sub" style="margin:0">${esc(c.direccion)}</p><div id="pushAviso" style="margin-top:14px"></div>` +
     (f ? `<div class="heroW"><button class="hero" data-a="fotoToque" data-id="${esc(f.id)}" data-src="${esc(f.data)}" aria-label="Ver foto en grande"><img src="${esc(f.data)}" alt="Estado actual de tu pileta"><div class="cap"><b>Estado actual</b>Foto del ${largo(ff)}${fr && fr.piletero ? ' · ' + esc(fr.piletero) : ''}</div></button><span class="bigh" aria-hidden="true">${CORAZON}</span>${botonGusta(f)}${fa ? `<button class="adb" data-a="comparar" data-id="${esc(f.realizada_id)}">↔ Antes y después</button>` : ''}</div>`
        : `<div class="hero"><div class="empty"><div><span>🏊</span>Cuando tu piletero pase, vas a ver acá la foto de cómo quedó tu pileta.</div></div></div>`) +
     (vino ? `<div class="estado ok"><div class="ic">✓</div><div><b>Tu piletero pasó hoy</b><small>${esc(ult.piletero || 'Tu piletero')} ya hizo el mantenimiento.</small></div></div>`
@@ -512,14 +535,14 @@ function renderInicio() {
     checklistHTML(ult) +
     (recs.length ? `<div class="aviso"><small>Aviso de ${esc(p?.nombre || 'tu piletero')}</small><b>Te estás quedando <span class="hl">sin productos</span></b><ul>${recs.map(x => `<li><span>${esc(x.nombre)} ×${x.cantidad}${x.nota ? `<br><small>${esc(x.nota)}</small>` : ''}</span><span>${+x.precio ? peso(x.precio * x.cantidad) : 'Consultá'}</span></li>`).join('')}</ul><button class="btn" data-a="comprarRecs">Pedírselos ahora</button></div>` : '') +
     (peds.length ? peds.map(x => `<div class="estado ${x.estado === 'confirmado' ? 'ok' : 'warn'}"><div class="ic">🛒</div><div class="grow"><b>Pedido ${EST[x.estado].toLowerCase()} · ${peso(x.total)}</b><small>${ESTX[x.estado]}</small></div></div>`).join('') : '') +
-    `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div>${esAdm() || +c.abono > 0 ? `<div><small>Abono mensual</small><b>${peso(c.abono)}</b></div>` : `<div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div>`}<div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
+    `<div class="stats"><div class="full"><small>Próxima visita</small><b>${pr ? (pr.fecha === h ? 'Hoy' : dias(pr.fecha) === -1 ? 'Mañana' : corto(pr.fecha)) + (pr.hora ? ' · ' + hora(pr.hora) : '') : 'A coordinar'}</b></div>${SP() ? `<div><small>Visitas por semana</small><b>${c.visitas_semana || 1}</b></div>` : esAdm() || +c.abono > 0 ? `<div><small>Abono mensual</small><b>${peso(c.abono)}</b></div>` : `<div><small>Valor por visita</small><b>${c.valor_visita ? peso(c.valor_visita) : '—'}</b></div>`}<div><small>Visitas este mes</small><b>${rm.length}</b></div></div>` +
     semanaHTML(c, p) +
     avisosActivos(p) + `<button class="btn sec" data-a="avisar">📣 Avisarle algo a ${esc((p?.nombre || 'tu piletero').split(' ')[0])}</button>` +
     (tpend ? `<div class="estado warn"><div class="ic">$</div><div><b>Productos sin pagar: ${peso(tpend)}</b><small>${pend.map(v => esc(v.nombre) + ' ×' + v.cantidad).join(', ')}</small></div></div>` : '') +
-    (esAdm() ? cuentaAdmHTML(true) : +c.abono > 0 ? abonoCliHTML(p) : cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia')) +
+    (esAdm() ? cuentaAdmHTML(true) : SP() ? '' : +c.abono > 0 ? abonoCliHTML(p) : cobroHTML(p, 'Pagale a ' + esc(p?.nombre || 'tu piletero') + ' por transferencia')) +
     `<div class="card pil">${avatar(p)}<div class="grow"><b>${esc(p?.nombre || 'Sin piletero asignado')}</b><small>Tu piletero · ${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ', los ' + esc(c.dia.toLowerCase()) : ''}</small></div><button class="btn sm" data-t="chat">Escribile</button></div>` +
     (ult ? `<h3>Lo que se hizo en la última visita</h3><div class="card"><p>${esc(ult.nota || 'Mantenimiento de rutina.')}</p>${ult.productos ? `<p class="sub" style="margin:6px 0 0">Productos usados: ${esc(ult.productos)}</p>` : ''}</div><button class="btn sec" data-t="hist">Ver todas las visitas</button>` : '') +
-    premiosHTML() + recomendarHTML() +
+    (SP() ? '' : premiosHTML() + recomendarHTML()) +
     `<h3>Avisale algo rápido</h3><div class="chips" style="flex-wrap:wrap">${QUICK.slice(0, 4).map(q => `<button class="chip" data-a="rapido" data-id="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
   if (window.JCPush) JCPush.montarAviso($('#pushAviso'), pushOpc());
 }
@@ -660,21 +683,26 @@ async function darGusta(id, si, grande) {
 const tieneCobro = p => p && (p.alias || p.cbu);
 // ── Modo administración (edificios con consorcio): varios edificios y una cuenta mensual
 const esAdm = () => !!C.adm;
+// Coordinador del edificio (entra con el código del edificio de una administración): sin precios, pagos ni tienda
+const SP = () => !!(C.d && C.d.sin_plata) && !esAdm();
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const mesLargo = k => MESES[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4);
 function edificiosHTML() {
   if (!esAdm()) return '';
-  const a = C.adm;
-  return `<div class="admBar"><small>🏢 ${esc(a.nombre)} · ${a.edificios.length} ${a.edificios.length === 1 ? 'edificio' : 'edificios'}</small><div class="edifs">${a.edificios.map(e => `<button class="edif ${e.id === C.d.cliente.id ? 'on' : ''}" data-a="edif" data-id="${e.id}"><b>${esc(e.nombre)}</b><small>${e.ultima ? 'Última visita ' + corto(e.ultima) : 'Sin visitas aún'}</small></button>`).join('')}</div></div>`;
+  const a = C.adm, ed = a.edificios || [];
+  return `<div class="admBar"><small>🏛️ ${esc(a.nombre)} · ${ed.length} ${ed.length === 1 ? 'edificio' : 'edificios'} con José Carrizo e Hijos</small><div class="edifs">${ed.map(e => { const m = Math.max(1, +e.visitas_semana || 1), n = Math.min(+e.semana || 0, m); return `<button class="edif ${e.id === C.d.cliente.id ? 'on' : ''}" data-a="edif" data-id="${e.id}"><b>${esc(e.nombre)}</b><small>${e.ultima ? 'Última visita ' + corto(e.ultima) : 'Sin visitas aún'}</small><span class="ex">🧑‍🔧 ${esc(e.piletero || 'Sin piletero')}${e.contacto ? ' · 👤 ' + esc(e.contacto) : ''}</span><span class="mini" title="Visitas de esta semana">${Array.from({ length: m }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}<em>${n}/${m} esta semana</em></span></button>`; }).join('')}</div></div>`;
 }
 function cuentaAdmHTML(breve) {
   if (!esAdm()) return '';
-  const a = C.adm, ed = a.edificios || [], nc = ed.filter(e => e.cobro).length, pagado = ed.length > 0 && nc === ed.length;
-  if (breve) return `<button class="estado ${pagado ? 'ok' : 'warn'}" data-t="cuenta" style="width:100%;text-align:left;border:0;font:inherit;cursor:pointer"><div class="ic">$</div><div class="grow"><b>Abonos de ${mesLargo(a.mes)}: ${nc} de ${ed.length} pagados</b><small>${pagado ? 'Todo al día ✓ ¡Gracias!' : 'Cada abono se le paga al piletero del edificio · tocá para ver el detalle'}</small></div></button>`;
-  return `<h3>Abonos de ${mesLargo(a.mes)}</h3><div class="stats"><div class="full"><small>Abono mensual de tus edificios</small><b>${peso(a.total)}</b></div><div><small>Pagados</small><b>${nc} de ${ed.length}</b></div><div><small>Edificios</small><b>${ed.length}</b></div></div>` +
-    `<p class="note">Cada abono se le paga al piletero que atiende el edificio. Cuando lo cobra, lo confirma en su app y acá aparece como pagado.</p>` +
-    ed.map(e => `<div class="row"><div class="grow"><b>${esc(e.nombre)}</b><small>${e.contacto ? '👤 ' + esc(e.contacto) + ' · ' : ''}${esc(e.piletero || 'Sin piletero')} · ${e.visitas_mes} visitas este mes</small></div><div class="num"><b>${peso(e.abono)}</b><small>${e.cobro ? 'Pagado ✓' : 'Pendiente'}</small></div></div>`).join('') +
-    ((a.pagos || []).filter(x => x.mes !== a.mes).length ? '<h3>Meses anteriores</h3>' + a.pagos.filter(x => x.mes !== a.mes).map(x => `<div class="row"><div class="grow"><b>${mesLargo(x.mes)}</b><small>${x.n || 1} ${+x.n === 1 ? 'abono pagado' : 'abonos pagados'}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
+  const a = C.adm, ed = a.edificios || [], pg = (a.pagos || []).find(x => x.mes === a.mes), pagado = pg && pg.pagado, pe = a.pago_empresa || {};
+  const pr = a.productos || [], tpr = pr.reduce((x, v) => x + (+v.total || 0), 0), prPend = pr.filter(v => !v.cobrado).reduce((x, v) => x + (+v.total || 0), 0);
+  if (breve) return `<button class="estado ${pagado ? 'ok' : 'warn'}" data-t="cuenta" style="width:100%;text-align:left;border:0;font:inherit;cursor:pointer"><div class="ic">$</div><div class="grow"><b>Cuenta de ${mesLargo(a.mes)}: ${peso(+a.total + prPend)}</b><small>${pagado ? 'Abono pagado ✓ ¡Gracias!' + (prPend ? ' · productos ' + peso(prPend) + ' pendientes' : '') : 'Abono de tus ' + ed.length + ' edificios' + (prPend ? ' + productos' : '') + ' · tocá para ver el detalle y cómo pagar'}</small></div></button>`;
+  const dato = (k, v, q) => v ? `<div class="dato"><div class="grow"><small>${k}</small><b>${esc(v)}</b></div><button class="cp" data-a="copiar" data-id="${esc(v)}" data-q="${q}">Copiar</button></div>` : '';
+  return `<h3>Cuenta de ${mesLargo(a.mes)}</h3><div class="stats"><div><small>Abono mensual</small><b>${peso(a.total)}</b></div><div><small>Productos del mes</small><b>${peso(tpr)}</b></div><div><small>Estado del abono</small><b>${pagado ? 'Pagado ✓' : 'Pendiente'}</b></div><div><small>Edificios</small><b>${ed.length}</b></div></div>` +
+    `<div class="tabla">${ed.map(e => { const m = Math.max(1, +e.visitas_semana || 1); return `<div class="row"><div class="grow"><b>${esc(e.nombre)}</b><small>${esc(e.direccion || '')} · 🧑‍🔧 ${esc(e.piletero || 'Sin piletero')}${e.contacto ? ' · 👤 ' + esc(e.contacto) : ''} · ${m} ${m > 1 ? 'visitas' : 'visita'}/semana · ${e.visitas_mes} este mes</small></div><div class="num"><b>${peso(e.abono)}</b><small>por mes</small></div></div>`; }).join('')}</div>` +
+    (pr.length ? `<h3>Productos de ${mesLargo(a.mes)}</h3><div class="tabla">${pr.map(v => `<div class="row"><div class="grow"><b>${esc(v.nombre)} ×${v.cantidad}</b><small>${esc(v.edificio)} · ${corto(v.fecha)} · ${v.cobrado ? 'pagado ✓' : 'pendiente'}</small></div><div class="num"><b>${peso(v.total)}</b></div></div>`).join('')}</div>` : '') +
+    (!pagado || prPend ? (pe.alias || pe.cbu ? `<div class="pago"><h4>Datos para transferir a José Carrizo e Hijos</h4><p class="sub" style="margin:0 0 6px">${esc(pe.titular || '')}${pe.banco ? ' · ' + esc(pe.banco) : ''}${pe.cuit ? ' · CUIT ' + esc(pe.cuit) : ''}</p>${dato('Alias', pe.alias, 'Alias')}${dato('CBU / CVU', pe.cbu, 'CBU')}<p class="sub" style="margin:8px 0 0">Total a transferir: <b>${peso((pagado ? 0 : +a.total) + prPend)}</b>. Mandanos el comprobante por Mensajes o WhatsApp.</p></div>` : `<p class="note">Pedinos los datos para transferir por WhatsApp.</p>`) : '') +
+    ((a.pagos || []).filter(x => x.mes !== a.mes && x.pagado).length ? '<h3>Meses anteriores</h3>' + a.pagos.filter(x => x.mes !== a.mes && x.pagado).map(x => `<div class="row"><div class="grow"><b>${mesLargo(x.mes)}</b><small>Pagado el ${corto(x.fecha)}</small></div><div class="num"><b>${peso(x.monto)}</b></div></div>`).join('') : '');
 }
 // Checklist del mantenimiento que confirma el piletero en cada visita
 const TAREAS = [['superficie', '🍃', 'Limpieza de superficie'], ['fondo', '🧹', 'Barrido de fondo'], ['productos', '🧪', 'Aplicación de productos'], ['retrolavado', '🔄', 'Retrolavado y enjuague']];
@@ -732,7 +760,7 @@ function promoHTML(x) {
 }
 function burbuja() {
   const b = $('#burb'); if (!b) return;
-  const ps = promos(), mostrar = ps.length > 0 && C.tab === 'inicio' && !(window.JCTour && JCTour.activo());
+  const ps = promos(), mostrar = !SP() && ps.length > 0 && C.tab === 'inicio' && !(window.JCTour && JCTour.activo());
   b.hidden = !mostrar;
   if (!mostrar) return;
   const ft = foto(ps[0]);
@@ -789,12 +817,12 @@ async function renderHist() {
 function renderCuenta() {
   const c = C.d.cliente, u = C.user || {};
   $('#cuenta').innerHTML = `<h1>Mi <em>cuenta</em></h1><p class="sub">${esc(u.user_metadata?.nombre || u.user_metadata?.full_name || '')}${u.user_metadata?.nombre || u.user_metadata?.full_name ? ' · ' : ''}${esc(u.email || '')}</p>` +
-    (esAdm() ? cuentaAdmHTML() : `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>${+c.abono > 0 ? 'Abono mensual' : 'Valor de cada visita'}</b><small>${+c.abono > 0 ? peso(c.abono) : c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
+    (esAdm() ? cuentaAdmHTML() : SP() ? `<h3>El edificio</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}${c.administracion ? ' · ' + esc(c.administracion) : ''}</small></div></div><div class="row"><div class="grow"><b>Mantenimiento</b><small>${c.visitas_semana || 1} ${+c.visitas_semana > 1 ? 'visitas' : 'visita'} por semana · lo atiende ${esc(C.d.piletero?.nombre || 'tu piletero')}</small></div></div><p class="note">El abono y los pagos los maneja la administración.</p>` : `<h3>Mi pileta</h3><div class="row"><div class="grow"><b>${esc(c.nombre)}</b><small>${esc(c.direccion)}</small></div></div><div class="row"><div class="grow"><b>Frecuencia</b><small>${esc(c.frecuencia || 'Semanal')}${c.dia && c.dia !== 'Sin día fijo' ? ' · ' + esc(c.dia) : ''}</small></div></div><div class="row"><div class="grow"><b>${+c.abono > 0 ? 'Abono mensual' : 'Valor de cada visita'}</b><small>${+c.abono > 0 ? peso(c.abono) : c.valor_visita ? peso(c.valor_visita) : 'A coordinar con tu piletero'}</small></div></div>` +
     (+c.abono > 0 ? abonoCliHTML(C.d.piletero, true) : cobroHTML(C.d.piletero, 'Datos para transferir a tu piletero'))) +
     `<p class="note" style="margin-top:14px">¿Algún dato está mal? Avisale a tu piletero por Mensajes y lo corrige.</p>` +
     `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}">WhatsApp de la empresa · 223 540-5578</a>` +
     `<h3>Notificaciones</h3><div class="pago" id="pushBox" style="margin-top:0"></div>` +
-    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + (esAdm() ? '' : recomendarHTML()) +
+    `<button class="btn sec" data-a="tour">👋 Ver el recorrido de la app</button>` + (esAdm() || SP() ? '' : recomendarHTML()) +
     `<p class="legal">Tus datos se usan solo para el servicio de tu pileta. <a href="${PRIV}" target="_blank" rel="noopener">Política de privacidad</a> · Para ver, corregir o borrar tus datos, escribinos por Mensajes o al WhatsApp de la empresa.</p>` +
     `<h3>Tener la app en el celular</h3><p class="note">iPhone: tocá Compartir y elegí “Agregar a inicio”.<br>Android: tocá los tres puntos y elegí “Instalar app” o “Agregar a pantalla principal”.</p>` +
     `<button class="btn sec" data-a="salir">Cerrar sesión</button>`;
@@ -810,7 +838,7 @@ async function marcarLeidos() {
   badge();
   if (!C.demo) await sb.rpc('marcar_leidos_cliente');
 }
-function renderAll() { renderInicio(); renderTienda(); renderChatHead(); renderMsgs(); renderCuenta(); badge(); renderCarro(); burbuja(); if (C.tab === 'hist') renderHist(); }
+function renderAll() { document.body.classList.toggle('sp', SP()); document.body.classList.toggle('adm', esAdm()); if (SP() && C.tab === 'tienda') go('inicio'); renderInicio(); renderTienda(); renderChatHead(); renderMsgs(); renderCuenta(); badge(); renderCarro(); burbuja(); if (C.tab === 'hist') renderHist(); }
 function go(t) {
   C.tab = t;
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + t));
